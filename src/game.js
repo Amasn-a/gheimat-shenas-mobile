@@ -118,8 +118,8 @@ function question() {
   let lead = off ? V.pill('اتصال قطع شد؛ تا برگرده نمی‌شه جواب داد و زمان ادامه داره.', 'wifi') : connPill();
   if (S.ui.slowSettle) lead = V.pill(pend ? 'پاسخت ثبت شده؛ نتیجه‌اش هنوز نرسیده.' : 'نتیجه هنوز نرسیده.', 'refresh', '<button class="q-pill__btn" data-act="recheck-answer">بررسی دوباره</button>');
   const tm = pend ? V.timer({ mode: 'busy' }) : over ? V.timer({ mode: 'zero' }) : V.timer({ mode: tn.low ? 'low' : 'run', t: tn.t, p: tn.p });
-  const decision=V.decide(pend ? 'pending' : off || over ? 'off' : 'on',q.pick,'',S.ref.price,'ans',S.ref);
-  return V.game(top(), trk(), tm, lead + V.cmpCard(q.product, 'hidden', 0, q.imgSlow && !q.imgReady,decision),
+  const decision=V.decide(pend ? 'pending' : off || over ? 'off' : 'on',q.pick,'',S.ref.price);
+  return V.game(top(), trk(), tm, lead + V.refCard(S.ref,true) + V.cmpCard(q.product, 'hidden', 0, q.imgSlow && !q.imgReady,decision),
     '', leave(), S.ui.toast);
 }
 
@@ -132,18 +132,18 @@ function feedback() {
   if (fb.kind === 'correct') {
     const pop = S.ui.popped !== fb.questionId; S.ui.popped = fb.questionId;   // the check pops once per confirmed question, not on re-renders
     tm = V.timer({ mode: 'verdict', kind: 'ok', title: 'درست گفتی!', sub: fb.equal ? 'قیمت‌ها برابر بود؛ هر دو جواب درسته' : `${truthW} بود`, pop });
-    dec = V.decide('ok', fb.choice, '',S.ref.price,'ans',S.ref);
+    dec = V.decide('ok', fb.choice, '',S.ref.price);
     card = V.cmpCard(fb.product, 'ok', fb.revealedPrice,false,dec);
   } else if (fb.kind === 'wrong') {
     tm = V.timer({ mode: 'verdict', kind: 'no', title: 'جوابت درست نبود', sub: `${truthW} بود` });
-    dec = V.decide('no', fb.choice, '',S.ref.price,'ans',S.ref);
+    dec = V.decide('no', fb.choice, '',S.ref.price);
     card = V.cmpCard(fb.product, 'no', fb.revealedPrice,false,dec);
   } else {   // timeout: no answer is shown as the player's
     tm = V.timer({ mode: 'verdict', kind: 'time', title: 'زمان تموم شد', sub: `${truthW} بود` });
-    dec = V.decide('truth', fb.direction === 'higher' ? 'higher' : 'lower', '',S.ref.price,'ans',S.ref);
+    dec = V.decide('truth', fb.direction === 'higher' ? 'higher' : 'lower', '',S.ref.price);
     card = V.cmpCard(fb.product, 'time', fb.revealedPrice,false,dec);
   }
-  return V.game(top(), trk(), tm, connPill() + card, '', leave(), S.ui.toast);
+  return V.game(top(), trk(), tm, connPill() + V.refCard(S.ref,true) + card, '', leave(), S.ui.toast);
 }
 
 /** G05/G06 (owner 2026-10-25). While the continue is open or being paid: the game screen with the revealed price under the

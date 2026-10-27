@@ -355,7 +355,7 @@ body #app.gu, body.pe-play #app.gu, body.pe-play:not(.pe-dev) #app.gu, .pe-dev #
    4. «ارزون‌تره» is green.  5. The icon sits at the label's right; the play triangle points at the label.
    6. Track: the coin alone (no amount), coins and badges one size, counts at 90 % opacity. */
 .gu, .gu * { text-shadow: none !important; -webkit-text-stroke: 0 !important; }
-.gu *:not(button):not(a):not(.q-spin):not(button *):not(a *):not(.h-home):not(.h-home *):not(.p-game):not(.p-game *):not(.p-end):not(.p-end *):not(.q-modal):not(.q-modal *):not(.q-cp):not(.q-cp *):not(.l-guide):not(.l-guide *):not(.p-run-loading):not(.p-run-loading *):not(.l-tour):not(.l-tour *) { box-shadow: none !important; border-color: transparent !important; }
+.gu *:not(button):not(a):not(.q-spin):not(button *):not(a *):not(.h-home):not(.h-home *):not(.p-game):not(.p-game *):not(.p-end):not(.p-end *):not(.q-modal):not(.q-modal *):not(.q-cp):not(.q-cp *):not(.l-guide):not(.l-guide *):not(.p-run-loading):not(.p-run-loading *):not(.l-tour):not(.l-tour *):not(.l-coach):not(.l-coach *) { box-shadow: none !important; border-color: transparent !important; }
 .gu .q-track__ic, .gu .q-track li.is-done .q-track__ic, .gu .q-invite__tag, .gu .q-home-art { filter: none !important; }
 .gu .q-track li:not(.is-done) .q-track__ic { filter: saturate(.6) brightness(.85) !important; }
 

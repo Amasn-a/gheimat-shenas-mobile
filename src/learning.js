@@ -1,6 +1,6 @@
 // Practice is local and uses invented products. It never starts a run, spends a
 // chance, charges coins or awards a badge. Only the final explicit play action does.
-import { tourMarkup } from './learning-spotlight.js';
+import { tourMarkup, practiceCoachMarkup } from './learning-spotlight.js';
 import { soundControl } from './feedback.mjs';
 import { I } from './icons.js';
 import { fa, money, esc } from './fmt.js';
@@ -20,12 +20,11 @@ export function renderLearning(m,h) {
     const progress=`<div class="l-progress"><span>${phase==='intro'?'قدم‌به‌قدم با هم یاد می‌گیریم':phase==='question'?'حالا خودت انتخاب کن':'جواب رو بررسی کن'}</span><small>${phase==='intro'?'زمان هنوز شروع نشده':'تمرین رایگان'}</small></div>`;
     const tm=feedback?h.timer({mode:'verdict',kind:correct?'ok':l.outcome==='timeout'?'time':'no',title:correct?'درست گفتی!':l.outcome==='timeout'?'زمان تمرین تموم شد':'این بار گرون‌تر بود',sub:'هدفون از ماگ گرون‌تره'}):phase==='question'?h.timer({mode:m.remaining<=3000?'low':'run',t:fa(Math.ceil(m.remaining/1000)),p:Math.max(0,m.remaining/c.inputMs).toFixed(3)}):h.timer({mode:'idle'});
     const first={...DEMO_FIRST,displayTitle:'ماگ سرامیکی'},second={...DEMO_SECOND,displayTitle:'هدفون بی‌سیم'};
-    const decision=h.decide(phase==='intro'||feedback?'off':'on',null,'',first.price,'learn',first);
-    const foot=feedback?`<div class="l-practice-dock"><p>${money(DEMO_SECOND_PRICE)} بیشتر از ${money(first.price)} تومنه؛ پس جواب «گرون‌تره» است.</p>${button('فهمیدم، ادامه بدیم','learn-done',false,I.fwd)}</div>`:'';
-    const main=h.cmpCard(second,feedback?(correct?'ok':l.outcome==='timeout'?'time':'no'):'hidden',feedback?DEMO_SECOND_PRICE:0,false,decision);
-    let page=h.game(top,progress,tm,main,'','').replace('q-game p-game',`q-game p-game l-practice${feedback?' l-practice--feedback':''}`);
-    if(phase==='intro') page=page.replace('<div class="q-page','<div inert class="q-page')+tourMarkup(l.tourStep||0,seconds);
-    if(feedback)page=page.replace('</main>',`</main>${foot}`);
+    const decision=h.decide(phase==='intro'||feedback?'off':'on',null,'',first.price,'learn');
+    const main=h.refCard(first,true)+h.cmpCard(second,feedback?(correct?'ok':l.outcome==='timeout'?'time':'no'):'hidden',feedback?DEMO_SECOND_PRICE:0,false,decision);
+    let page=h.game(top,progress,tm,main,'','').replace('q-game p-game',`q-game p-game l-practice l-coach-space`);
+    if(phase==='intro') page=page.replace('<div class="q-page','<div inert class="q-page l-tour-active')+tourMarkup(l.tourStep||0,seconds);
+    if(phase!=='intro')page+=practiceCoachMarkup(phase,seconds);
     return page;
   }
   let body='',foot='',title='چطور بازی کنیم؟';
