@@ -71,7 +71,7 @@ export function hdr(t, act, label, end = '', cls = '') {
 export const page = (cls, inner, extra = '') => `<div class="q-page ${cls}"${/q-modal/.test(extra) ? ' inert' : ''}>${inner}</div>${extra}`;
 export function sheet(t, text, body, btns, icon) {
   const lead = icon ? `<span class="q-sheet__icon q-sheet__icon--${icon[0]}" aria-hidden="true">${ICO(icon[1], 26)}</span>` : '';
-  return `<div class="q-scrim q-modal"><section class="q-sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t">${lead}<h2 id="sh-t">${t}</h2>${text ? `<p>${text}</p>` : ''}${body || ''}<div class="q-sheet__btns">${btns}</div></section></div>`;
+  return `<div class="q-scrim q-modal"><section class="q-sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t">${lead}<h2 id="sh-t">${t}</h2>${text ? `<p>${text}</p>` : ''}${body || ''}<button class="modal-close q-iconbtn" data-act="leave-no" aria-label="بستن">${I.x}</button><div class="q-sheet__btns">${btns}</div></section></div>`;
 }
 export const statecard = (ic, kind, t, text, actions) => `<div class="q-state"><span class="q-state__i${kind ? ' q-state__i--' + kind : ''}" aria-hidden="true">${ICO(ic, 30)}</span><h2>${t}</h2>${text ? `<p>${text}</p>` : ''}<div class="q-state__a">${actions}</div></div>`;
 
@@ -93,7 +93,7 @@ export function balance(b) {
 /** The home's bottom sheet (owner 2026-10-25): full-bleed, curved top; the chances line and the one main action. v: the G01 state. */
 function homeSheet(v, m) {
   const b = m.boot, q = b.quota;
-  const chances = `<p class="q-chances">${ICO('info', 18)}<span>هنوز <b>${fa(q.playsLeft)}</b> شانس داری</span></p>`;
+  const chances = `<p class="q-chances"><span>هنوز <b>${fa(q.playsLeft)}</b> شانس داری</span></p>`;
   let cta, pre = '';
   if (v === 'G01.ACTIVE_RUN') {
     const r = b.activeRun;
@@ -247,7 +247,7 @@ export function leaveSheet(m) {
  */
 export function cpOverlay(c,index,reward,next) {
   const amount=c.rewardAmount||0,late=reward?.status==='delayed';
-  return `<div class="q-cp q-cp--compact tier-${index}" role="dialog" aria-modal="true" aria-labelledby="cp-t" aria-describedby="cp-d"><section class="p-checkpoint-card"><small class="p-checkpoint-kicker">یه نشان تازه برای تو</small>${badge(c,index,'q-cp__badge')}<h2 id="cp-t">نشان «${esc(c.title)}» رو گرفتی!</h2><p id="cp-d">${fa(c.requiredCorrect)} حدس درست پشت‌سرهم</p>${amount?`<p class="p-checkpoint-prize">${COIN}<b>${fa(amount)} دیجی‌کوین جایزه</b><small>${late?'واریزش کمی طول می‌کشه':reward?.status==='succeeded'?'واریز شد':''}</small></p>`:''}<p class="p-checkpoint-next">${next?`${fa(next.requiredCorrect-c.requiredCorrect)} جواب دیگه تا نشان «${esc(next.title)}»`:'همهٔ نشان‌ها رو گرفتی؛ رکوردت رو بالاتر ببر!'}</p>${PRIMARY('ادامهٔ بازی',' data-act="cp-go"',I.fwd)}</section></div>`;
+  return `<div class="q-cp q-cp--compact tier-${index}" role="dialog" aria-modal="true" aria-labelledby="cp-t" ><section class="p-checkpoint-card"><button class="modal-close q-iconbtn" data-act="cp-go" aria-label="بستن نشان">${I.x}</button>${badge(c,index,'q-cp__badge')}<h2 id="cp-t">نشان «${esc(c.title)}» رو گرفتی!</h2>${amount?`<p class="p-checkpoint-prize">${COIN}<b>${fa(amount)} دیجی‌کوین جایزه</b><small>${late?'واریزش کمی طول می‌کشه':reward?.status==='succeeded'?'واریز شد':''}</small></p>`:''}${PRIMARY('ادامهٔ بازی',' data-act="cp-go"',I.fwd)}</section></div>`;
 }
 
 // ---------------------------------------------------------------- G05/G06 end of a run (owner 2026-10-25)
@@ -255,28 +255,7 @@ export function cpOverlay(c,index,reward,next) {
  * End screen 1 — the continue offer as a modal over the game screen (the revealed price and verdict stay visible behind a
  * blur). m: { cost, balance, state: offer|loading|ending|pending|unknown|failed, left (offer seconds or null) }.
  */
-export function offerModal(m) {
-  const busy = { loading: 'در حال آماده‌سازی…', ending: 'در حال ثبت نتیجه…', pending: 'در حال دریافت جون…' }[m.state];
-  const locked = !!busy || m.state === 'unknown' || m.state==='skipping';
-  let note = '', main;
-  if (m.state === 'pending') note = status('', 'هزینه فقط یک بار کسر می‌شه.', 'info');
-  if (m.state === 'unknown') note = status('warn', 'وضعیت پرداخت در حال بررسیه؛ دوباره سکه کسر نمی‌شه.', null, true);
-  if (m.state === 'failed') note = status('no', 'پرداخت انجام نشد و سکه‌ای کسر نشد.', 'alert', false, true);
-  if (busy) main=`<button class="q-btn q-btn--secondary q-offer__go" data-act="continue" disabled aria-busy="true">${SPIN}<span>${busy}</span></button>`;
-  else if (m.state === 'unknown') main = BTN('q-btn--secondary q-offer__go', 'بررسی وضعیت پرداخت', ' data-act="recheck"', I.refresh);
-  else main = BTN('q-btn--secondary q-offer__go', `یه جون اضافه با ${fa(m.cost)} دیجی‌کوین`, ' data-act="continue"'+(locked?L:''), COIN);
-  const skip = m.state==='skipping'?`<button class="q-btn q-btn--primary q-offer__skip" data-act="offer-skip" disabled aria-busy="true">${SPIN}<span>در حال ثبت نتیجه…</span></button>`:BTN('q-btn--primary q-offer__skip', 'دیدن نتیجهٔ این دست', ' data-act="offer-skip"' + (locked ? L : ''));
-  const why = m.reason === 'timeout' ? 'وقتت تموم شد و این دور رو باختی.' : 'این حدس درست نبود و این دور رو باختی.';
-
-  return `<div class="q-scrim q-modal q-offerlayer"><section class="q-offer p-revive" role="dialog" aria-modal="true" aria-labelledby="offer-t" aria-describedby="offer-d">` +
-    `<button class="q-iconbtn q-offer__x" data-act="offer-skip" aria-label="بستن و دیدن نتیجهٔ این دست"${locked?L:''}>${I.x}</button><span class="p-heart" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M32 53S7 37 7 20C7 5 26 3 32 15 38 3 57 5 57 20c0 17-25 33-25 33Z" fill="#e6b0a0" stroke="#92533e" stroke-width="2.5"/><path d="m34 11-7 13 10 5-8 16" stroke="#fffaf0" stroke-width="4" stroke-linejoin="round"/></svg></span>` +
-    `<h2 id="offer-t">هنوز می‌تونی برگردی!</h2><p id="offer-d">${why}</p>` +
-    `<div class="p-revive-score"><b>${fa(m.score || 0)}</b><span>امتیاز گرفتی!</span></div>` +
-    `<p class="p-revive-explain">با دادن <b>${fa(m.cost)} تا دیجی کوین</b> یه جون اضافه میگیری و ادامه میدی!</p>` +
-    (m.nextGoal ? `<p class="p-revive-goal">${fa(m.nextGoal.requiredCorrect-(m.score || 0))} جواب کم داری تا ${esc(m.nextGoal.title)}</p>` : '') +
-    `${m.left != null ? `<p class="q-offer__left">${ICO('clock',16)}<b data-offer-left>${m.left}</b> ثانیه برای تصمیم</p>` : ''}${note}` +
-    `<div class="q-offer__btns">${skip}${main}</div><p class="p-revive-wallet">موجودی: ${fa(m.balance ?? 0)} دیجی‌کوین</p></section></div>`;
-}
+export function offerModal(){return '';}
 /** A seen product with its (simulated) deal: tile for the result screen and the deals page. */
 function dealTile(p, big) {
   const d = p.deal || {};
@@ -293,21 +272,19 @@ export const dealsOf = list => (list?.items || []).filter(p => p.deal && (p.deal
  * note (payment message html), code, shareable, balance, toast }.
  */
 /** Compact, truthful preview: at most three seen products, with a responsive remainder count. */
-function resultDeals(items) {
-  if (!items.length) return '';
-  const thumbs = items.slice(0,3).map((p,i)=>`<span class="p-deal-thumb" data-preview="${i}">${p.imageUrl ? `<img src="${esc(p.imageUrl)}" alt="" decoding="async">` : ''}${p.deal?.discountPercent > 0 ? `<b>${fa(p.deal.discountPercent)}٪</b>` : p.deal?.coinBack > 0 ? `<small>${COIN}${fa(p.deal.coinBack)}</small>` : ''}</span>`).join('');
-  const more = items.length > 3 ? `<span class="p-deals-more"><b class="p-more-wide" dir="ltr">+${fa(items.length-3)}</b><b class="p-more-small" dir="ltr">+${fa(items.length-2)}</b><small>کالای دیگه</small></span>` : '';
-  return `<button class="p-result-deals" data-act="deals-end" aria-label="دیدن ${fa(items.length)} کالای دیده‌شده با تخفیف یا دیجی‌کوین"><span class="p-deals-heading"><b>کالاهایی که دیدی، با جایزه!</b><span>مشاهدهٔ همه ${ICO('fwd',14)}</span></span><span class="p-deals-thumbs">${thumbs}${more}</span></button>`;
+function resultDeals(items){
+ const slots=Array.from({length:3},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}"><span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
+ return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid">${slots}</ol></section>`;
 }
 export function vEnd(m) {
   const headline = m.newRecord ? 'رکوردت رو شکستی!' : m.cp ? 'چه دست خوبی!' : m.score > 0 ? 'هر بار، یه قدم جلوتر!' : 'دست بعدی مال توئه!';
-  const earned = m.reward?.amount > 0 ? `<div class="p-result-reward">${COIN}<span><b>${fa(m.reward.amount)} دیجی‌کوین</b> ${m.reward.status === 'succeeded' ? 'جایزه گرفتی' : 'جایزه در حال واریزه'}</span></div>` : '';
+  const earned='';
   const art = m.cp ? `<img src="${BADGE_SRC(badgeId(m.cp,m.cpIndex))}" alt="نشان ${esc(m.cp.title)}">` : '<img src="assets/brand-smile-v2.png" alt="">';
   const share = m.shareable;
   const deals = resultDeals(m.deals || []);
-  const limit = m.noOfferReason === 'no_funds' ? '<p class="p-result-limit">موجودی برای جون اضافه کافی نبود؛ دست جدید با شانس روزانه شروع می‌شه.</p>' : '';
+  const limit='';
   return page(`q-end p-end${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="end-home" aria-label="رفتن به صفحه اصلی">${ICO('home',22)}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
-    `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
+    `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد"><p class="p-result-streak">${fa(m.streakDays||0)} روز حضور پشت‌سرهم</p>` +
     `<div class="p-result-art" aria-hidden="true">${art}</div><h1 class="q-end__h">${headline}</h1><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
     `<div class="p-result-best"><span>بهترین رکوردت:</span><b>${fa(m.best)}</b></div></section>` +
     `${earned}${limit}${m.note || ''}${m.code || ''}${deals}</main>` +

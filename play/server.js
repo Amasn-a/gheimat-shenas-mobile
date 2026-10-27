@@ -27,7 +27,7 @@ const CFG = {
     { id: 'cp_15', requiredCorrect: 15, title: 'بازاری', badgeAssetId: 'badge_15', reward: 3, percent: 90 },
     { id: 'cp_20', requiredCorrect: 20, title: 'تاجر', badgeAssetId: 'badge_20', reward: 5, percent: 99 },
   ],
-  continueRule: { enabled: true, cost: 5, cap: 1 },
+  continueRule: { enabled: false, cost: 5, cap: 0 },
   recordReward: 1, recordRewardAbove: 20,
   streakReward: 1,
   bands: [
@@ -62,7 +62,7 @@ const invalid = (message, details) => Object.assign(new Fail(422, 'VALIDATION_FA
 
 // ------------------------------------------------------------------------------------------------ state (localStorage)
 const fresh = () => ({
-  v: 1, player: { onboarded: false, record: 0, recordRunId: null, blocked: false, firstWeekCompletedAt:null, badgeCounts:{} }, testSettings:{revive:true}, gameOn: true,
+  v: 1, player: { onboarded: false, record: 0, recordRunId: null, blocked: false, firstWeekCompletedAt:null, badgeCounts:{} }, testSettings:{revive:false}, gameOn: true,
   part: {}, seen: {}, runs: {}, qs: {}, offers: {}, ops: {}, credit: {}, idem: {}, rewardHistory: {},
   wallet: { balance: 1000, tx: {}, script: [] },   // owner 2026-10-25: temporary QA value
 });
@@ -74,7 +74,7 @@ function load() {
   // Migrate past successful operations before old runs and their operations can be pruned.
   Object.values(S.ops).forEach(op => rememberReward(S.rewardHistory, op));
   save();
-  CFG.continueRule.enabled=S.testSettings?.revive!==false;CFG.continueRule.cap=CFG.continueRule.enabled?1:0;
+  CFG.continueRule.enabled=false;CFG.continueRule.cap=0;
   if(!S.player.badgeCounts){
     S.player.badgeCounts={};for(const cp of CFG.checkpoints){const count=Object.values(S.runs).filter(r=>r.score>=cp.requiredCorrect).length;S.player.badgeCounts[cp.id]=Math.max(count,S.player.record>=cp.requiredCorrect?1:0);}save();
   }
@@ -497,6 +497,7 @@ function start(device, campaignId) {
   if (S.player.blocked) throw new Fail(409, 'PLAYER_BLOCKED');
   if (!S.gameOn) throw new Fail(409, 'GAME_UNAVAILABLE', { message: '' });
   let active = activeRun();
+  if(active&&['AWAITING_OFFER','OFFER_OPEN','PAYMENT_PENDING'].includes(active.state)){finish(active,'wrong',now);}
   if (active) { applyDue(active); if (active.state === 'FINISHED') active = null; }
   if (active) {
     if (active.deviceId === device) throw new Fail(409, 'ACTIVE_RUN_EXISTS', { run_id: active.runId });
@@ -745,8 +746,10 @@ function claimDaily() {
 }
 
 function bootstrap(device) {
+  if(!S.player.blocked)claimDaily();
   const balance = gateway.balance(), now = clockNow, today = dateOf(now);
   let active = activeRun();
+  if(active&&['AWAITING_OFFER','OFFER_OPEN','PAYMENT_PENDING'].includes(active.state)){finish(active,'wrong',now);}
   if (active) { applyDue(active); if (active.state === 'FINISHED') active = null; }
   let activeView = null;
   if (active) {
@@ -868,7 +871,7 @@ export const reviewer = {
   snapshot(){return {balance:S.wallet.balance,record:S.player.record,streak:streak(dateOf(Date.now())),playsLeft:CFG.playsPerDay-part(dateOf(Date.now())).playsUsed,firstVisit:!S.player.onboarded,revive:CFG.continueRule.enabled,badgeCounts:{...S.player.badgeCounts}};},
   configure(o){
     const num=(v,max)=>Math.min(max,Math.max(0,Math.floor(Number(v)||0)));
-    S=fresh();clockNow=Date.now();S.testSettings={revive:o.revive!==false};CFG.continueRule.enabled=S.testSettings.revive;CFG.continueRule.cap=S.testSettings.revive?1:0;
+    S=fresh();clockNow=Date.now();S.testSettings={revive:false};CFG.continueRule.enabled=false;CFG.continueRule.cap=0;
     S.wallet.balance=num(o.balance,1000000);S.player.record=num(o.record,10000);S.player.onboarded=!o.firstVisit;
     for(const cp of CFG.checkpoints)S.player.badgeCounts[cp.id]=num(o.badgeCounts?.[cp.id],9999);
     part(dateOf(clockNow)).playsUsed=CFG.playsPerDay-num(o.playsLeft,CFG.playsPerDay);
@@ -912,5 +915,5 @@ export const reviewer = {
     save();
   },
   resetPlays() { clockNow = Date.now(); part(dateOf(clockNow)).playsUsed = 0; save(); },
-  resetAll() { S = fresh();CFG.continueRule.enabled=true;CFG.continueRule.cap=1;save(); },
+  resetAll() { S = fresh();CFG.continueRule.enabled=false;CFG.continueRule.cap=0;save(); },
 };

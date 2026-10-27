@@ -38,7 +38,7 @@ export const S = {
 };
 
 let root = null, screenEl = null, cpEl = null, offerEl = null;
-let offerMarkup = null;
+let offerMarkup = null, lastRenderedView = null;
 const now = () => performance.now();
 function later(ms, fn) { const g = S.gen; return setTimeout(() => { if (g === S.gen) fn(); }, ms); }
 /** Per-run transient UI, cleared in one place whenever a run ends, is replaced, or a new one starts or boots. */
@@ -163,20 +163,7 @@ function offerModel() {
     score: S.run?.score || 0, reason: S.ui.lossReason || S.fb?.kind,
     nextGoal: cfg().checkpoints.find(c => c.requiredCorrect > (S.run?.score || 0)) };
 }
-function syncOfferModal() {
-  if (!offerEl) return;
-  if (!OFFER_STATE[S.view] || S.view==='G05.LOADING') { offerEl.replaceChildren(); offerMarkup=null; return; }
-  const model=offerModel(), markup=V.offerModal({...model,left:model.left==null?null:''});
-  if(markup!==offerMarkup) {
-    const template=document.createElement('template'); template.innerHTML=V.offerModal(model);
-    const oldDialog=offerEl.querySelector('[role=dialog]'), newDialog=template.content.querySelector('[role=dialog]');
-    if(oldDialog) patchHTML(oldDialog,newDialog.innerHTML);
-    else offerEl.replaceChildren(template.content);
-    offerMarkup=markup;
-  }
-  if(S.view==='G05.OFFER'&&S.offer)react('revive',S.offer.offerId);
-  const counter=offerEl.querySelector('[data-offer-left]'); if(counter)counter.textContent=model.left;
-}
+function syncOfferModal(){if(offerEl)offerEl.replaceChildren();offerMarkup=null;}
 function endScreen() {
   const v = S.view, run = S.run, score = run ? run.score : 0, cost = S.offer ? S.offer.cost : cfg().continueRule.cost;
   const before = (S.boot && S.boot.record) || 0, newRecord = S.result?.isNewRecord ?? (score > 0 && score > before);
@@ -187,10 +174,10 @@ function endScreen() {
   const R = S.result, code = R && R.campaignCode && R.campaignCode.status !== 'sold_out' ? V.codeCard(R.campaignCode, S.ui.codeState === 'copied') : '';
   return V.vEnd({ title: newRecord ? 'رکوردتو زدی!' : cp ? 'ترکوندی!' : 'باختی!', score, best: Math.max(R ? R.record : 0, before, score), newRecord,
     cp, cpIndex: ci, better: cp && cp.comparisonPercent != null ? cp.comparisonPercent : null,   // the checkpoint's own comparisonPercent (config: 50/70/90/99)
-    deals: V.dealsOf(S.end && S.end.products), dealsState: S.end ? S.end.state : 'loading',
+    deals: S.end?.products?.items||[], dealsState: S.end ? S.end.state : 'loading',
     note, code, soundOn:soundIsOn(),sharing:!!S.ui.share?.busy, restarting:!!S.ui.restarting, shareable: feat('share'), balance: S.balance, toast: S.ui.toast,
     nextGoal: R?.nextGoal || cfg().checkpoints.filter(c => c.requiredCorrect > score).map(c => ({remaining:c.requiredCorrect-score,title:c.title}))[0],
-    reward: R?.checkpointReward, noOfferReason: R?.noOfferReason || S.ui.noOffer, previousRecord: R?.previousRecord ?? before });
+    reward: R?.checkpointReward, noOfferReason: R?.noOfferReason || S.ui.noOffer, streakDays:S.boot?.dailyReward?.streakDays||0, previousRecord: R?.previousRecord ?? before });
 }
 /** G12.DEALS: the seen products from the result screen's run, or from the latest finished run when opened from home. */
 function dealsScreen() {
@@ -206,7 +193,7 @@ async function loadEndDeals(runId) {
 }
 function openDeals(src) {
   S.ui.dealsFrom = S.view; S.ui.dealsSrc = src;
-  host.setBackHandler(() => { if (S.view === 'G12.DEALS') { closeDeals(); return true; } return false; });
+  host.setBackHandler(() => { if (S.view === 'G12.DEALS') { homeTab('game',true); return true; } return false; });
   go('G12.DEALS');
 }
 function closeDeals() {
@@ -225,7 +212,7 @@ function stopLearningClock() { clearInterval(learnTimer); learnTimer=0; }
 function learningPhase(phase) {
   if (S.ui.onb?.busy) return;
   stopLearningClock(); S.ui.learn={phase}; render();
-  refocus(phase==='intro'?'[data-act="learn-start"]':'.l-header button,.l-practice .q-iconbtn');
+  refocus(phase==='intro'?'[data-tour-next]':'.l-header button,.l-practice .q-iconbtn');
 }
 function learningBack() {
   if (S.ui.learn?.phase !== 'overview') return learningPhase('overview');
@@ -240,33 +227,17 @@ function advanceLearningTour(delta=1) {
 }
 function startLearningQuestion(answerGuide=false) {
   if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view) || S.ui.onb?.busy || S.ui.learn?.phase!=='intro' || (S.ui.learn.tourStep||0)!==TOUR_STEPS.length-1) return;
-  react('start',`practice:${now()}`);
   stopLearningClock();
-  S.ui.learn={phase:'question',answerGuide,deadline:now()+cfg().inputMs}; render();
-  refocus('[data-act="learn-higher"]');
-  const tick=()=>{
-    const l=S.ui.learn;
-    if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view)||l?.phase!=='question') return stopLearningClock();
-    const rem=Math.max(0,l.deadline-now());
-    if(rem<=0) return answerLearning(null);
-    const tm=root.querySelector('.l-practice [data-timer]');
-    if(!tm)return;
-    const low=rem<=3000;
-    tm.style.setProperty('--p',(rem/cfg().inputMs).toFixed(3));
-    tm.classList.toggle('is-low',low);tm.classList.toggle('is-run',!low);
-    tm.querySelector('.q-timer__n').textContent=fa(Math.ceil(rem/1000));
-    tm.querySelector('.q-timer__l').textContent=low?'زود باش، وقت داره تموم می‌شه!':'ثانیه برای انتخابت';
-    tm.setAttribute('aria-label',`${fa(Math.ceil(rem/1000))} ثانیه برای انتخابت`);
-  };
-  learnTimer=setInterval(tick,100);tick();
+  S.ui.learn={phase:'question',answerGuide:true};render();refocus('[data-act="learn-higher"]');
 }
+
 function answerLearning(choice) {
   const l=S.ui.learn;
   if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view)||l?.phase!=='question') return;
   stopLearningClock();
-  const outcome=!choice||now()>=l.deadline?'timeout':choice==='higher'?'correct':'wrong';
-  react(outcome==='correct'?'correct':'wrong',`practice:${l.deadline}`);
-  S.ui.learn={phase:'feedback',outcome,choice};render();refocus('[data-act="learn-done"]');
+  const outcome=choice==='higher'?'correct':'wrong';
+  react(outcome==='correct'?'correct':'wrong',`practice:${now()}`);
+  S.ui.learn={phase:'feedback',outcome,choice};render();refocus('[data-act="onb-finish"],[data-act="guide-close"]');
 }
 function guidePlay() {
   closeGuide();
@@ -275,7 +246,7 @@ function guidePlay() {
 }
 function startOnboarding(campaignId=null) {
   S.ui.daily = null;
-  S.ui.onb = { busy: false, error: null, campaignId }; S.ui.learn = {phase:'intro'};
+  S.ui.onb = { busy: false, error: null, campaignId }; S.ui.learn = {phase:'overview'};
   host.setBackHandler(() => { if(!S.ui.onb)return false;learningBack();return true; });
   go('G02.ONBOARDING'); refocus('.l-header h1');
 }
@@ -302,14 +273,16 @@ async function finishOnboarding(play=false) {
 
 export function render() {
   if (!root) return;
-  const ms = S.view.startsWith('G11.') ? 0 : S.ui.morph != null ? S.ui.morph : motion.running() ? Math.max(160, motion.remaining()) : 0;
-  S.ui.morph = null;
-  const before = ms && !inRun(S.view) && !S.view.startsWith('G02.') && !motion.reducedMotion() ? motion.snapshot(root) : null;
+  const viewChanged=lastRenderedView!==S.view;lastRenderedView=S.view;
+  const ms=S.view.startsWith('G11.')?0:(S.ui.morph||0);
+  S.ui.morph=null;
+  // Intentional transitions finish the previous movement; ordinary updates leave it running.
+  if(viewChanged||ms>0)motion.end();
+  const before=ms>0&&!S.view.startsWith('G02.')&&!motion.reducedMotion()?motion.snapshot(root):null;
   const hs = root.querySelector('[data-hscroll]');
   if (hs && S.home.positioned) S.home.scroll = hs.scrollLeft;   // a re-render never resets the player's own scrolling
   const mobileScroll = root.querySelector('[data-mobile-tab]');
   if (mobileScroll) (S.home.tabScroll ||= {})[mobileScroll.dataset.mobileTab] = mobileScroll.scrollTop;
-  motion.end();
   const active = document.activeElement?.closest('[data-act]');
   const focusAct = active?.dataset.act, focusStep = active?.dataset.step;
   const markup=screen()+(S.ui.share?.url?V.shareModal(S.ui.share):'')+(S.ui.soundMenu?audioMenu(reactions.settings()):'');
@@ -317,7 +290,10 @@ export function render() {
   syncOfferModal();
   syncLearningSpotlight(root,['G02.GUIDE','G02.ONBOARDING'].includes(S.view)?S.ui.learn?.answerGuide?TOUR_STEPS.length-1:S.ui.learn?.phase==='intro'?S.ui.learn.tourStep||0:null:null);
   if (S.ui.share?.url) screenEl.querySelector('.q-page')?.setAttribute('inert','');
-  root.querySelectorAll('.p-sound').forEach(el=>el.setAttribute('aria-expanded',String(!!S.ui.soundMenu)));
+  root.querySelectorAll('.p-sound').forEach(el=>{
+    el.setAttribute('aria-expanded',String(!!S.ui.soundMenu));
+    if(S.ui.soundMenu){el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';el.setAttribute('aria-label','بستن تنظیمات صدا');}
+  });
   reactions.setUrgent(S.view==='G03.QUESTION_ACTIVE'&&S.q&&timerNow().rem<=3000);
   const same = focusAct && [...screenEl.querySelectorAll('[data-act]')].find(e=>e.dataset.act===focusAct && e.dataset.step===focusStep && !e.disabled);
   if (same) same.focus({preventScroll:true});
@@ -453,26 +429,23 @@ async function bootInner() {
   routeHome();
 }
 
-/** Home in the state the server described, with the daily reward modal on top when a reward waits for its claim. */
+/** Home never opens attendance automatically. */
 function routeHome() {
   const b = S.boot;
   if (b.activeRun && b.activeRun.onThisDevice) return go('G01.ACTIVE_RUN');
-  const d = b.dailyReward;
-  if (!b.firstVisit && d && (d.state === 'claimable' || d.state === 'processing')) {
-    S.ui.daily = { phase: d.state === 'processing' ? 'processing' : 'claimable' };
-    if (d.state === 'processing') pollDaily();
-  }
+  S.ui.daily=null;
+  host.setBackHandler(onBack);
   go(b.quota.playsLeft > 0 ? 'G01.READY' : 'G01.QUOTA_EXHAUSTED');
-  if (S.ui.daily) focusModal();
+
 }
-function focusModal() { requestAnimationFrame(() => { const b = root.querySelector('.q-daily .q-btn:not([disabled])'); if (b) b.focus({ preventScroll: true }); }); }
-function openDailyReward(all=false) {
+function focusModal() { requestAnimationFrame(() => { const b = root.querySelector('.q-daily [data-act="daily-close"]'); if (b) b.focus({ preventScroll: true }); }); }
+function openDailyReward(all=true) {
   const d = S.boot && S.boot.dailyReward;
   if (!S.view.startsWith('G01.') || !d || (!all&&!['claimable','processing'].includes(d.state))) return;
   S.home.streakInfo = false;
   S.ui.daily = { phase: d.state==='processing'?'processing':d.state==='claimable'?'claimable':d.state==='delayed'?'slow':'info' };
   render(); focusModal();
-  if (d.state === 'processing') pollDaily();
+
 }
 
 /** «کالاهای دست قبلی»: only the products shown in the player's latest finished run (§5), loaded once per run id. */
@@ -1017,6 +990,7 @@ async function lossHome() {
 }
 
 function onBack() {
+  if(S.view.startsWith('G01.')&&(S.home.appTab||'game')!=='game'){homeTab('game',true);return true;}
   if (!S.run) return false;
   if (S.ui.cp) return true;                                   // the celebration closes with its own button only
   if (S.op || S.view === 'G03.ANSWER_PENDING') return true;   // back is blocked while an answer or a payment is in flight
@@ -1219,7 +1193,7 @@ export function init(el) {
   document.addEventListener('keydown', e => {
     const dialog = root.querySelector('[role="dialog"]:not([data-answer-guide])');
     if (dialog && e.key === 'Escape') {   // safe dismissals only: exit sheet, daily reward, share preview (never a checkpoint or a payment)
-      const x = dialog.querySelector('[data-act="leave-no"]:not([disabled]),[data-act="daily-close"]:not([disabled]),[data-act="share-close"]:not([disabled]),[data-act="offer-skip"]:not([disabled]),[data-act="streak-info-close"],[data-act="campaign-close"]');
+      const x = dialog.querySelector('[data-act="cp-go"]:not([disabled]),[data-act="learn-back"]:not([disabled]),[data-act="leave-no"]:not([disabled]),[data-act="daily-close"]:not([disabled]),[data-act="share-close"]:not([disabled]),[data-act="offer-skip"]:not([disabled]),[data-act="streak-info-close"],[data-act="campaign-close"]');
       if (x) { e.preventDefault(); x.click(); }
       return;
     }
@@ -1248,6 +1222,10 @@ async function homeTab(tab,fromBack=false) {
   render(); refocus(fromBack?'#mobile-title':`[data-act="nav-${tab}"][data-step="tab"]`);
 }
 function onClick(e) {
+  if(e.target.matches('.q-scrim,.q-offerlayer,.q-cp,.l-tour')){
+    const close=e.target.querySelector('[data-act="daily-close"],[data-act="share-close"],[data-act="leave-no"],[data-act="cp-go"],[data-act="learn-back"],[data-act="campaign-close"]');
+    if(close&&!close.disabled)close.click();return;
+  }
   const el = e.target.closest('[data-act]'); if (!el || el.disabled || el.getAttribute('aria-disabled') === 'true') return;
   const a = el.dataset.act;
   const acts = {
@@ -1284,6 +1262,7 @@ function onClick(e) {
     guide: openGuide, 'guide-close': closeGuide,
     'onb-skip': () => finishOnboarding(),
     'onb-start': () => finishOnboarding(true),
+    'onb-finish':()=>finishOnboarding(false),
     'onb-rules': () => learningPhase('overview'),
     'offer-skip': skipOffer, 'end-close': lossHome, 'end-home': lossHome,
     'play-again': playAgain,
@@ -1311,7 +1290,7 @@ function onClick(e) {
     copy: copyCode,
     'exit-app': () => host.close(),
   };
-  if (acts[a]) {const cue=buttonCueFor(a);if(cue)react(cue,`${a}:${now()}`);acts[a]();}
+  if (acts[a]) {const cue=buttonCueFor(a);if(/^nav-|^tab-/.test(a)){if(reactions.settings().haptics&&feat('haptics'))host.haptic('tap');}else if(cue)react(cue,`${a}:${now()}`);acts[a]();}
 }
 
 async function shareResult() {
@@ -1341,11 +1320,10 @@ export const audioDiagnostics=()=>reactions.diagnostics();
 export async function openTestScreen(name,score=0){
   if(['badges','rewards','products'].includes(name)){S.ui.daily=null;homeTab(name);return;}
   if(name==='streak'){openDailyReward(true);return;}
-  if(!['game','result','revive'].includes(name))return;
+  if(!['game','result'].includes(name))return;
   if(S.view!=='G01.READY')return;await startRun();if(!S.run)return;
-  const mod=await import('../play/server.js');const mode=name==='revive'?'offer':name==='result'?'result':'ready';
+  const mod=await import('../play/server.js');const mode=name==='result'?'result':'ready';
   const run=mod.reviewer.scenario(S.run.runId,score,mode);S.gen++;S.fb=null;S.q=null;S.offer=null;S.ref=run.reference;S.ui.offline=false;S.result=null;
-  if(mode==='offer'){S.run=run;go('G05.LOADING');return activateOffer();}
   if(mode==='result'){S.run=run;return finished(run);}
   S.run=run;go('G03.READY');
 }

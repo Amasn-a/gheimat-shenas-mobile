@@ -9,7 +9,7 @@
 .gu .p-game--answers .q-decide>.p-question{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff0ba;border:1px solid #d6c37b;border-radius:13px;padding:6px 4px;margin:0;color:#233f35;line-height:1.4;text-align:center}
 .gu .p-game--answers .p-question>span{font-size:11px;font-weight:650}.gu .p-game--answers .p-question>b{font-size:20px;font-weight:950;line-height:1.5}.gu .p-game--answers .p-question>small{font-size:10px;color:#6c623f}
 .p-question i{font-style:normal;margin-inline-start:4px;color:#426344}
-.gu .p-game--answers .q-cmp>.q-img{outline:1px solid #91ae7b;outline-offset:2px;animation:photo-attention .65s ease-out 1}
+.gu .p-game--answers .q-cmp>.q-img{outline:1px solid #91ae7b;outline-offset:2px;animation:none}
 .gu .p-game--answers .q-ref{background:#f5f4eb;border-color:#d9decd}
 .gu .p-game--answers.l-practice--feedback{grid-template-rows:44px 25px minmax(0,1fr) auto}.l-practice--feedback .l-practice-dock{gap:5px;padding-bottom:4px}.l-practice--feedback .l-practice-dock>p{font-size:11px}.l-practice--feedback .l-btn{min-height:46px}
 @keyframes photo-attention{from{outline-color:#ffe082;outline-offset:7px}to{outline-color:#91ae7b;outline-offset:2px}}
@@ -95,7 +95,7 @@
 @media(max-height:600px){.m-shell:has(.m-quick){grid-template-rows:50px 44px minmax(0,1fr) calc(57px + env(safe-area-inset-bottom));gap:6px}.m-play h1{font-size:25px}.m-play-copy{padding-top:6px}.m-play-copy>p{display:none}.m-kicker{font-size:7px}.m-play-line{margin-bottom:3px}.m-float{font-size:7px}.m-app .q-homesheet>.q-btn{min-height:44px}.m-main[data-mobile-tab="game"]{gap:6px}.m-main[data-mobile-tab="game"]>.m-campaign{height:65px;min-height:65px}}
 /* No transient ghost outlines or decorative motion during an answer. */
 .gu .p-game *{text-shadow:none!important;-webkit-text-stroke:0!important}
-.gu .p-game *:not(.q-spin):not(.q-spin *):not(.q-btn__fill){animation:none!important}
+
 .gu[data-input=pointer] :focus{outline:none!important}
 /* One centered score, its caption, and a separated right-to-left record row. */
 .gu .p-end .p-result{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px 16px;min-height:220px}
@@ -116,3 +116,20 @@
 @media(max-height:600px){.m-play-copy{padding-top:11px}.m-play-foot{padding-top:0}.m-play-line{margin-bottom:5px}}
 
 .p-streak-flame[hidden]{display:none}
+/* Purposeful motion: one reveal, one verdict, one earned celebration. */
+.gu .p-game .q-price--reveal b{animation:price-arrive .23s ease-out 1}
+.gu .p-game .q-pop-once{animation:verdict-pop .3s cubic-bezier(.2,.8,.3,1.1) 1}
+.gu .p-game .q-timer.is-low .q-timer__n{animation:timer-breathe 1s ease-in-out infinite;box-shadow:none}
+.gu .p-game .q-timer.is-zero .q-timer__n{animation:none;box-shadow:none}
+.gu .p-game .p-ready-mascot{animation:h-float 5s ease-in-out infinite}
+.gu .p-end--record .p-result-art>img{animation:earned-arrive .55s cubic-bezier(.2,.8,.3,1.1) 1}
+.gu .p-checkpoint-card .q-cp__badge{animation:earned-arrive .48s ease-out 1}
+.gu .q-offer.p-revive{animation:dialog-arrive .22s ease-out 1}
+@keyframes price-arrive{from{opacity:.3;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes verdict-pop{from{transform:scale(.8);opacity:.3}to{transform:scale(1);opacity:1}}
+@keyframes timer-breathe{50%{transform:scale(1.025)}}
+@keyframes earned-arrive{from{opacity:0;transform:translateY(12px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes dialog-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.gu .p-game *,.gu .p-end--record .p-result-art>img,.gu .p-checkpoint-card *,.gu .q-offer.p-revive{animation:none!important;transition:none!important}}
+
+.gu.is-card-moving .p-game :is(.q-ref,.q-cmp){overflow:visible}
