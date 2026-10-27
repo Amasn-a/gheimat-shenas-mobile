@@ -1,0 +1,134 @@
+/* Keep text in its own rows; the animated illustration is bounded by both available axes. */
+.ps-splash__scene{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;align-items:center;justify-items:center;gap:10px;width:100%;height:100%;min-height:0}
+.ps-splash__art,.p-launch-art{container-type:size;display:grid;place-items:center;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden}
+.ps-splash .ps-splash__art .p-energy,.p-run-loading .p-launch-art .p-energy{width:min(94cqw,94cqh,340px);height:auto;aspect-ratio:1;max-height:none;min-height:0;flex:none}
+.ps-splash__promise{position:relative;z-index:2;padding-top:6px;width:100%;background:#fffaf0;white-space:normal}
+.ps-splash .p-energy__tag{right:auto}.ps-splash .p-energy__tag--up{right:0}.ps-splash .p-energy__tag--down{left:0}
+.p-run-loading main{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;justify-items:center;align-items:center;width:100%;height:100%}
+#app #mobile-title:focus{outline:none!important}
+/* The original badge artwork is retained, in a brief checkpoint dialog over the paused game. */
+.gu .q-cp.q-cp--compact{display:flex;align-items:center;justify-content:center;padding:20px;background:#233f3566;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);overflow:auto}
+.p-checkpoint-card{width:min(100%,350px);padding:22px 20px 20px;border:1.5px solid #53664c;border-radius:28px;background:#fffaf0;box-shadow:0 7px 0 #233f3530;text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px;color:#233f35}
+.p-checkpoint-kicker{font-size:11px;color:#77846a}
+.gu .p-checkpoint-card .q-cp__badge{width:180px;height:auto;margin:0;flex:none}
+.gu .p-checkpoint-card h2{font-size:23px;line-height:1.5;font-weight:950;text-shadow:none;color:#233f35;margin:0}
+.p-checkpoint-card #cp-d{font-size:12px;line-height:1.6;color:#6c7b61}
+.p-checkpoint-prize{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;padding:8px 12px;background:#fff0bd;border-radius:11px;font-size:12px;color:#78602f;width:100%}
+.p-checkpoint-prize .q-coin{width:23px;height:23px}.p-checkpoint-prize>small{font-size:9px}
+.p-checkpoint-next{font-size:10px;line-height:1.8;color:#7b866f;margin:1px 0 4px}
+.gu .p-checkpoint-card>.q-btn{font-size:17px;min-height:52px;width:100%;flex:none}
+/* One sheet for daily progress, reward claim, recovery and confirmation. */
+#app .q-sheet.p-streak{padding:20px 18px max(20px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:17px;max-height:calc(100dvh - 24px);width:min(100%,460px);border-radius:28px 28px 0 0;background:#fffaf0;color:#233f35;text-align:right;overflow:hidden}
+.p-streak>header{display:flex;align-items:center;gap:9px;flex:none}
+#app .p-streak .q-iconbtn{width:44px;height:44px;margin:0;border:1px solid #dce1d0;background:#f5f4e9;border-radius:13px;color:#52654a;flex:none}
+.p-streak>header>div{min-width:0;flex:1}.p-streak>header small{font-size:9px;color:#8a927e}
+#app .p-streak h2{font-size:22px;line-height:1.5;font-weight:950;margin:3px 0 0;color:#233f35;text-shadow:none;letter-spacing:-.5px}
+.p-streak-flame{display:grid;place-items:center;width:41px;height:47px;background:#fff0d8;border-radius:14px;flex:none}.p-streak-flame>svg{width:27px;height:32px}
+.p-streak-body{min-height:0;overflow:auto;overscroll-behavior:contain;padding:1px}
+.p-streak-prize{display:flex;align-items:center;gap:13px;padding:18px 16px;background:#fff0b9;border:1px solid #e9d59a;border-radius:20px}
+.p-streak-prize>span{display:grid;place-items:center;flex:none;width:51px;height:51px;transform:rotate(-9deg)}
+.p-streak-prize .q-coin{width:49px;height:49px}
+.p-streak-prize>div{flex:1;min-width:0}.p-streak-prize b{font-size:31px;font-weight:950;line-height:1.2;color:#70592c}.p-streak-prize b>small{font-size:13px;font-weight:750}
+#app .p-streak-prize p{font-size:11px;line-height:1.8;color:#8e7547;margin-top:5px}
+.p-streak-prize.is-success{background:#e8f3de;border-color:#bfd2ad}.p-streak-prize>i{color:#4b7a4e;font-style:normal}
+.p-streak-cycle{display:flex;align-items:center;justify-content:space-between;margin-top:20px;margin-bottom:12px;gap:8px}.p-streak-cycle>b{font-size:12px;font-weight:800}.p-streak-cycle>small{font-size:10px;color:#8a927f}
+.p-streak-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;list-style:none;margin:0;padding:0}
+.p-streak-days>li{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.p-streak-days>li>span{display:grid;place-items:center;position:relative;width:100%;height:39px;border:1px solid #dce2ce;border-radius:12px;background:#f0f2e6;color:#7d8b72;font-size:15px;font-weight:850}
+.p-streak-days .is-done>span{background:#cde5c8;border-color:#99bc91;color:#2b5838}
+.p-streak-days .is-current>span{outline:2px solid #8d75ad;outline-offset:2px}
+.p-streak-days .is-reward>span{background:#fff0bd;border-color:#ddc274;color:#81602c}
+.p-streak-days .is-reward.is-done>span{background:#f6d777}
+.p-streak-days i{position:absolute;top:-5px;left:-4px;width:15px;height:15px;display:grid;place-items:center;background:#3f7d50;color:#fff;border:2px solid #fffaf0;border-radius:50%}
+.p-streak-days i>svg{width:11px;height:11px}.p-streak-days small{font-size:8px;color:#8b947f;min-height:13px;white-space:nowrap}
+.p-streak-rule{display:flex;align-items:flex-start;gap:7px;padding:11px 12px;margin-top:17px;background:#eee7f7;border-radius:13px;color:#7c6591}.p-streak-rule>svg{width:19px;height:19px;flex:none;margin-top:1px}
+#app .p-streak-rule p{font-size:10px;line-height:1.9;color:#746183}
+#app .p-streak-note{font-size:10px;line-height:1.9;color:#8a947d;margin-top:12px}
+.p-streak-body>.q-status{margin-top:12px;font-size:11px;line-height:1.8;flex:none}
+.p-streak>footer{flex:none}.p-streak>footer>.q-btn{font-size:17px;min-height:52px;width:100%}
+/* Current product price and a truthful crossed-out original only when the price decreased. */
+.m-product-price{display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:3px;min-height:43px;margin-top:auto;flex:none;color:#233f35}
+.m-product-price>del{font-size:10px;color:#9aa18e;line-height:1.4;text-decoration-thickness:1px}
+.m-product-price>span{display:flex;align-items:center;gap:4px;line-height:1.4}.m-product-price b{font-size:16px;font-weight:900;white-space:nowrap}.m-product-price small{font-size:8px;color:#7b8771}.m-product-price--unknown{font-size:10px;color:#8d967f}
+.q-deal--row .m-product-price{align-items:flex-start;margin-top:5px}
+@media(max-width:359px){#app .q-sheet.p-streak{padding:16px 13px;gap:13px}#app .p-streak h2{font-size:20px}.p-streak-days{gap:5px}.p-streak-days>li>span{height:34px;border-radius:10px;font-size:13px}.p-streak-days small{font-size:7px}.p-streak-prize{padding:14px 12px;gap:9px}.p-streak-prize b{font-size:28px}.m-product-price b{font-size:14px}.p-checkpoint-card{padding:18px 16px}.gu .p-checkpoint-card h2{font-size:21px}.gu .p-checkpoint-card .q-cp__badge{width:160px}}
+@media(max-height:620px){.ps-splash h1{font-size:37px}.ps-splash__scene{gap:6px}.ps-splash__promise{font-size:11px}.p-streak-cycle{margin-top:14px}.p-streak-rule{margin-top:13px}#app .p-streak-note{margin-top:9px}.gu .p-checkpoint-card .q-cp__badge{width:150px}.p-checkpoint-card{gap:7px}.p-streak-prize{padding-block:12px}}
+@media(max-height:430px){.ps-splash__stage{grid-template-rows:30px minmax(0,1fr) auto;padding:4px 18px 8px;gap:5px}.ps-splash__scene>.p-entry-kicker{display:none}.ps-splash__scene{grid-template-rows:auto minmax(0,1fr) auto}.ps-splash h1{font-size:28px}.ps-splash__loader{gap:4px}.ps-splash__brand{font-size:16px}.ps-splash__promise{font-size:10px}.ps-splash__label{font-size:10px}.ps-splash__loader>small{display:none}}
+@media(prefers-reduced-motion:reduce){.q-cp--compact *{animation:none!important}}
+.gu .q-share{padding-top:24px;gap:0}.gu .q-share-preview{max-height:46dvh;margin:12px auto;flex:0 1 auto}.gu .q-share-actions .q-btn{font-size:12px;min-height:48px;padding-inline:9px}
+.p-share-caption{font-size:10px!important;color:#7b886e!important;line-height:1.8!important;text-align:center;margin-bottom:12px}
+.p-share-link{display:flex;align-items:center;gap:8px;border:1px solid #d9dfcf;background:#f5f4e9;border-radius:12px;padding:5px 6px;margin-top:12px;min-width:0}
+.p-share-link>span{font-size:9px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;flex:1;color:#7c8873;user-select:all;text-align:left}
+.p-share-link>button{display:flex;align-items:center;gap:4px;min-height:44px;border:0;border-radius:9px;padding:0 8px;background:#e8eddd;color:#526a4a;font-size:11px;font-weight:800;white-space:nowrap}
+.p-share-link svg{width:15px;height:15px}.p-share-notice{font-size:10px!important;line-height:1.8!important;padding-top:9px;color:#6c7a5f!important;text-align:right}
+@media(max-height:620px){.gu .q-share-preview{max-height:36dvh}.gu .q-share h2{font-size:18px}.p-share-link{margin-top:8px}.gu .q-share{padding:20px 15px 16px}.p-share-caption{margin-bottom:8px}}
+
+.p-checkpoint-card{max-height:calc(100dvh - 40px);overflow-y:auto;flex-shrink:0}
+
+/* Offer keeps one dialog mounted across loading, payment and other screen updates. */
+.gu .q-offerlayer,.gu .q-offer.p-revive{animation:none}
+.gu .q-offer.p-revive{text-align:center;align-items:center;padding-top:26px}
+.gu .p-revive>p,.gu .p-revive .q-status{text-align:center;justify-content:center}
+.gu .p-revive>.q-offer__btns{width:100%}
+.gu .p-revive .q-offer__left{align-self:center;justify-content:center}
+.gu .p-revive .q-offer__x{top:9px;right:9px;left:auto;inset-inline-start:9px;width:44px;height:44px;border:1px solid #dce1d0;background:#f5f4e9;color:#52654a;border-radius:13px;display:grid;place-items:center}
+.gu .p-revive:has([aria-busy="true"]) .p-heart{display:block}
+/* Distinguish the known reference from the active question with surface, label and frame. */
+.gu .p-game .q-ref{background:#f4f3ea;border-color:#d6dccb;box-shadow:none}
+.gu .p-game .q-ref .p-card-label{color:#738167}
+.gu .p-game .q-cmp{background:#edf5e4;border:2px solid #7f9b69;box-shadow:0 4px 0 #c2d4af}
+.gu .p-game .q-cmp .p-card-label--second{color:#365933;font-weight:900}
+.gu .p-game .p-cmp--answer>.q-decide{border-top:1px solid #c1d3ac;background:#e3efd5;margin-inline:-8px;padding:9px 8px 3px;border-radius:13px}
+.gu .p-game .p-cmp--answer .p-question{color:#29482d;font-size:12px;line-height:1.7;font-weight:850;text-align:center;width:100%}
+.gu .q-share-preview{aspect-ratio:9/16}
+@media(max-height:740px){.gu .p-game .p-cmp--answer .p-question{font-size:11px;line-height:1.5}.gu .p-game .p-cmp--answer>.q-decide{padding-top:7px}}
+@media(max-width:359px){.gu .p-game .p-cmp--answer .p-question{font-size:10px}}
+
+/* A state update changes the current surface; it never replays an entrance. */
+.gu .q-modal,.gu .q-modal .q-sheet,.gu .m-panel{animation:none}
+.gu .q-btn[aria-busy=true]{gap:9px;cursor:wait}
+.gu .q-btn[aria-busy=true] .q-spin{width:19px;height:19px;flex:none}
+.p-copy-invite{display:flex;align-items:center;justify-content:center;gap:7px;border:0;background:transparent;color:#607452;margin:11px auto 0;min-height:44px;font-size:12px;font-weight:750}
+.p-copy-invite svg{width:17px;height:17px}
+/* Compact independent sound options, anchored beneath the top control. */
+.p-audio-menu{position:fixed;top:calc(61px + env(safe-area-inset-top));left:max(14px,calc((100vw - 500px)/2 + 14px));z-index:100;width:min(280px,calc(100vw - 28px));border:1px solid #bdc9b1;border-radius:18px;background:#fffdf5;padding:12px;box-shadow:0 9px 28px #233f3530;color:#233f35;direction:rtl}
+.p-audio-menu header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 7px;font-size:13px}
+.p-audio-menu header>button{border:0;background:#edf0e3;width:36px;height:36px;border-radius:11px;font-size:23px;line-height:1}
+.p-audio-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:0;border-top:1px solid #e6e8da;background:transparent;text-align:right;padding:10px 0;min-height:59px}
+.p-audio-row>span{display:grid;gap:2px}.p-audio-row b{font-size:12px}.p-audio-row small{font-size:9px;color:#819074}
+.p-audio-row>i{width:39px;height:24px;border:1px solid #c4cebc;background:#dce1d4;border-radius:15px;padding:3px;flex:none;display:flex;justify-content:flex-end}
+.p-audio-row[aria-checked=true]>i{background:#a8d6a1;border-color:#7aab74;justify-content:flex-start}
+.p-audio-row em{display:block;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #233f3525}
+.p-audio-test{border:0;border-top:1px solid #e6e8da;width:100%;padding:10px 0 0;min-height:42px;font-size:10px;color:#7b886e;background:transparent}
+/* Four titles fit the available height. Very short screens retain natural scrolling. */
+.m-main[data-mobile-tab=badges]{overflow-y:auto}
+.m-panel.m-badges{height:100%;min-height:0;display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:8px;padding:16px}
+.m-badges .m-personal{padding:9px 12px;min-height:53px}.m-badges .m-personal b{font-size:23px}.m-badges .m-personal>div>small{font-size:9px}
+.m-badges .m-panel-heading h1{font-size:23px}.m-badges .m-earned-count{font-size:10px}
+.m-badges .m-badge-grid{height:100%;grid-template-rows:repeat(2,minmax(0,1fr));grid-auto-rows:initial;gap:9px}
+.m-badges .m-badge-grid>li{display:grid;grid-template-rows:minmax(0,1fr) auto auto;justify-items:center;padding:8px;gap:4px}
+.m-badges .m-badge-grid>li>img{height:100%;min-height:0;max-height:160px;width:100%;object-fit:contain}
+.m-badges .m-badge-state{position:absolute;top:6px;right:6px;padding:2px 5px;font-size:0;z-index:1}.m-badges .m-badge-state>span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.m-badges .m-badge-state svg{width:10px;height:10px}
+.m-badge-count{position:absolute;top:8px;left:7px;background:#e0eacf;color:#40623d;border:1px solid #c7d7b8;border-radius:8px;padding:0 5px;min-height:20px;display:grid;place-items:center;font-size:11px;font-weight:900;font-style:normal}
+.m-badge-grid .is-locked .m-badge-count{background:#edeedc;color:#9aab8c;border-color:#dfe4cf}
+.m-badges .m-next-badge{padding:5px 8px;font-size:10px}
+@media(max-height:740px){.m-panel.m-badges{padding:12px;gap:6px}.m-badges .m-panel-heading h1{font-size:21px}.m-badges .m-badge-grid>li{gap:3px;padding:6px}.m-badges .m-badge-grid>li>img{max-height:115px}.m-badges .m-badge-grid b{font-size:10px}.m-badges .m-badge-grid small{font-size:8px}.m-badge-count{top:6px;left:5px;font-size:10px}.m-badges .m-next-badge{font-size:9px}}
+@media(max-height:610px){.m-panel.m-badges{height:auto;min-height:475px;grid-template-rows:auto auto auto minmax(270px,1fr) auto}.m-badges .m-badge-grid{grid-template-rows:repeat(2,minmax(132px,1fr))}}
+/* Reviewer entry is deliberately separate from the game, with explicit local-only test values. */
+.p-test-setup{position:fixed;inset:0;z-index:2147483000;background:#fffaf0;overflow:auto;overscroll-behavior:contain;font-family:Digikala,sans-serif;color:#233f35;padding:24px 18px max(24px,env(safe-area-inset-bottom))}
+.p-test-setup main{max-width:560px;margin:auto}.p-test-setup header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}.p-test-setup header img{width:105px;height:auto}.p-test-setup header span{font-size:11px;color:#7a8a6d}
+.p-test-setup h1{font-size:26px;line-height:1.6;font-weight:950}.p-test-lead{font-size:12px;line-height:1.9;color:#76866b;margin-top:7px;margin-bottom:20px}
+.p-test-setup fieldset{border:0;padding:0;margin:0}.p-test-setup legend{font-size:12px;font-weight:850;margin-bottom:8px}
+.p-test-modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}.p-test-modes label{position:relative;display:flex;flex-direction:column;border:1px solid #d2dcc4;background:#fffdf7;border-radius:17px;padding:14px 11px;gap:6px;cursor:pointer}.p-test-modes label:has(:checked){background:#e2f1d7;border:2px solid #729565;padding:13px 10px}.p-test-modes input{align-self:flex-start;accent-color:#527b47}.p-test-modes b{font-size:14px}.p-test-modes span{font-size:10px;line-height:1.8;color:#7f8b74}
+.p-test-presets{display:flex;gap:7px;margin:18px 0}.p-test-presets button{flex:1;border:1px solid #ddd6be;border-radius:10px;background:#f8efda;min-height:40px;padding:6px;font-size:10px;font-weight:750}
+.p-test-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px 12px}.p-test-fields label,.p-test-counts label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:750;min-width:0}
+.p-test-fields input,.p-test-fields select,.p-test-counts input{height:44px;min-width:0;width:100%;border:1px solid #d0d9c4;border-radius:11px;background:#fffef9;padding:7px 10px;outline-offset:2px}.p-test-fields input,.p-test-counts input{direction:ltr;text-align:center;font-size:17px;font-weight:800}
+.p-test-setup .p-test-counts{margin-top:20px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.p-test-counts label{font-size:10px;text-align:center}.p-test-counts input{font-size:16px;padding-inline:5px}
+.p-test-first{display:flex;align-items:center;gap:9px;font-size:12px;margin-top:18px;min-height:40px}.p-test-first input{accent-color:#527b47;width:18px;height:18px}
+.p-test-hint{font-size:10px;line-height:1.9;color:#8b927c;margin:9px 0 16px}.p-test-setup .q-btn{display:flex;justify-content:center;align-items:center;gap:10px;width:100%;min-height:54px;background:#ffd45b;border:1.5px solid #233f35;border-radius:16px;box-shadow:0 4px 0 #233f35;font-size:15px;font-weight:850}.p-test-continue{width:100%;border:0;background:transparent;min-height:46px;margin-top:8px;color:#74836b;font-size:12px}.p-test-error{color:#a7483b;font-size:11px;margin-bottom:12px}
+@media(max-width:359px){.p-test-setup{padding:18px 14px}.p-test-setup h1{font-size:23px}.p-test-modes b{font-size:12px}.p-test-presets button{font-size:9px}.p-test-fields{gap:10px}.p-test-counts label{font-size:9px}}
+
+.m-badges .m-badge-grid .q-coin{width:15px;height:15px;min-height:15px;max-height:15px;object-fit:contain;flex:none}.m-badges .m-badge-grid b.m-badge-name{font-size:11px}.m-badges .m-badge-name>span{font-size:8px;font-weight:650;color:#7c896e}
+.m-badges .m-badge-state{width:22px;height:20px;left:auto;display:grid;place-items:center;line-height:1;border-radius:7px;padding:2px}.m-badges .m-badge-count{z-index:2}.m-badges .m-badge-state svg{width:12px;height:12px}
+.p-test-setup .q-btn{color:#233f35}.p-test-setup h1:focus{outline:none}

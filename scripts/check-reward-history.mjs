@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { rememberReward, rewardHistoryView } from '../play/reward-history.js';
+
+const ledger = {};
+const reward = { operationId:'r1', type:'CHECKPOINT_REWARD', amount:3, status:'PENDING', createdAt:1000, rewardKey:'cp_15' };
+rememberReward(ledger,reward);
+assert.equal(rewardHistoryView(ledger).count,0,'Pending rewards are not received rewards');
+for (const type of ['CHARGE','REFUND']) rememberReward(ledger,{...reward,type,operationId:type,status:'SUCCEEDED'});
+assert.equal(rewardHistoryView(ledger).count,0,'Wallet charges and refunds are excluded');
+rememberReward(ledger,{...reward,status:'SUCCEEDED',creditedAt:2000});
+rememberReward(ledger,{...reward,status:'SUCCEEDED',amount:99,creditedAt:3000});
+assert.equal(rewardHistoryView(ledger).totalCoins,3,'Retries and migration cannot count a reward twice');
+rememberReward(ledger,{operationId:'daily',type:'STREAK_REWARD',amount:1,status:'SUCCEEDED',claimedAt:5000,createdAt:4000});
+const history=rewardHistoryView(ledger,[{id:'cp_15',title:'بازاری'}]);
+assert.equal(history.totalCoins,4);
+assert.deepEqual(history.items.map(r=>r.id),['daily','r1'],'Most recent received reward appears first');
+assert.equal(history.items[1].title,'جایزهٔ نشان بازاری');
+assert.equal(history.items[0].receivedAt,new Date(5000).toISOString(),'Old daily rewards migrate using their claim time');
+assert.equal(rewardHistoryView(JSON.parse(JSON.stringify(ledger))).totalCoins,4,'History survives serialization independently of run operations');
+console.log('Reward history: pending/charge filtering, idempotency, totals, ordering, migration and persistence passed.');

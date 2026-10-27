@@ -1,0 +1,44 @@
+/* قیمت‌شناس · redesign 2026-10-21 (§2). Proposed values from the spec: white base, Digikala red for actions, neutral
+   surfaces, pastel yellow for the DigiCoin balance, and each badge's own colour. Light theme only. */
+:root, [data-theme="light"] {
+  color-scheme: only light;
+  --bg: #FFFFFF;
+  --ink: #23252B;            /* main text */
+  --ink-2: #62666F;          /* secondary text (4.6:1 on white) */
+  --ink-3: #8A8F99;          /* decorative / disabled only, never the only carrier of meaning */
+  --red: #EF4056;            /* action */
+  --red-ink: #C8102E;        /* red text on white (5.6:1) */
+  --red-press: #D9283F;
+  --red-tint: #FFEEF0;
+  --surface: #F5F6F8;        /* neutral surface */
+  --surface-2: #ECEEF2;
+  --line: #E3E5EA;
+  --coin-bg: #FFF2C9;        /* pastel yellow of the balance */
+  --coin-ink: #6B4E00;
+  --gold: #E3A92B;
+  --gold-2: #C88A12;
+  --ok: #0A7A5F;
+  --ok-tint: #E7F6F0;
+  --no: #C42537;
+  --no-tint: #FDECEE;
+  --warn: #9A5300;
+  --warn-tint: #FFF4E5;
+  --lilac: #F4F3FB;          /* record card */
+  --cream: #FFFBF1;          /* checkpoint celebration */
+  --cream-ink: #5A4210;
+  --focus: #1F5FD6;
+  --scrim: rgba(35, 37, 43, 0.56);
+
+  --gutter: 16px;
+  --gap: 16px;
+  --gap-l: 24px;
+  --radius: 20px;
+  --radius-l: 24px;
+  --radius-s: 14px;
+  --touch: 48px;
+
+  --font: Digikala;   /* only the supplied family is ever loaded; main.js waits for it before painting text */
+  --shadow-sheet: 0 -8px 24px rgba(35, 37, 43, 0.06);
+  --shadow-card: 0 2px 10px rgba(35, 37, 43, 0.06);
+  --ease: cubic-bezier(.3, .7, .2, 1);
+}

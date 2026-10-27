@@ -1,0 +1,3 @@
+/* Play supports desktop and mobile natively. No phone-width frame on desktop. */
+body.pe-play{background:var(--bg)}
+body.pe-play #app,body.pe-play:not(.pe-dev) #app{max-width:1440px;width:100%;height:100dvh;margin-inline:auto;box-shadow:none;left:auto;right:auto;top:auto;border-radius:0}

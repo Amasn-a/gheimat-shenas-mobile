@@ -1,0 +1,118 @@
+/* A user-paced guide and an isolated practice round, in the mobile game's palette. */
+html:has(.l-guide),html:has(.l-guide) body{height:100%;overflow:hidden;overscroll-behavior:none;background:#fffaf0!important}
+html:has(.l-guide) body{background-image:radial-gradient(#dfdfcb 1px,transparent 1px)!important;background-size:22px 22px!important}
+html:has(.l-guide) body::before{display:none!important}
+body.pe-play #app.gu:has(.l-guide){max-width:500px!important;height:100dvh!important;background:transparent;overflow:hidden}
+.gu .q-page.l-guide{display:grid;grid-template-rows:46px minmax(0,1fr) auto;gap:15px;padding:calc(10px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));background:transparent;color:#233f35;overflow:hidden}
+.l-header{display:flex;align-items:center;gap:10px;border-bottom:1px solid #dbe1ce;padding-bottom:9px}
+.l-header>button{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:13px;border:1px solid #d6ddcb;background:#fffdf7;color:#233f35}
+.l-header h1{font-size:18px;line-height:1.4;font-weight:900;flex:1}
+.l-header>span{font-size:10px;color:#869178;white-space:nowrap}
+.l-main{display:flex;flex-direction:column;justify-content:safe center;gap:14px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:3px 0 5px;scrollbar-width:thin;scrollbar-color:#c6d3ba transparent}
+.l-main>*{flex:none}
+.l-hero{display:flex;align-items:center;position:relative;gap:4px;min-height:185px;background:#b7e5c6;border:1.5px solid #56774e;border-radius:26px;padding:20px 16px;overflow:hidden;box-shadow:0 4px 0 #8eaf84}
+.l-hero>div{flex:1;min-width:0;z-index:1}
+.l-hero>img{width:48%;height:160px;object-fit:contain;flex:none}
+.l-hero span{font-size:10px;color:#55734b;font-weight:650}
+.l-hero h2{font-size:31px;font-weight:950;line-height:1.35;margin:7px 0;color:#233f35;letter-spacing:-.6px}
+.l-hero p{font-size:11px;color:#526e49;line-height:1.6}
+.l-steps{display:flex;flex-direction:column;gap:9px}
+.l-steps>li{display:flex;align-items:center;gap:11px;min-height:62px;padding:10px 12px;border:1px solid #dbe0cd;background:#fffdf7;border-radius:17px}
+.l-steps>li>b{display:grid;place-items:center;width:30px;height:32px;border:1px solid #dce0c8;border-radius:10px;background:#f1f3e4;font-size:18px;font-weight:900;flex:none;color:#6c805a}
+.l-steps>li>div{flex:1;min-width:0}
+.l-steps h3{font-size:14px;font-weight:850;line-height:1.5}
+.l-steps p{font-size:11px;color:#7a866e;line-height:1.7}
+.l-steps>li>svg{width:22px;height:22px;color:#91a17c;flex:none}
+.l-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.l-shortcuts>button{position:relative;display:flex;align-items:flex-start;flex-direction:column;gap:6px;min-height:74px;padding:11px;border:1px solid #ddd2ec;background:#eee7f8;border-radius:16px;text-align:right;color:#6f5688}
+.l-shortcuts>button>span{font-size:11px;font-weight:750;line-height:1.4}
+.l-shortcuts>button>svg:first-child{width:22px;height:22px}
+.l-shortcuts>button>svg:last-child{width:13px;height:13px;position:absolute;left:8px;top:13px}
+.l-footer{display:flex;flex-direction:column;gap:9px;min-height:0;padding-bottom:5px}
+.l-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:52px;padding:8px 11px;border:1.5px solid #233f35;border-radius:15px;background:#ffd45b;color:#233f35;font-size:17px;font-weight:900;box-shadow:0 4px 0 #233f35;line-height:1.5;transition:transform .12s,box-shadow .12s}
+.l-btn>svg{width:21px;height:21px;flex:none}
+.l-btn--play>svg{transform:scaleX(-1)}
+.l-btn--secondary{min-height:43px;background:#f2efe4;border:1px solid #d2d8c4;box-shadow:none;color:#6c7c60;font-size:13px;font-weight:700}
+.l-btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #233f35}
+.l-btn:disabled{opacity:.5;cursor:wait}
+.l-guide button:focus-visible,.l-practice button:focus-visible{outline:3px solid #9a83b6;outline-offset:3px}
+.l-free-hint{font-size:10px;line-height:1.5;text-align:center;color:#80906e}
+.l-error{font-size:12px;color:#a64d33;line-height:1.7;background:#ffeddf;border:1px solid #e1b49c;padding:8px;border-radius:12px}
+.l-save{font-size:12px;text-align:center;color:#70855d}
+.l-section-intro{text-align:center;display:flex;flex-direction:column;align-items:center;gap:7px;padding:3px 8px}
+.l-section-intro>span{font-size:11px;color:#8c987c}
+.l-section-intro h2{font-size:25px;line-height:1.45;font-weight:950}
+.l-section-intro p{font-size:12px;line-height:1.8;color:#75836a;max-width:35ch}
+.l-badge-map{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.l-badge-map>li{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:158px;padding:12px 6px;border:1px solid #dce1ce;background:#f6f6e9;border-radius:20px}
+.l-badge-map img{width:100%;height:100px;object-fit:contain}
+.l-badge-map b{font-size:13px;font-weight:850}
+.l-badge-map li>span{display:flex;align-items:center;gap:4px;font-size:10px;color:#9b8343;line-height:1.5}
+.l-badge-map .q-coin{width:18px;height:18px}
+.l-note{background:#f1f3e6;border:1px solid #dce3cc;padding:10px 12px;border-radius:14px;color:#7b8b69;font-size:11px;line-height:1.9;text-align:center}
+.l-rule-icon{display:grid;place-items:center;width:52px;height:52px;border-radius:17px;background:#e9e0f5;color:#80649b!important}
+.l-rule-icon svg{width:29px;height:29px}
+.l-option{display:flex;align-items:flex-start;gap:10px;padding:17px 14px;border:1px solid #dbd6cb;border-radius:21px;background:#fffdf6}
+.l-option--free{border-color:#7ea67b;background:#e4f1dc}
+.l-option>span{display:grid;place-items:center;flex:none;width:31px;height:31px;color:#588551}
+.l-option>span svg,.l-option .q-coin{width:27px;height:27px}
+.l-option small{font-size:10px;color:#8b967f;line-height:1.5}
+.l-option h3{font-size:18px;font-weight:900;margin:5px 0;color:#435b3b}
+.l-option p{font-size:12px;color:#79866b;line-height:1.9}
+.l-done{display:flex;flex-direction:column;justify-content:center;align-items:center;flex:1;min-height:0;gap:13px;text-align:center;padding:12px 17px;border:1.5px solid #799776;border-radius:27px;background:#c2e7ba;box-shadow:0 4px 0 #a0b896}
+.l-done-check{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#f1f9de;border:1px solid #93b479;color:#4c7b45;flex:none}
+.l-done-check svg{width:25px;height:25px}
+.l-done>img{width:90%;height:180px;min-height:0;object-fit:contain;flex:0 1 auto}
+.l-done h2{font-size:29px;font-weight:950;line-height:1.4}
+.l-done p{font-size:13px;line-height:1.9;color:#5c7850;max-width:30ch}
+.l-takeaways{display:flex;justify-content:center;gap:7px;width:100%}
+.l-takeaways>span{border:1px solid #97b584;border-radius:10px;padding:5px 9px;background:#eef7df;font-size:11px;color:#5b794b}
+/* The practice reuses the actual game's cards, timer and answer controls. */
+.gu .q-page.l-practice--explain{grid-template-rows:44px 32px minmax(0,1fr) 110px}
+.l-demo-pill{background:#eee5f8;border:1px solid #d6c8e6;color:#88729d;border-radius:9px;padding:4px 8px;font-size:10px;white-space:nowrap}
+.l-progress{display:flex;position:relative;align-items:flex-start;justify-content:space-between;gap:9px;font-size:11px;font-weight:750;min-height:0;padding:0 2px;color:#647858}
+.l-progress small{font-size:9px;white-space:nowrap;color:#8a977e}
+.l-progress>div{position:absolute;display:flex;gap:5px;bottom:0;inset-inline:0;height:4px}
+.l-progress i{flex:1;background:#e0e5d2;border-radius:8px}
+.l-progress i.is-done{background:#7ca478}
+.l-practice-dock{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-end;gap:9px;padding-bottom:5px;min-height:0}
+.l-practice-dock>p{font-size:11px;color:#718266;line-height:1.7;text-align:center}
+.l-practice-dock .l-btn{min-height:52px}
+/* Earned badges have a textual state and a large full-width label, not a corner-only tick. */
+.m-earned-count{font-size:11px;font-weight:750;color:#7e8c70;line-height:1.7}
+.m-badge-grid>li{gap:7px;padding:10px 8px}
+.m-badge-grid>li.is-earned{background:#e2f1d9;border:2px solid #8daf7d}
+.m-badge-grid>li.is-current{background:#d6ebca;border-color:#4e7950;box-shadow:0 3px 0 #a3bd94}
+.m-badge-grid>li.is-locked{background:#f6f5ed;border:1px solid #e1e2d6}
+.m-badge-grid>li>img{height:96px;max-height:96px}
+.m-badge-grid>li.is-earned>img{opacity:1;filter:none}
+.m-badge-grid>li.is-locked>img{opacity:.44;filter:grayscale(.7)}
+.m-badge-state{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;padding:5px 6px;border-radius:9px;background:#eef2e7;color:#606d54;font-size:10px;font-weight:750;line-height:1.5}
+.m-badge-state>svg{width:15px;height:15px;flex:none}
+.is-earned>.m-badge-state{background:#4f7648;color:#fff}
+.is-current>.m-badge-state{background:#406b43;color:#fff}
+@media(max-height:740px){
+ .gu .q-page.l-guide{grid-template-rows:42px minmax(0,1fr) auto;gap:11px;padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+ .l-header h1{font-size:16px}.l-header>span{font-size:9px}.l-main{gap:10px}
+ .l-hero{min-height:140px;padding:14px}.l-hero>img{height:126px}.l-hero h2{font-size:27px}.l-hero span{font-size:9px}
+ .l-steps{gap:7px}.l-steps>li{min-height:51px;padding:8px 10px}.l-steps h3{font-size:13px}.l-steps p{font-size:10px}.l-shortcuts>button{min-height:65px;padding:9px}
+ .l-section-intro h2{font-size:22px}.l-section-intro p{font-size:11px}.l-section-intro{gap:5px}
+ .l-badge-map>li{min-height:136px;padding:8px 5px}.l-badge-map img{height:80px}.l-badge-map b{font-size:12px}.l-badge-map li>span{font-size:9px}
+ .l-option{padding:12px;gap:8px}.l-option h3{font-size:16px}.l-option p{font-size:11px}.l-rule-icon{width:42px;height:42px}
+ .l-done{gap:10px}.l-done>img{height:140px}.l-done h2{font-size:26px}.l-done p{font-size:12px}
+ .gu .q-page.l-practice--explain{grid-template-rows:42px 28px minmax(0,1fr) 108px}
+ .l-practice .q-hdr__t{font-size:20px}.l-practice-dock>p{font-size:10px}
+}
+@media(max-height:640px){
+ .gu .q-page.l-guide{gap:8px;padding-inline:12px}
+ .l-main{gap:4px}.l-hero{min-height:112px;padding:10px 12px}.l-hero>img{height:104px;width:40%}.l-hero h2{font-size:23px;line-height:1.3;margin:4px 0}.l-hero span{font-size:8px}.l-hero p{font-size:9px}
+ .l-steps>li{min-height:43px;padding:6px 9px;gap:8px}.l-steps>li>b{width:25px;height:28px;font-size:16px}.l-steps h3{font-size:12px}.l-steps p{font-size:9px}
+ .l-shortcuts>button{min-height:59px;gap:4px;padding:8px}.l-shortcuts>button>span{font-size:10px}.l-shortcuts>button>svg:first-child{width:18px;height:18px}
+ .l-btn{min-height:47px;font-size:15px}.l-btn--secondary{min-height:37px;font-size:12px}.l-footer{gap:7px}.l-free-hint{font-size:9px}
+ .l-section-intro{padding:0 4px;gap:4px}.l-section-intro h2{font-size:20px}.l-section-intro p{font-size:10px}.l-section-intro>span{font-size:9px}
+ .l-badge-map{gap:8px}.l-badge-map>li{min-height:109px;padding:7px 4px;gap:3px}.l-badge-map img{height:60px}.l-badge-map b{font-size:11px}.l-badge-map li>span{font-size:8px}
+ .l-note{font-size:9px;line-height:1.8;padding:6px 9px}.l-option{padding:10px}.l-option h3{font-size:15px;margin:3px 0}.l-option p{font-size:10px}.l-option small{font-size:9px}.l-rule-icon{width:34px;height:34px}.l-rule-icon svg{width:22px;height:22px}
+ .l-done{gap:8px;padding:10px 13px}.l-done-check{width:32px;height:32px}.l-done>img{height:104px}.l-done h2{font-size:24px}.l-done p{font-size:11px}.l-takeaways>span{font-size:10px;padding:4px 7px}
+ .m-badge-state{font-size:9px;padding:4px}.m-badge-grid>li{padding:8px 6px;gap:5px}.m-badge-grid>li>img{height:80px;max-height:80px}
+}
+@media(prefers-reduced-motion:reduce){.l-guide *,.l-practice *{transition:none!important;animation:none!important}}
