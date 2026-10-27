@@ -12,6 +12,7 @@ import * as host from './host.js';
 import * as motion from './motion.js';
 import { DUR } from './durations.js';
 import * as V from './views.js';
+import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js';
 import { createShareCard, GAME_URL } from './share.js';
 import { shareCaption, shareStats } from './share-payload.mjs';
 import { fa, untilInstant, title, esc } from './fmt.js';
@@ -117,8 +118,8 @@ function question() {
   let lead = off ? V.pill('اتصال قطع شد؛ تا برگرده نمی‌شه جواب داد و زمان ادامه داره.', 'wifi') : connPill();
   if (S.ui.slowSettle) lead = V.pill(pend ? 'پاسخت ثبت شده؛ نتیجه‌اش هنوز نرسیده.' : 'نتیجه هنوز نرسیده.', 'refresh', '<button class="q-pill__btn" data-act="recheck-answer">بررسی دوباره</button>');
   const tm = pend ? V.timer({ mode: 'busy' }) : over ? V.timer({ mode: 'zero' }) : V.timer({ mode: tn.low ? 'low' : 'run', t: tn.t, p: tn.p });
-  const decision=V.decide(pend ? 'pending' : off || over ? 'off' : 'on',q.pick,'',S.ref.price);
-  return V.game(top(), trk(), tm, lead + V.refCard(S.ref, true) + V.cmpCard(q.product, 'hidden', 0, q.imgSlow && !q.imgReady,decision),
+  const decision=V.decide(pend ? 'pending' : off || over ? 'off' : 'on',q.pick,'',S.ref.price,'ans',S.ref);
+  return V.game(top(), trk(), tm, lead + V.cmpCard(q.product, 'hidden', 0, q.imgSlow && !q.imgReady,decision),
     '', leave(), S.ui.toast);
 }
 
@@ -131,18 +132,18 @@ function feedback() {
   if (fb.kind === 'correct') {
     const pop = S.ui.popped !== fb.questionId; S.ui.popped = fb.questionId;   // the check pops once per confirmed question, not on re-renders
     tm = V.timer({ mode: 'verdict', kind: 'ok', title: 'درست گفتی!', sub: fb.equal ? 'قیمت‌ها برابر بود؛ هر دو جواب درسته' : `${truthW} بود`, pop });
-    dec = V.decide('ok', fb.choice, '');
+    dec = V.decide('ok', fb.choice, '',S.ref.price,'ans',S.ref);
     card = V.cmpCard(fb.product, 'ok', fb.revealedPrice,false,dec);
   } else if (fb.kind === 'wrong') {
     tm = V.timer({ mode: 'verdict', kind: 'no', title: 'جوابت درست نبود', sub: `${truthW} بود` });
-    dec = V.decide('no', fb.choice, '');
+    dec = V.decide('no', fb.choice, '',S.ref.price,'ans',S.ref);
     card = V.cmpCard(fb.product, 'no', fb.revealedPrice,false,dec);
   } else {   // timeout: no answer is shown as the player's
     tm = V.timer({ mode: 'verdict', kind: 'time', title: 'زمان تموم شد', sub: `${truthW} بود` });
-    dec = V.decide('truth', fb.direction === 'higher' ? 'higher' : 'lower', '');
+    dec = V.decide('truth', fb.direction === 'higher' ? 'higher' : 'lower', '',S.ref.price,'ans',S.ref);
     card = V.cmpCard(fb.product, 'time', fb.revealedPrice,false,dec);
   }
-  return V.game(top(), trk(), tm, connPill() + V.refCard(S.ref, true) + card, '', leave(), S.ui.toast);
+  return V.game(top(), trk(), tm, connPill() + card, '', leave(), S.ui.toast);
 }
 
 /** G05/G06 (owner 2026-10-25). While the continue is open or being paid: the game screen with the revealed price under the
@@ -231,8 +232,14 @@ function learningBack() {
   if (S.view==='G02.ONBOARDING') { S.ui.onb=null; S.ui.learn=null; host.setBackHandler(null); return routeHome(); }
   closeGuide();
 }
+function advanceLearningTour(delta=1) {
+  const l=S.ui.learn;if(l?.phase!=='intro')return;
+  l.tourStep=Math.max(0,Math.min(TOUR_STEPS.length-1,(l.tourStep||0)+delta));
+  react('spotlight',`tour:${now()}`);render();refocus('[data-tour-next]');
+}
 function startLearningQuestion() {
-  if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view) || S.ui.onb?.busy) return;
+  if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view) || S.ui.onb?.busy || S.ui.learn?.phase!=='intro' || (S.ui.learn.tourStep||0)!==TOUR_STEPS.length-1) return;
+  react('start',`practice:${now()}`);
   stopLearningClock();
   S.ui.learn={phase:'question',deadline:now()+cfg().inputMs}; render();
   refocus('[data-act="learn-higher"]');
@@ -307,6 +314,7 @@ export function render() {
   const markup=screen()+(S.ui.share?.url?V.shareModal(S.ui.share):'')+(S.ui.soundMenu?audioMenu(reactions.settings()):'');
   patchHTML(screenEl,markup);
   syncOfferModal();
+  syncLearningSpotlight(root,S.ui.learn?.phase==='intro'&&['G02.GUIDE','G02.ONBOARDING'].includes(S.view)?S.ui.learn.tourStep||0:null);
   if (S.ui.share?.url) screenEl.querySelector('.q-page')?.setAttribute('inert','');
   root.querySelectorAll('.p-sound').forEach(el=>el.setAttribute('aria-expanded',String(!!S.ui.soundMenu)));
   reactions.setUrgent(S.view==='G03.QUESTION_ACTIVE'&&S.q&&timerNow().rem<=3000);
@@ -708,6 +716,7 @@ function countdown(q) {
 function release(q) {
   if (S.q !== q || q.pick || !['G03.COUNTDOWN', 'G03.PREPARING', 'G03.READY', 'G06.SUCCESS'].includes(S.view)) return;
   S.ui.morph = DUR.verdictMs; S.ui.leadTotal = 0;
+  react('swoosh',`reveal:${q.questionId}`);
   go('G03.QUESTION_ACTIVE');
   later(DUR.imageSlowMs, () => { if (S.q === q && !q.imgReady) { q.imgSlow = true; render(); } });
   tickLoop();
@@ -806,7 +815,7 @@ function onAnswer(ans, q) {
   S.ui.morph = DUR.verdictMs;
   S.ui.noOffer = ans.noOfferReason;
   if (ans.result === 'correct') {
-    react('correct',q.questionId);
+    if(!(ans.run.score>(S.boot?.record||0)&&S.ui.recordNotified!==ans.run.runId))react('correct',q.questionId);
     if(ans.run.score>(S.boot?.record||0)&&S.ui.recordNotified!==ans.run.runId){S.ui.recordNotified=ans.run.runId;react('record',ans.run.runId);}
     go('G03.CORRECT_FEEDBACK');
     const reached = ans.checkpointReached, fb = S.fb, reward = ans.checkpointReward || null;
@@ -1264,6 +1273,7 @@ function onClick(e) {
     },
     boot, home: boot, start: startRun, reveal:()=>reveal(true), continue: continueOffer, 'ans-higher': () => answer('higher'), 'ans-lower': () => answer('lower'),
     'learn-practice': () => learningPhase('intro'), 'learn-start': startLearningQuestion,
+    'learn-next':()=>advanceLearningTour(), 'learn-prev':()=>advanceLearningTour(-1),
     'learn-higher': () => answerLearning('higher'), 'learn-lower': () => answerLearning('lower'),
     'learn-done': () => learningPhase('done'), 'learn-overview': () => learningPhase('overview'),
     'learn-rewards': () => learningPhase('rewards'), 'learn-revive': () => learningPhase('revive'),

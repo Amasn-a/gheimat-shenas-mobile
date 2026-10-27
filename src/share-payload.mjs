@@ -1,4 +1,4 @@
-export const GAME_URL='https://amasn-a.github.io/gheimat-shenas-mobile/';
+export const GAME_URL='https://amasn-a.github.io/gheimat-shenas-mobile//';
 export const SHARE_SIZE={width:1080,height:1920};
 export function shareCaption(score,url=GAME_URL) {
   const n=new Intl.NumberFormat('fa-IR').format(score);

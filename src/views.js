@@ -175,7 +175,7 @@ export function timer(o) {
 }
 export function refCard(card, strip) {
   const k = keyOf(card);
-  return `<article class="q-ref${strip ? ' q-ref--strip' : ''}" aria-label="کالای اول، ${money(card.price)} تومان"${mk('card:' + k, 'frame')} data-tour="first"><span class="p-card-label">کالای اول · قیمت معلوم</span>${img(card, true)}` +
+  return `<article class="q-ref${strip ? ' q-ref--strip' : ''}" aria-label="کالای اول، ${money(card.price)} تومان"${mk('card:' + k, 'frame')} data-tour="first">${img(card, true)}` +
     `<div class="q-ref__b"><h2 class="q-ref__t"${mk('ttl:' + k, 'text')}>${title(card.displayTitle)}</h2>${price(card.price, '', mk('prc:' + k, 'text'))}</div></article>`;
 }
 /**
@@ -202,13 +202,13 @@ export function cmpCard(card, st, revealedPrice, slow, decision='') {
     : price(revealedPrice, ' q-price--reveal', mk('prc:' + k, 'text'));
   const hint = slow ? '<p class="q-cmp__hint">عکس در راهه؛ از روی اسم هم می‌تونی جواب بدی.</p>' : '';
   return `<article class="q-cmp${cls}${decision?' p-cmp--answer':''}" aria-label="کالای دوم${st === 'hidden' ? '، قیمت مخفی' : `، ${money(revealedPrice)} تومان`}"${mk('card:' + k, 'frame')} data-tour="second">` +
-    `<span class="p-card-label p-card-label--second">${st === 'hidden' ? 'کالای دوم · تو حدس بزن!' : 'کالای دوم · قیمت واقعی'}</span>${img(card, true, st === 'hidden' ? 'q' : '')}<div class="p-cmp-info"><h2 class="q-cmp__t"${mk('ttl:' + k, 'text')}>${title(card.displayTitle)}</h2>${hint}${row}</div>${decision}</article>`;
+    `${img(card, true, st === 'hidden' ? 'q' : '')}<div class="p-cmp-info"><h2 class="q-cmp__t"${mk('ttl:' + k, 'text')}>${title(card.displayTitle)}</h2>${hint}${row}</div>${decision}</article>`;
 }
 /**
  * Decision area: the prompt (or, after the server's verdict, the verdict in the same place) and the two answers at a
  * fixed size and position. st: on · off · pending · ok · no · truth. Text marks («انتخاب تو», «درست») never rely on colour.
  */
-export function decide(st, side, line, refPrice, scope = 'ans') {
+export function decide(st, side, line, refPrice, scope = 'ans', reference = null) {
   const A = { cls: '', a: ` data-act="${scope}-higher"`, i: I.up, m: '' }, B = { cls: '', a: ` data-act="${scope}-lower"`, i: I.down, m: '' };
   const me = side === 'higher' ? A : B, ot = side === 'higher' ? B : A;
   const ok = `<span class="q-ab__m">${ICO('check', 18)}</span>`, no = `<span class="q-ab__m">${ICO('x', 18)}</span>`;
@@ -219,7 +219,7 @@ export function decide(st, side, line, refPrice, scope = 'ans') {
   else if (st === 'truth') { me.cls = ' is-truth'; me.a = L; me.i = ok; me.m = 'جواب درست'; ot.cls = ' is-dim'; ot.a = L; }
   const rp = st === 'on' && refPrice ? money(refPrice) : '';
   const btn = (o, w) => `<button class="q-ab${o.cls}"${o.a}${rp ? ` aria-label="${w} از ${rp} تومان"` : ''}><i class="q-ab__i">${o.i}</i><span>${w}${o.m ? `<small class="pe-sr">، ${o.m}</small>` : ''}</span></button>`;
-  return `<div class="q-decide"${mk('decide', 'fade')}><p class="p-question">این کالای پایینی، از بالایی گرون‌تره یا ارزون‌تر؟</p><div class="q-ans" role="group" aria-label="قیمت کالای دوم نسبت به کالای اول" data-tour="answers">${btn(A, 'گرون‌تره')}${btn(B, 'ارزون‌تره')}</div></div>`;
+  return `<div class="q-decide"${mk('decide', 'fade')}><p class="p-question" data-tour="question"><span>به نظرت این کالا</span><b>گرون‌تره یا ارزون‌تر؟</b><small>با کالای زیر مقایسه کن <i aria-hidden="true">↓</i></small></p>${reference ? refCard(reference,true) : ''}<div class="q-ans" role="group" aria-label="قیمت کالای دوم نسبت به کالای اول" data-tour="answers">${btn(A, 'گرون‌تره')}${btn(B, 'ارزون‌تره')}</div></div>`;
 }
 export const prompt = (text, muted) => `<p class="q-prompt${muted ? ' is-muted' : ''}">${text}</p>`;
 export function verdict(k, t, sub, pop) {
@@ -229,7 +229,7 @@ export function verdict(k, t, sub, pop) {
 export const pill = (t, ic, btn) => `<p class="q-pill" role="status">${ICO(ic, 16)}<span>${t}</span>${btn || ''}</p>`;
 export function game(top, trk, tmr, main, dec, extra, toast) {
   const attached=main.includes('p-cmp--answer');
-  return page(`q-game p-game${attached?' p-game--answers':dec?'':' p-game--ready'}`, top+trk+`<main class="q-game__main" aria-label="مقایسهٔ دو کالا">${main}${tmr}</main>`+(attached?'':dec||'<div class="p-ready-space" aria-hidden="true"></div>'),(extra||'')+toastHTML(toast));
+  return page(`q-game p-game${attached?' p-game--answers p-game--focus':dec?'':' p-game--ready'}`, top+trk+`<main class="q-game__main" aria-label="مقایسهٔ دو کالا">${main}${tmr}</main>`+(attached?'':dec||'<div class="p-ready-space" aria-hidden="true"></div>'),(extra||'')+toastHTML(toast));
 }
 
 export function leaveSheet(m) {

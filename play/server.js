@@ -711,7 +711,7 @@ function share(runId, device) {
   const run = lockForCommand(runId);
   if (run.state !== 'FINISHED') throw stateError('RUN_NOT_FINISHED', run, device);
   const cp = run.finishReason === 'blocked' ? null : cpById(run.highestCheckpointId);
-  return { score: run.score, checkpointTitle: cp ? cp.title : null, badgeAssetId: cp ? cp.badgeAssetId : null, gameName: 'قیمت‌شناس', deepLink: 'https://amasn-a.github.io/gheimat-shenas-mobile/' };
+  return { score: run.score, checkpointTitle: cp ? cp.title : null, badgeAssetId: cp ? cp.badgeAssetId : null, gameName: 'قیمت‌شناس', deepLink: 'https://gheimat-shenas-mobile.digikala-5029.chatgpt.site/' };
 }
 
 function dailyView() {   // DailyRewardService.view

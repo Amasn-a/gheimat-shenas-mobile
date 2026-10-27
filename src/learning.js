@@ -1,5 +1,6 @@
 // Practice is local and uses invented products. It never starts a run, spends a
 // chance, charges coins or awards a badge. Only the final explicit play action does.
+import { tourMarkup } from './learning-spotlight.js';
 import { soundControl } from './feedback.mjs';
 import { I } from './icons.js';
 import { fa, money, esc } from './fmt.js';
@@ -16,13 +17,16 @@ export function renderLearning(m,h) {
   if(['intro','question','feedback'].includes(phase)) {
     const feedback=phase==='feedback', correct=l.outcome==='correct';
     const top=`<header class="q-hdr q-hdr--game"><button class="q-iconbtn" data-act="learn-back" aria-label="بازگشت به راهنما">${I.back}</button><h1 class="q-hdr__t">تمرین رایگان</h1><span class="l-demo-pill">آموزشی</span>${soundControl(m.soundOn!==false)}</header>`;
-    const step=phase==='intro'?1:phase==='question'?2:3;
-    const progress=`<div class="l-progress"><span>${['قیمت کالای اول رو ببین','حالا خودت انتخاب کن','جواب رو بررسی کن'][step-1]}</span><small>مرحلهٔ ${fa(step)} از ۳</small><div>${[1,2,3].map(n=>`<i class="${n<=step?'is-done':''}"></i>`).join('')}</div></div>`;
+    const progress=`<div class="l-progress"><span>${phase==='intro'?'قدم‌به‌قدم با هم یاد می‌گیریم':phase==='question'?'حالا خودت انتخاب کن':'جواب رو بررسی کن'}</span><small>${phase==='intro'?'زمان هنوز شروع نشده':'تمرین رایگان'}</small></div>`;
     const tm=feedback?h.timer({mode:'verdict',kind:correct?'ok':l.outcome==='timeout'?'time':'no',title:correct?'درست گفتی!':l.outcome==='timeout'?'زمان تمرین تموم شد':'این بار گرون‌تر بود',sub:'هدفون از ماگ گرون‌تره'}):phase==='question'?h.timer({mode:m.remaining<=3000?'low':'run',t:fa(Math.ceil(m.remaining/1000)),p:Math.max(0,m.remaining/c.inputMs).toFixed(3)}):h.timer({mode:'idle'});
     const first={...DEMO_FIRST,displayTitle:'ماگ سرامیکی'},second={...DEMO_SECOND,displayTitle:'هدفون بی‌سیم'};
-    const foot=phase==='question'?h.decide('on',null,'',first.price,'learn'):`<div class="l-practice-dock"><p>${feedback?`${money(DEMO_SECOND_PRICE)} بیشتر از ${money(first.price)} تومنه؛ پس جواب «گرون‌تره» است.`:'این دو کالا نمونهٔ تمرین‌اند؛ قیمت اول رو به خاطر بسپار.'}</p>${button(feedback?'فهمیدم، ادامه بدیم':`شروع تمرین ${fa(seconds)} ثانیه‌ای`,feedback?'learn-done':'learn-start',false,feedback?I.fwd:I.play)}</div>`;
-    const main=h.refCard(first,true)+h.cmpCard(second,feedback?(correct?'ok':l.outcome==='timeout'?'time':'no'):'hidden',feedback?DEMO_SECOND_PRICE:0,false,phase==='question'?foot:'');
-    return h.game(top,progress,tm,main,phase==='question'?'':foot,'').replace('q-game p-game',`q-game p-game l-practice${phase!=='question'?' l-practice--explain':''}`);
+    const decision=h.decide(phase==='intro'||feedback?'off':'on',null,'',first.price,'learn',first);
+    const foot=feedback?`<div class="l-practice-dock"><p>${money(DEMO_SECOND_PRICE)} بیشتر از ${money(first.price)} تومنه؛ پس جواب «گرون‌تره» است.</p>${button('فهمیدم، ادامه بدیم','learn-done',false,I.fwd)}</div>`:'';
+    const main=h.cmpCard(second,feedback?(correct?'ok':l.outcome==='timeout'?'time':'no'):'hidden',feedback?DEMO_SECOND_PRICE:0,false,decision);
+    let page=h.game(top,progress,tm,main,'','').replace('q-game p-game',`q-game p-game l-practice${feedback?' l-practice--feedback':''}`);
+    if(phase==='intro') page=page.replace('<div class="q-page','<div inert class="q-page')+tourMarkup(l.tourStep||0,seconds);
+    if(feedback)page=page.replace('</main>',`</main>${foot}`);
+    return page;
   }
   let body='',foot='',title='چطور بازی کنیم؟';
   if(phase==='rewards') {
