@@ -65,3 +65,54 @@
 
 .gu .l-coach{background:#fffaf0;color:#233f35}.gu .l-coach h2{color:#233f35}.gu .l-coach p{color:#5e7055}
 .gu .p-game--answers .q-cmp{border-width:2px!important}
+/* Six-step introduction; primary controls stay centered in the fixed dock. */
+.l-tour--overview{background:#102e29bb}.l-spotlight-ring[hidden]{display:none}
+.l-coach-actions{grid-template-columns:52px minmax(0,1fr) 52px;gap:6px}
+.l-coach-actions>.l-coach-prev,.l-coach-actions>span:first-child{grid-column:1;grid-row:1}
+.l-coach-actions>.l-btn,.l-coach-actions>.l-coach-wait{grid-column:2;grid-row:1}
+.l-coach .l-btn{width:100%;font-size:11px}.l-coach h2{font-size:16px}
+/* Reference remains above; comparison receives more of the available canvas. */
+.gu .p-game--answers .q-game__main{grid-template-rows:minmax(0,.78fr) var(--comparison-timer) minmax(0,1.22fr) var(--answer-row)}
+.gu .p-game--answers .q-ref{padding:8px 12px}
+.gu .p-game--answers .q-decide>.p-question{justify-content:center;gap:2px}
+.gu .p-game--answers .p-question>b{font-size:22px}
+/* Remove the artificial white photo tile, preserving the entire product. */
+.gu .p-game :is(.q-ref,.q-cmp) .q-img{background:transparent!important;border:0;outline:none}
+.gu .p-game :is(.q-ref,.q-cmp) .q-img img{background:transparent!important;mix-blend-mode:multiply;object-fit:contain;border-radius:0}
+.p-energy__tag>svg{width:20px;height:20px}.p-result-best>span>svg{width:12px;height:12px;vertical-align:middle}
+.gu .p-streak-countdown{display:flex;flex-direction:column;gap:3px;opacity:1!important;background:#f1ebcf!important;color:#65714e!important;box-shadow:none!important}
+.p-streak-countdown>span{font-size:11px}.p-streak-countdown>b{font-size:20px;font-variant-numeric:tabular-nums}
+/* Home scales the illustration into remaining height instead of forcing a scroll. */
+.m-main[data-mobile-tab="game"]{overflow:hidden;gap:9px;padding-bottom:5px}
+.m-main[data-mobile-tab="game"] .m-play{flex:1 1 0;min-height:0;height:auto}
+.m-main[data-mobile-tab="game"]>.m-campaign{flex:none}
+@media(max-height:740px){
+ .m-main[data-mobile-tab="game"] .m-play{flex:1 1 0;min-height:0}
+ .m-play-copy{padding-top:9px}.m-play h1{font-size:29px;margin:6px 0 4px}.m-play-copy>p{font-size:10px}
+ .m-play-foot{padding:0 14px 10px}.m-play-line{margin-bottom:6px;font-size:9px}.m-app .q-homesheet{gap:5px}.m-app .q-homesheet>.q-btn{min-height:49px;font-size:18px}
+ .m-main[data-mobile-tab="game"]>.m-campaign{height:71px;min-height:71px;padding-block:6px}
+}
+@media(max-height:600px){.m-shell:has(.m-quick){grid-template-rows:50px 44px minmax(0,1fr) calc(57px + env(safe-area-inset-bottom));gap:6px}.m-play h1{font-size:25px}.m-play-copy{padding-top:6px}.m-play-copy>p{display:none}.m-kicker{font-size:7px}.m-play-line{margin-bottom:3px}.m-float{font-size:7px}.m-app .q-homesheet>.q-btn{min-height:44px}.m-main[data-mobile-tab="game"]{gap:6px}.m-main[data-mobile-tab="game"]>.m-campaign{height:65px;min-height:65px}}
+/* No transient ghost outlines or decorative motion during an answer. */
+.gu .p-game *{text-shadow:none!important;-webkit-text-stroke:0!important}
+.gu .p-game *:not(.q-spin):not(.q-spin *):not(.q-btn__fill){animation:none!important}
+.gu[data-input=pointer] :focus{outline:none!important}
+/* One centered score, its caption, and a separated right-to-left record row. */
+.gu .p-end .p-result{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px 16px;min-height:220px}
+.gu .p-end .p-result-art{width:100%;height:130px;max-height:160px;flex:0 1 130px;min-height:50px;grid-area:auto}
+.gu .p-end .q-end__h{grid-area:auto;text-align:center;margin:0;font-size:25px}
+.gu .p-end .p-result-number{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;grid-area:auto;width:100%}
+.gu .p-end .p-result-number>b{font-size:76px;line-height:1.05}.gu .p-end .p-result-number>span{font-size:13px;line-height:1.6;text-align:center}
+.gu .p-end .p-result-best{display:flex;align-items:center;justify-content:space-between;direction:rtl;grid-area:auto;width:100%;border-top:1px solid #88ac7e;padding-top:13px;margin-top:8px;gap:14px}
+.gu .p-end .p-result-best>span{font-size:12px;color:#527045;background:none;padding:0}.gu .p-end .p-result-best>b{font-size:23px;font-weight:950}
+.gu .p-end .q-end__foot{display:flex;flex-direction:column;gap:10px}.gu .p-end .q-end__foot .q-btn{width:100%;min-height:52px}
+@media(max-height:640px){.gu .p-end .p-result{padding:12px;gap:6px;min-height:200px}.gu .p-end .p-result-art{height:85px;flex-basis:85px}.gu .p-end .p-result-number>b{font-size:56px}.gu .p-end .p-result-best{padding-top:8px;margin-top:4px}.gu .p-end .q-end__h{font-size:20px}.gu .p-end .q-end__foot .q-btn{min-height:47px}}
+/* On the last teaching step only the actual answer buttons can be selected. */
+.l-tour--answer{pointer-events:none}.l-tour--answer .l-coach{pointer-events:none}.l-tour--answer .l-coach-actions{display:none}
+
+/* Home's main card: title, illustration, invitation, primary start, quota. */
+.m-play-copy{padding-top:18px}.m-play h1{margin:0;line-height:1.2}.m-play-foot{padding-top:5px}.m-play-line{margin-bottom:10px}
+@media(max-height:740px){.m-play-copy{padding-top:14px}.m-play h1{margin:0}.m-play-foot{padding-top:3px}.m-play-line{margin-bottom:7px}}
+@media(max-height:600px){.m-play-copy{padding-top:11px}.m-play-foot{padding-top:0}.m-play-line{margin-bottom:5px}}
+
+.p-streak-flame[hidden]{display:none}

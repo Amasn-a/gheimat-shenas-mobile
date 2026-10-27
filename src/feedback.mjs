@@ -50,7 +50,7 @@ export function createFeedback({storage,createContext,visible=()=>true,haptic=()
   function setActive(v){active=!!v;if(!active)stop();else syncMusic();}
   function setUrgent(v){if(urgent===v)return;urgent=v;if(musicBus&&ctx){musicBus.gain.cancelScheduledValues?.(ctx.currentTime);musicBus.gain.setTargetAtTime?.(urgent?.019:.055,ctx.currentTime,.12);}}
   function react(kind,{key,haptics:allowHaptics=true}={}){
-    if(!(NOTES[kind]||['swoosh','spotlight'].includes(kind))||!active||!visible())return false;const id=key&&`${kind}:${key}`;
+    if(!(NOTES[kind]||['swoosh','spotlight','select-high','select-low','open','nav','back','share','claim','confirm'].includes(kind))||!active||!visible())return false;const id=key&&`${kind}:${key}`;
     if(id&&seen.has(id))return false;if(id){seen.add(id);if(seen.size>180)seen.delete(seen.values().next().value);}
     if(HAPTIC_PATTERNS[kind]&&haptics&&allowHaptics&&unlocked){try{haptic(kind);}catch{}}
     if(!enabled||!unlocked||ctx?.state!=='running')return false;
@@ -68,3 +68,15 @@ export function createFeedback({storage,createContext,visible=()=>true,haptic=()
 }
 export function soundControl(enabled=true){return `<button class="p-sound" data-act="sound-toggle" aria-label="تنظیمات صدا" aria-expanded="false" aria-controls="audio-options" title="موزیک، صدای بازی و ویبره"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 4-5 4H3v8h3l5 4V4Z"/>${enabled?'<path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>':'<path d="m16 9 6 6m0-6-6 6"/>'}</svg></button>`;}
 export function audioMenu(settings){const row=(key,label,sub)=>`<button class="p-audio-row" role="switch" aria-checked="${settings[key]}" data-act="audio-${key}"><span><b>${label}</b><small>${sub}</small></span><i aria-hidden="true"><em></em></i></button>`;return `<section class="p-audio-menu" id="audio-options" aria-label="تنظیمات صدا"><header><b>صدای بازی، به سلیقهٔ تو</b><button data-act="sound-close" aria-label="بستن تنظیمات صدا">×</button></header>${row('music','موزیک پس‌زمینه','ریتم، بیس و ملودی برای همراهی بازی')}${row('effects','صدای بازی','حرکت کارت‌ها، تایمر و جشن رکورد')}${row('haptics','ویبره','بازخورد کوتاه برای اتفاق‌های بازی')}<button class="p-audio-test" data-act="test-setup">عوض کردن حالت تست</button></section>`;}
+
+export function buttonCueFor(action){
+ if(action==='ans-higher'||action==='learn-higher')return 'select-high';
+ if(action==='ans-lower'||action==='learn-lower')return 'select-low';
+ if(['share-result','share-send','share-copy'].includes(action))return 'share';
+ if(['daily-claim','daily-check','continue'].includes(action))return 'claim';
+ if(['reveal','deals-end','campaign-open','sound-toggle'].includes(action))return 'open';
+ if(/close|back|skip|end-home/.test(action))return 'back';
+ if(/^(tab-|nav-)|guide|daily-open/.test(action))return 'nav';
+ if(['cp-go','learn-next','learn-prev','onb-start','learn-done','start','play-again'].includes(action))return 'confirm';
+ return null;
+}

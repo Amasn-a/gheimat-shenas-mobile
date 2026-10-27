@@ -31,6 +31,14 @@ export function createSoundPalette(ctx){
     const n=(hz,offset,d,v=.6,type='triangle',end=hz)=>note(hz,at+offset,d,bus,v,set,type,end);
     const whoosh=(d=.24,v=.8)=>noise(at,d,bus,v,set,550,4700,1.1);
     switch(kind){
+      case 'select-high':n(540,0,.07,.38,'sine',880);break;
+      case 'select-low':n(660,0,.08,.38,'sine',330);break;
+      case 'open':noise(at,.09,bus,.25,set,650,3300);n(980,.02,.07,.18,'sine');break;
+      case 'nav':n(720,0,.045,.32,'triangle');n(1080,.04,.055,.16,'sine');break;
+      case 'back':n(590,0,.065,.28,'sine',360);break;
+      case 'share':n(1047,0,.09,.31,'sine');n(1568,.065,.14,.22,'triangle');break;
+      case 'claim':n(1568,0,.12,.33,'triangle');n(2093,.07,.17,.23,'sine');n(3136,.08,.07,.09,'sine');break;
+      case 'confirm':n(330,0,.075,.38,'sine',440);n(660,.055,.10,.25,'triangle');break;
       case 'swoosh':whoosh();n(240,.025,.16,.16,'sine',750);break;
       case 'spotlight':noise(at,.12,bus,.28,set,900,3200);n(880,.045,.1,.23,'sine');break;
       case 'tap':n(650,0,.045,.65,'sine',390);noise(at,.025,bus,.16,set,1900,1200);break;

@@ -1,14 +1,15 @@
 import { fa } from './fmt.js';
 export const TOUR_STEPS=[
-  {target:'.q-cmp > .q-img',title:'اول، این کالا رو ببین',copy:'قراره قیمت همین هدفون رو حدس بزنی. عکسش رو نگاه کن؛ قیمتش فعلاً مخفیه.',next:'خب، سؤال چیه؟'},
-  {target:'[data-tour="question"]',title:'سؤال دقیقاً اینه',copy:'هدفون گرون‌تره یا ارزون‌تر؟ برای جواب، با ماگی که بالای صفحه می‌بینی مقایسه‌اش کن.',next:'با کدوم کالا؟'},
-  {target:'[data-tour="first"]',title:'با این ماگ مقایسه کن',copy:'قیمت ماگ ۲۴۵٬۰۰۰ تومنه. فکر می‌کنی قیمت هدفون بیشتر از اینه یا کمتر؟',next:'فهمیدم، کجا جواب بدم؟'},
-  {target:'[data-tour="answers"]',title:'انتخابت رو اینجا بزن',copy:'اگه هدفون از ماگ گرون‌تره، «گرون‌تره» رو بزن؛ اگه ارزون‌تره، دکمهٔ کناری رو.',next:'چقدر وقت دارم؟'},
-  {target:'[data-tour="timer"]',title:'حالا آماده‌ای!',copy:'بعد از شروع تمرین، {seconds} ثانیه وقت داری. تا اینجا هیچ زمانی ازت کم نشده.',next:'آماده‌ام، شروع تمرین'}
+  {target:null,title:'قیمت‌شناس چطور بازی می‌شه؟',copy:'قیمت دو کالا رو با هم مقایسه می‌کنی؛ برای هر جواب درست یه امتیاز می‌گیری. بیا یه دور رایگان امتحان کنیم.',next:'بریم سراغ کالای اول'},
+  {target:'[data-tour="first"]',title:'قیمت این کالا رو ببین',copy:'این ماگ ۲۴۵٬۰۰۰ تومنه. قیمتش رو به خاطر بسپار؛ قراره یه کالای دیگه رو باهاش مقایسه کنی.',next:'حالا کالای دوم'},
+  {target:'.q-cmp > .q-img',title:'حالا این هدفون رو ببین',copy:'قیمت هدفون مخفیه. باید حدس بزنی از ماگی که دیدی گرون‌تره یا ارزون‌تر.',next:'سؤال رو ببینیم'},
+  {target:'[data-tour="question"]',title:'این سؤال رو جواب می‌دی',copy:'هدفون گرون‌تره یا ارزون‌تر؟ قیمت ماگ رو که می‌دونی؛ حالا قیمت هدفون رو نسبت به اون حدس بزن.',next:'چقدر وقت دارم؟'},
+  {target:'[data-tour="timer"]',title:'۱۰ ثانیه برای هر انتخاب',copy:'وقتی تمرین رو شروع کنی، {seconds} ثانیه وقت داری. الان تایمر متوقفه؛ با خیال راحت راهنما رو بخون.',next:'کجا جواب بدم؟'},
+  {target:'[data-tour="answers"]',title:'از این دو دکمه انتخاب کن',copy:'اگه هدفون از ماگ گرون‌تره، «گرون‌تره» رو بزن؛ اگه ارزون‌تره، دکمهٔ کناری رو. آماده‌ای؟',next:'آماده‌ام، شروع تمرین'}
 ];
-export function tourMarkup(step,seconds){
+export function tourMarkup(step,seconds,answerGuide=false){
   const t=TOUR_STEPS[step]||TOUR_STEPS[0],last=step===TOUR_STEPS.length-1;
-  return `<div class="l-tour" data-mkey="practice-tour"><div class="l-spotlight-ring" aria-hidden="true"></div><section class="l-coach" role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta"><span>فوت‌وفن بازی · ${fa(step+1)} از ${fa(TOUR_STEPS.length)}</span><button data-act="learn-back" aria-label="خروج از تمرین">×</button></div><h2 id="tour-title">${t.title}</h2><p id="tour-copy">${t.copy.replace('{seconds}',fa(seconds))}</p><div class="l-coach-actions"><button class="l-coach-prev" data-act="learn-prev"${step?'':' disabled aria-hidden="true" tabindex="-1"'}>قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div><div class="l-coach-dots" aria-hidden="true">${TOUR_STEPS.map((_,i)=>`<i class="${i===step?'is-active':''}"></i>`).join('')}</div></section></div>`;
+  return `<div class="l-tour${answerGuide?' l-tour--answer':''}" data-mkey="practice-tour"><div class="l-spotlight-ring" aria-hidden="true"></div><section class="l-coach" role="${answerGuide?'region':'dialog'}"${answerGuide?' data-answer-guide':' aria-modal="true"'} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta"><span>فوت‌وفن بازی · ${fa(step+1)} از ${fa(TOUR_STEPS.length)}</span>${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین">×</button>'}</div><h2 id="tour-title">${t.title}</h2><p id="tour-copy">${t.copy.replace('{seconds}',fa(seconds))}</p>${answerGuide?'':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="learn-prev"${step?'':' disabled aria-hidden="true" tabindex="-1"'}>قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`}<div class="l-coach-dots" aria-hidden="true">${TOUR_STEPS.map((_,i)=>`<i class="${i===step?'is-active':''}"></i>`).join('')}</div></section></div>`;
 }
 // Same dock geometry during the actual practice and its result, without a scrim.
 export function practiceCoachMarkup(phase,seconds){
@@ -25,8 +26,11 @@ export function syncLearningSpotlight(root,step){
     if(stage&&dock&&answers){const r=answers.getBoundingClientRect(),p=dock.getBoundingClientRect();if(r.bottom>p.top-18)stage.scrollTop+=r.bottom-p.top+18;}
     return;
   }
-  const layer=root.querySelector('.l-tour'),ring=layer?.querySelector('.l-spotlight-ring'),panel=layer?.querySelector('.l-coach'),target=root.querySelector(TOUR_STEPS[step]?.target);
-  if(!ring||!panel||!target)return;
+  const layer=root.querySelector('.l-tour'),ring=layer?.querySelector('.l-spotlight-ring'),panel=layer?.querySelector('.l-coach'),target=TOUR_STEPS[step]?.target?root.querySelector(TOUR_STEPS[step].target):null;
+  if(!ring||!panel)return;
+  layer.classList.toggle('l-tour--overview',!target);
+  ring.hidden=!target;
+  if(!target){layer.dataset.step=String(step);layer.classList.add('is-positioned');return;}
   const stage=root.querySelector('.l-tour-active');
   // The dock never moves. Only the small-phone canvas scrolls to expose a target.
   if(stage){

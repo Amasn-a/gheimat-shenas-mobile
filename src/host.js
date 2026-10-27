@@ -1,5 +1,5 @@
 import { HAPTIC_PATTERNS } from './feedback.mjs';
-import { buildSharePayload, GAME_URL } from './share-payload.mjs';
+import { buildSharePayload, GAME_URL, singleShareLink } from './share-payload.mjs';
 // Host adapter: every Super App interaction goes through here. The bridge contract (login token handover, back/close,
 // device id, haptics, share, deep link, WebView floor) is with the app team (D09) and is NOT in the supplied
 // sources, so no bridge object name or URL scheme is invented. The integration supplies an implementation through
@@ -35,7 +35,7 @@ export function haptic(kind) { if (typeof impl.haptic === 'function' && Object.h
 
 /** Share the image together with a playable link (owner revision). Resolves 'sent' | 'cancelled' | 'unsupported'. */
 export async function share(blob, text, url=GAME_URL) {
-  const caption=text.includes(url)?text:`${text}\n${url}`;
+  const caption=singleShareLink(text,url);
   if (typeof impl.share === 'function') return impl.share({ blob, text:caption, url });
   const payload=buildSharePayload(blob,caption,url);
   if (navigator.canShare && navigator.canShare(payload)) {

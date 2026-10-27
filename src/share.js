@@ -1,7 +1,7 @@
 // Current-run score leads; personal best is secondary, with a playable QR.
 import { fa } from './fmt.js';
 import { BADGES, BADGE_SRC } from './views.js';
-import { GAME_URL, SHARE_SIZE, shareStats } from './share-payload.mjs';
+import { GAME_URL, SHARE_SIZE, shareStats, shareRecordLabel } from './share-payload.mjs';
 export { GAME_URL };
 const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src;});
 const rounded=(c,x,y,w,h,r,fill,stroke)=>{c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=3;c.stroke();}};
@@ -28,8 +28,9 @@ export async function createShareCard({score,record=score,title,badgeAssetId}){
   c.fillStyle='#233f35';number(c,score,540,1090,112,540);
   // Separate label and smaller number prevent the personal best being mistaken for this run.
   rounded(c,185,1153,710,96,24,'#fffaf0','#b4c99f');
-  c.font='750 30px Digikala';c.fillStyle='#617953';c.fillText('بهترین رکوردم',665,1214);
-  c.fillStyle='#355433';number(c,record,354,1219,64,230);
+  const recordMessage=shareRecordLabel(score,record);
+  if(recordMessage){c.font='900 43px Digikala';c.fillStyle='#355433';c.fillText(recordMessage,540,1215);}
+  else{c.font='750 30px Digikala';c.fillStyle='#617953';c.fillText('بهترین رکوردم',665,1214);c.fillStyle='#355433';number(c,record,354,1219,64,230);}
   c.font='900 43px Digikala';c.fillStyle='#233f35';c.fillText('تو چند امتیاز می‌گیری؟',540,1365);
   rounded(c,100,1410,880,270,34,'#fffdf7','#d7dfca');
   c.imageSmoothingEnabled=false;c.drawImage(qr,670,1419,252,252);c.imageSmoothingEnabled=true;

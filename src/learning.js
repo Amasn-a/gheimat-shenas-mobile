@@ -24,7 +24,8 @@ export function renderLearning(m,h) {
     const main=h.refCard(first,true)+h.cmpCard(second,feedback?(correct?'ok':l.outcome==='timeout'?'time':'no'):'hidden',feedback?DEMO_SECOND_PRICE:0,false,decision);
     let page=h.game(top,progress,tm,main,'','').replace('q-game p-game',`q-game p-game l-practice l-coach-space`);
     if(phase==='intro') page=page.replace('<div class="q-page','<div inert class="q-page l-tour-active')+tourMarkup(l.tourStep||0,seconds);
-    if(phase!=='intro')page+=practiceCoachMarkup(phase,seconds);
+    if(phase==='question'&&l.answerGuide){page=page.replace('data-act="learn-back"','disabled data-act="learn-back"').replace('data-act="sound-toggle"','disabled data-act="sound-toggle"');page+=tourMarkup(5,seconds,true);}
+    else if(phase!=='intro')page+=practiceCoachMarkup(phase,seconds);
     return page;
   }
   let body='',foot='',title='چطور بازی کنیم؟';

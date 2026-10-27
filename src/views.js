@@ -152,7 +152,7 @@ export function track(score, cps) {
   const next = cps.find(c => c.requiredCorrect > score);
   const label = next ? `${fa(score)} جواب درست؛ چک‌پوینت بعدی با ${fa(next.requiredCorrect)} جواب درست${next.rewardAmount > 0 ? ` و ${fa(next.rewardAmount)} دیجی‌کوین` : ''}` : `${fa(score)} جواب درست؛ همه‌ی چک‌پوینت‌ها رو گرفتی`;
   return `<div class="q-track" role="progressbar" aria-valuemin="0" aria-valuemax="${last}" aria-valuenow="${Math.min(score, last)}" aria-label="${label}">` +
-    `<div class="p-track-heading" aria-hidden="true"><span>${next ? `${fa(next.requiredCorrect - score)} تا جواب کم داری تا ${esc(next.title)} بشی` : 'همهٔ نشان‌ها رو گرفتی!'}</span><small>${next?.rewardAmount > 0 ? `${fa(next.rewardAmount)} دیجی‌کوین جایزه` : 'هر حدس، یک قدم جلوتر'}</small></div><div class="q-track__line"><i style="--f:${f.toFixed(4)}"></i></div><ol aria-hidden="true">${nodes}</ol></div>`;
+    `<div class="p-track-heading" aria-hidden="true"><span>${next ? `${fa(next.requiredCorrect - score)} جواب کم داری تا ${esc(next.title)}` : 'همهٔ نشان‌ها رو گرفتی!'}</span><small>${next?.rewardAmount > 0 ? `${fa(next.rewardAmount)} دیجی‌کوین جایزه` : 'هر حدس، یک قدم جلوتر'}</small></div><div class="q-track__line"><i style="--f:${f.toFixed(4)}"></i></div><ol aria-hidden="true">${nodes}</ol></div>`;
 }
 /**
  * Timer plate above the products (§7): the words on the right, the seconds on the left in a pulsing cap, no bar.
@@ -191,7 +191,7 @@ export function revealCard(state, lead) {
     : failed ? PRIMARY('دوباره امتحان کن', ' data-act="reveal" data-tour="reveal"', I.refresh)
     : `<button class="q-btn q-btn--primary q-btn--lead${state === 'count' ? ' is-counting' : ''}" data-act="reveal" data-tour="reveal" aria-label="نشان بده؛ کالای بعدی خودکار نشون داده می‌شه"${fill}>` +
       `<i class="q-btn__fill" aria-hidden="true"></i><i class="q-btn__i q-btn__i--play">${I.play}</i><span>نشان بده</span></button>`;
-  return `<section class="q-invite${failed ? ' is-failed' : ''}"${mk('slot', 'fade')} aria-labelledby="inv-t"><span class="q-invite__tag" aria-hidden="true">${TAG}</span><img class="p-ready-mascot" src="assets/brand-smile-v2.png" alt="" aria-hidden="true"><h2 id="inv-t">${t}</h2>${p ? `<p>${p}</p>` : ''}</section><div class="p-ready-action"><small>قیمت کالای بالا رو به خاطر بسپار</small>${b}</div>`;
+  return `<section class="q-invite${failed ? ' is-failed' : ''}"${mk('slot', 'fade')} aria-labelledby="inv-t"><span class="q-invite__tag" aria-hidden="true">${TAG}</span><img class="p-ready-mascot" src="assets/brand-smile-v2.png" alt="" aria-hidden="true"><h2 id="inv-t">${t}</h2>${p ? `<p>${p}</p>` : ''}</section><div class="p-ready-action">${b}</div>`;
 }
 /** Comparison product. Its price is never in the page before the answer; afterwards the server's revealed price fills the same row. */
 export function cmpCard(card, st, revealedPrice, slow, decision='') {
@@ -219,7 +219,7 @@ export function decide(st, side, line, refPrice, scope = 'ans') {
   else if (st === 'truth') { me.cls = ' is-truth'; me.a = L; me.i = ok; me.m = 'جواب درست'; ot.cls = ' is-dim'; ot.a = L; }
   const rp = st === 'on' && refPrice ? money(refPrice) : '';
   const btn = (o, w) => `<button class="q-ab${o.cls}"${o.a}${rp ? ` aria-label="${w} از ${rp} تومان"` : ''}><i class="q-ab__i">${o.i}</i><span>${w}${o.m ? `<small class="pe-sr">، ${o.m}</small>` : ''}</span></button>`;
-  return `<div class="q-decide"${mk('decide', 'fade')}><p class="p-question" data-tour="question"><span>به نظرت این کالا</span><b>گرون‌تره یا ارزون‌تر؟</b><small>با کالای بالایی مقایسه کن <i aria-hidden="true">↑</i></small></p><div class="q-ans" role="group" aria-label="قیمت کالای دوم نسبت به کالای اول" data-tour="answers">${btn(A, 'گرون‌تره')}${btn(B, 'ارزون‌تره')}</div></div>`;
+  return `<div class="q-decide"${mk('decide', 'fade')}><p class="p-question" data-tour="question"><span>به نظرت این کالا</span><b>گرون‌تره یا ارزون‌تر؟</b></p><div class="q-ans" role="group" aria-label="قیمت کالای دوم نسبت به کالای اول" data-tour="answers">${btn(A, 'گرون‌تره')}${btn(B, 'ارزون‌تره')}</div></div>`;
 }
 export const prompt = (text, muted) => `<p class="q-prompt${muted ? ' is-muted' : ''}">${text}</p>`;
 export function verdict(k, t, sub, pop) {
@@ -273,7 +273,7 @@ export function offerModal(m) {
     `<h2 id="offer-t">هنوز می‌تونی برگردی!</h2><p id="offer-d">${why}</p>` +
     `<div class="p-revive-score"><b>${fa(m.score || 0)}</b><span>امتیاز گرفتی!</span></div>` +
     `<p class="p-revive-explain">با دادن <b>${fa(m.cost)} تا دیجی کوین</b> یه جون اضافه میگیری و ادامه میدی!</p>` +
-    (m.nextGoal ? `<p class="p-revive-goal">${fa(m.nextGoal.requiredCorrect-(m.score || 0))} تا جواب کم داری تا ${esc(m.nextGoal.title)} بشی</p>` : '') +
+    (m.nextGoal ? `<p class="p-revive-goal">${fa(m.nextGoal.requiredCorrect-(m.score || 0))} جواب کم داری تا ${esc(m.nextGoal.title)}</p>` : '') +
     `${m.left != null ? `<p class="q-offer__left">${ICO('clock',16)}<b data-offer-left>${m.left}</b> ثانیه برای تصمیم</p>` : ''}${note}` +
     `<div class="q-offer__btns">${skip}${main}</div><p class="p-revive-wallet">موجودی: ${fa(m.balance ?? 0)} دیجی‌کوین</p></section></div>`;
 }
@@ -303,17 +303,16 @@ export function vEnd(m) {
   const headline = m.newRecord ? 'رکوردت رو شکستی!' : m.cp ? 'چه دست خوبی!' : m.score > 0 ? 'هر بار، یه قدم جلوتر!' : 'دست بعدی مال توئه!';
   const earned = m.reward?.amount > 0 ? `<div class="p-result-reward">${COIN}<span><b>${fa(m.reward.amount)} دیجی‌کوین</b> ${m.reward.status === 'succeeded' ? 'جایزه گرفتی' : 'جایزه در حال واریزه'}</span></div>` : '';
   const art = m.cp ? `<img src="${BADGE_SRC(badgeId(m.cp,m.cpIndex))}" alt="نشان ${esc(m.cp.title)}">` : '<img src="assets/brand-smile-v2.png" alt="">';
-  const goal = m.nextGoal ? `${fa(m.nextGoal.remaining)} تا جواب کم آوردی تا ${esc(m.nextGoal.title)} بشی!` : 'همهٔ نشان‌ها رو گرفتی؛ رکورد بعدی منتظرته!';
   const share = m.shareable;
   const deals = resultDeals(m.deals || []);
   const limit = m.noOfferReason === 'no_funds' ? '<p class="p-result-limit">موجودی برای جون اضافه کافی نبود؛ دست جدید با شانس روزانه شروع می‌شه.</p>' : '';
   return page(`q-end p-end${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="end-home" aria-label="رفتن به صفحه اصلی">${ICO('home',22)}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
-    `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد"><span class="p-result-kicker">${m.newRecord ? '✦ رکورد شخصی جدید ✦' : m.cp ? `نشان «${esc(m.cp.title)}» برای تو` : 'شمّ اقتصادی‌ات قوی‌تر می‌شه'}</span>` +
-    `<div class="p-result-art" aria-hidden="true">${art}<i>✦</i><i>✧</i><i>✦</i></div><h1 class="q-end__h">${headline}</h1><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست<br>در این دست</span></div>` +
-    `<p class="p-result-best">بهترین رکوردت: <b>${fa(m.best)}</b>${m.newRecord && m.previousRecord > 0 ? `<span>↑ ${fa(m.score-m.previousRecord)} بهتر از قبل</span>` : ''}</p></section>` +
-    `${earned}<p class="p-result-goal">${goal}</p>${limit}${m.note || ''}${m.code || ''}${deals}</main>` +
-    `<footer class="q-end__foot">${share ? `<p>این دست ${fa(m.score)} امتیاز گرفتی؛ دوستات چند می‌گیرن؟</p>${m.sharing?`<button class="q-btn q-btn--primary" data-act="share-result" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی تصویر…</span></button>`:BTN('q-btn--primary','امتیاز این دستم رو بفرست',' data-act="share-result"',I.share)}` : ''}` +
-    `${m.restarting?`<button class="q-btn q-btn--secondary" data-act="play-again" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی…</span></button>`:BTN(share ? 'q-btn--secondary' : 'q-btn--primary','یه دست دیگه',' data-act="play-again"',I.play)}</footer>`,toastHTML(m.toast));
+    `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
+    `<div class="p-result-art" aria-hidden="true">${art}</div><h1 class="q-end__h">${headline}</h1><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
+    `<div class="p-result-best"><span>بهترین رکوردت:</span><b>${fa(m.best)}</b></div></section>` +
+    `${earned}${limit}${m.note || ''}${m.code || ''}${deals}</main>` +
+    `<footer class="q-end__foot">${m.restarting?`<button class="q-btn q-btn--primary" data-act="play-again" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی…</span></button>`:BTN('q-btn--primary','یه دست دیگه',' data-act="play-again"',I.play)}` +
+    `${share ? (m.sharing?`<button class="q-btn q-btn--secondary" data-act="share-result" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی تصویر…</span></button>`:BTN('q-btn--secondary','اشتراک گذاری با دوستان',' data-act="share-result"',I.share)) : ''}</footer>`,toastHTML(m.toast));
 }
 /** G12.DEALS — the products the player has seen that are discounted now or pay DigiCoin back (data simulated in Play). */
 export function vDeals(m) {

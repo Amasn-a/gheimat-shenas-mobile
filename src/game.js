@@ -1,4 +1,4 @@
-import { createFeedback, audioMenu } from './feedback.mjs';
+import { createFeedback, audioMenu, buttonCueFor } from './feedback.mjs';
 import { patchHTML } from './dom-patch.mjs';
 // Player state controller: one authoritative store drives the DOM. Explicit view states with transition guards; run,
 // question and operation identities plus a generation counter make stale responses and timers harmless. The server
@@ -83,7 +83,7 @@ function homeScreen() {
     untilReset: untilInstant(clock.ms(b.quota.resetsAt) - clock.serverNow()),
     historyPage: S.home.page, productsOn: feat('products'), products: S.home.products, historyState: S.home.state,
     productsRetry:!!S.ui.productsRetry,resumeBusy:!!S.ui.resumeBusy,appTab: S.home.appTab || 'game', streakInfo: !!S.home.streakInfo, campaignInfo: S.home.campaignInfo, campaignNow: clock.serverNow(),
-    modal: S.ui.daily && b.dailyReward ? V.dailyModal(b.dailyReward, {...S.ui.daily,canPlay:S.view==='G01.READY'&&!S.ui.offline}) : '',
+    modal: S.ui.daily && b.dailyReward ? V.dailyModal(b.dailyReward, {...S.ui.daily,nextRewardAt:b.quota.resetsAt,now:clock.serverNow(),canPlay:S.view==='G01.READY'&&!S.ui.offline}) : '',
   });
 }
 
@@ -235,13 +235,14 @@ function learningBack() {
 function advanceLearningTour(delta=1) {
   const l=S.ui.learn;if(l?.phase!=='intro')return;
   l.tourStep=Math.max(0,Math.min(TOUR_STEPS.length-1,(l.tourStep||0)+delta));
+  if(delta>0&&l.tourStep===TOUR_STEPS.length-1)return startLearningQuestion(true);
   react('spotlight',`tour:${now()}`);render();refocus('[data-tour-next]');
 }
-function startLearningQuestion() {
+function startLearningQuestion(answerGuide=false) {
   if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view) || S.ui.onb?.busy || S.ui.learn?.phase!=='intro' || (S.ui.learn.tourStep||0)!==TOUR_STEPS.length-1) return;
   react('start',`practice:${now()}`);
   stopLearningClock();
-  S.ui.learn={phase:'question',deadline:now()+cfg().inputMs}; render();
+  S.ui.learn={phase:'question',answerGuide,deadline:now()+cfg().inputMs}; render();
   refocus('[data-act="learn-higher"]');
   const tick=()=>{
     const l=S.ui.learn;
@@ -303,7 +304,7 @@ export function render() {
   if (!root) return;
   const ms = S.view.startsWith('G11.') ? 0 : S.ui.morph != null ? S.ui.morph : motion.running() ? Math.max(160, motion.remaining()) : 0;
   S.ui.morph = null;
-  const before = ms && !motion.reducedMotion() ? motion.snapshot(root) : null;
+  const before = ms && !inRun(S.view) && !S.view.startsWith('G02.') && !motion.reducedMotion() ? motion.snapshot(root) : null;
   const hs = root.querySelector('[data-hscroll]');
   if (hs && S.home.positioned) S.home.scroll = hs.scrollLeft;   // a re-render never resets the player's own scrolling
   const mobileScroll = root.querySelector('[data-mobile-tab]');
@@ -314,7 +315,7 @@ export function render() {
   const markup=screen()+(S.ui.share?.url?V.shareModal(S.ui.share):'')+(S.ui.soundMenu?audioMenu(reactions.settings()):'');
   patchHTML(screenEl,markup);
   syncOfferModal();
-  syncLearningSpotlight(root,S.ui.learn?.phase==='intro'&&['G02.GUIDE','G02.ONBOARDING'].includes(S.view)?S.ui.learn.tourStep||0:null);
+  syncLearningSpotlight(root,['G02.GUIDE','G02.ONBOARDING'].includes(S.view)?S.ui.learn?.answerGuide?TOUR_STEPS.length-1:S.ui.learn?.phase==='intro'?S.ui.learn.tourStep||0:null:null);
   if (S.ui.share?.url) screenEl.querySelector('.q-page')?.setAttribute('inert','');
   root.querySelectorAll('.p-sound').forEach(el=>el.setAttribute('aria-expanded',String(!!S.ui.soundMenu)));
   reactions.setUrgent(S.view==='G03.QUESTION_ACTIVE'&&S.q&&timerNow().rem<=3000);
@@ -322,14 +323,14 @@ export function render() {
   if (same) same.focus({preventScroll:true});
   // the answered buttons are gone, so focus would fall to <body>: hand it to «نشان بده» so a keyboard player can continue
   else if (!S.ui.cp && (!document.activeElement || document.activeElement === document.body)) screenEl.querySelector('[data-act="reveal"]:not([disabled])')?.focus({preventScroll:true});
-  const dialog = root.querySelector('[role="dialog"]');
+  const dialog = root.querySelector('[role="dialog"]:not([data-answer-guide])');
   if (dialog && !dialog.contains(document.activeElement)) requestAnimationFrame(()=>dialog.querySelector('button:not([disabled])')?.focus({preventScroll:true}));
   root.dataset.view = stateId();
   const audio=reactions.diagnostics();root.dataset.audioState=audio.state;root.dataset.musicPlaying=String(audio.musicPlaying);
   scheduleAuto();
   wireImages();
   if (before) motion.morph(root, before, ms, () => { const q = S.ui.queued; S.ui.queued = null; if (q === 'reveal') setTimeout(reveal, 0); });
-  if (root.querySelector('[data-countdown],[data-offer-left]')) tickLoop();
+  if (root.querySelector('[data-countdown],[data-offer-left],[data-streak-countdown]')) tickLoop();
   if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view)) stopLearningClock();
   syncCampaignClock();
   if (S.view.startsWith('G01.')) afterHomeRender();
@@ -1116,6 +1117,8 @@ function tickLoop() {
       }
       raf = requestAnimationFrame(step); return;
     }
+    const streakCd=$('[data-streak-countdown]',root);
+    if(streakCd){const rem=clock.ms(streakCd.dataset.until)-clock.serverNow();streakCd.textContent=untilInstant(Math.max(0,rem));if(rem>0)raf=requestAnimationFrame(step);return;}
     const cd = $('[data-countdown]', root);
     if (cd && S.boot) {
       const rem = clock.ms(S.boot.quota.resetsAt) - clock.serverNow(), s = untilInstant(rem);
@@ -1214,7 +1217,7 @@ export function init(el) {
   // the four small badge images are fetched right after start, so their first screen (onboarding, home, checkpoint) is ready
   setTimeout(() => V.BADGES.forEach(id => { const im = new Image(); im.decoding = 'async'; im.src = V.BADGE_SRC(id); im.decode?.().catch(() => {}); }), 0);
   document.addEventListener('keydown', e => {
-    const dialog = root.querySelector('[role="dialog"]');
+    const dialog = root.querySelector('[role="dialog"]:not([data-answer-guide])');
     if (dialog && e.key === 'Escape') {   // safe dismissals only: exit sheet, daily reward, share preview (never a checkpoint or a payment)
       const x = dialog.querySelector('[data-act="leave-no"]:not([disabled]),[data-act="daily-close"]:not([disabled]),[data-act="share-close"]:not([disabled]),[data-act="offer-skip"]:not([disabled]),[data-act="streak-info-close"],[data-act="campaign-close"]');
       if (x) { e.preventDefault(); x.click(); }
@@ -1228,8 +1231,8 @@ export function init(el) {
     if (e.shiftKey && i <= 0) { e.preventDefault(); focusable.at(-1).focus(); }
     else if (!e.shiftKey && (i === -1 || i === focusable.length-1)) { e.preventDefault(); focusable[0].focus(); }
   });
-  root.addEventListener('pointerdown',e=>{if(e.isTrusted)reactions.unlock();},{passive:true});
-  root.addEventListener('keydown',e=>{if(e.isTrusted&&(e.key==='Enter'||e.key===' '))reactions.unlock();});
+  root.addEventListener('pointerdown',e=>{root.dataset.input='pointer';if(e.isTrusted)reactions.unlock();},{passive:true});
+  root.addEventListener('keydown',e=>{root.dataset.input='keyboard';if(e.isTrusted&&(e.key==='Enter'||e.key===' '))reactions.unlock();});
   document.addEventListener('visibilitychange',()=>reactions.setActive(document.visibilityState==='visible'));
   document.addEventListener('pointerdown',e=>{if(S.ui.soundMenu&&!e.target.closest('.p-audio-menu,.p-sound')){S.ui.soundMenu=false;render();}},{passive:true});
   root.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.ui.soundMenu){S.ui.soundMenu=false;render();refocus('[data-act="sound-toggle"]');}});
@@ -1308,7 +1311,7 @@ function onClick(e) {
     copy: copyCode,
     'exit-app': () => host.close(),
   };
-  if (acts[a]) {if(['start','reveal','play-again','cp-go','continue','daily-claim','learn-start','onb-start'].includes(a))react('tap',`${a}:${now()}`);acts[a]();}
+  if (acts[a]) {const cue=buttonCueFor(a);if(cue)react(cue,`${a}:${now()}`);acts[a]();}
 }
 
 async function shareResult() {
