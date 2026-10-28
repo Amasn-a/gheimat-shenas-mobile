@@ -1,4 +1,4 @@
-import {createSoundPalette} from './sound-design.mjs?v=7afa2313a516';
+import {createSoundPalette} from './sound-design.mjs?v=fdc36ae507bc';
 
 // Game effects only: there is no background score, music bus, or audio scheduler.
 export const AUDIO_LEVELS={effects:.21};

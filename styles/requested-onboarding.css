@@ -67,3 +67,6 @@
  #app .l-tour .l-coach,#app .l-spotlight-ring,#app .l-coach-body,#app .l-guide.l-overview .l-main{animation:none!important;transition:none!important}
  #app .l-rule-copy{transition:none!important}
 }
+/* A permanent gap protects the complete choice pair, including its pressed edge. */
+#app{--lesson-bottom:24px}
+#app .l-practice .q-game__main{padding-bottom:8px;scroll-padding-block:12px}

@@ -1,6 +1,6 @@
 // Play starts immediately. Self-hosted font loading must never block the game indefinitely.
-import { init, boot } from './game.js?v=7afa2313a516';
-import { gate, nextBoot } from './launch.js?v=7afa2313a516';
+import { init, boot } from './game.js?v=fdc36ae507bc';
+import { gate, nextBoot } from './launch.js?v=fdc36ae507bc';
 document.documentElement.setAttribute('data-theme','light');
 document.documentElement.classList.add('fonts-ready');
 const app = document.getElementById('app');

@@ -1,4 +1,4 @@
-import {fa} from './fmt.js?v=7afa2313a516';
+import {fa} from './fmt.js?v=fdc36ae507bc';
 const titles=['قیمت‌شناس','تریدر','بازاری','تاجر'],ids=['cp_5','cp_10','cp_15','cp_20'];
 export function configureDemo(reviewer){
  return new Promise(resolve=>{

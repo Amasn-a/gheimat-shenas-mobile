@@ -1,7 +1,7 @@
 // Current-run score leads; personal best is secondary, with a playable QR.
-import { fa } from './fmt.js?v=7afa2313a516';
-import { BADGES, BADGE_SRC } from './views.js?v=7afa2313a516';
-import { GAME_URL, SHARE_SIZE, shareStats, shareRecordLabel } from './share-payload.mjs?v=7afa2313a516';
+import { fa } from './fmt.js?v=fdc36ae507bc';
+import { BADGES, BADGE_SRC } from './views.js?v=fdc36ae507bc';
+import { GAME_URL, SHARE_SIZE, shareStats, shareRecordLabel } from './share-payload.mjs?v=fdc36ae507bc';
 export { GAME_URL };
 const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src;});
 const rounded=(c,x,y,w,h,r,fill,stroke)=>{c.beginPath();c.roundRect(x,y,w,h,r);c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=3;c.stroke();}};

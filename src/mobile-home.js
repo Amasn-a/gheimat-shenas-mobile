@@ -1,7 +1,7 @@
-import {productPriceMarkup,productDiscountMarkup} from './product-pricing.mjs?v=7afa2313a516';
-import {soundControl} from './feedback.mjs?v=7afa2313a516';
-import {I} from './icons.js?v=7afa2313a516';
-import {fa,esc} from './fmt.js?v=7afa2313a516';
+import {productPriceMarkup,productDiscountMarkup} from './product-pricing.mjs?v=fdc36ae507bc';
+import {soundControl} from './feedback.mjs?v=fdc36ae507bc';
+import {I} from './icons.js?v=fdc36ae507bc';
+import {fa,esc} from './fmt.js?v=fdc36ae507bc';
 const svg=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const trophy=svg('<path d="M7 3h10v6c0 5-2 7-5 7s-5-2-5-7V3ZM7 5H3v4c0 3 2 5 5 5m9-9h4v4c0 3-2 5-5 5M12 17v4m-4 0h8"/>');
 const chart=svg('<path d="M4 20V4m0 16h16M8 16v-4m5 4V8m5 8V5"/>');

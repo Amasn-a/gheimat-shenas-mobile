@@ -1,4 +1,4 @@
-import { fa, esc } from './fmt.js?v=7afa2313a516';
+import { fa, esc } from './fmt.js?v=fdc36ae507bc';
 export const TOUR_STEPS=[
  {target:'[data-tour="first"]',title:'این کالای اوله',copy:'قیمت و اسمش رو ببین.',next:'کالای دوم رو ببینیم'},
  {target:'[data-tour="second"]',title:'این کالای دومه',copy:'اینجا اسم و عکس کالای دوم رو می‌بینی و حدس می‌زنی که از کالای اول گرون‌تره یا ارزون‌تره!',next:'بریم انتخاب کنیم'},
@@ -41,8 +41,8 @@ export function syncLearningSpotlight(root,step){
       const anchor=step===1?target.querySelector('.p-cmp-info')||target:target;
       const visibleTarget=anchor.getBoundingClientRect();
       const before=canvas.scrollTop;
-      if(visibleTarget.top<viewport.top+4)canvas.scrollTop-=viewport.top+4-visibleTarget.top;
-      else if(visibleTarget.bottom>viewport.bottom-4)canvas.scrollTop+=visibleTarget.bottom-(viewport.bottom-4);
+      if(visibleTarget.top<viewport.top+12)canvas.scrollTop-=viewport.top+12-visibleTarget.top;
+      else if(visibleTarget.bottom>viewport.bottom-12)canvas.scrollTop+=visibleTarget.bottom-(viewport.bottom-12);
       scrolled=canvas.scrollTop!==before;
     }
     const r=targetBox(),w=window.innerWidth,h=window.innerHeight,pad=7;

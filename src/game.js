@@ -1,22 +1,22 @@
-import {createJourney} from './journey.mjs?v=7afa2313a516';
-import { createFeedback, buttonCueFor } from './feedback.mjs?v=7afa2313a516';
-import { patchHTML } from './dom-patch.mjs?v=7afa2313a516';
+import {createJourney} from './journey.mjs?v=fdc36ae507bc';
+import { createFeedback, buttonCueFor } from './feedback.mjs?v=fdc36ae507bc';
+import { patchHTML } from './dom-patch.mjs?v=fdc36ae507bc';
 // Player state controller: one authoritative store drives the DOM. Explicit view states with transition guards; run,
 // question and operation identities plus a generation counter make stale responses and timers harmless. The server
 // decides timing, results, money and rewards; this file only renders what the server said and sends guarded intents.
 // Entry: splash → home → first-start practice → explicit play; the loss screen is the one surface for a miss and the continue
 // of the same run; checkpoint rewards are registered with the answer that crosses them, the celebration only continues.
-import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js?v=7afa2313a516';
-import { api, ApiError, newKey } from './api.js?v=7afa2313a516';
-import * as clock from './clock.js?v=7afa2313a516';
-import * as host from './host.js?v=7afa2313a516';
-import * as motion from './motion.js?v=7afa2313a516';
-import { DUR } from './durations.js?v=7afa2313a516';
-import * as V from './views.js?v=7afa2313a516';
-import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js?v=7afa2313a516';
-import { createShareCard, GAME_URL } from './share.js?v=7afa2313a516';
-import { shareCaption, shareStats } from './share-payload.mjs?v=7afa2313a516';
-import { fa, untilInstant, title, esc } from './fmt.js?v=7afa2313a516';
+import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js?v=fdc36ae507bc';
+import { api, ApiError, newKey } from './api.js?v=fdc36ae507bc';
+import * as clock from './clock.js?v=fdc36ae507bc';
+import * as host from './host.js?v=fdc36ae507bc';
+import * as motion from './motion.js?v=fdc36ae507bc';
+import { DUR } from './durations.js?v=fdc36ae507bc';
+import * as V from './views.js?v=fdc36ae507bc';
+import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js?v=fdc36ae507bc';
+import { createShareCard, GAME_URL } from './share.js?v=fdc36ae507bc';
+import { shareCaption, shareStats } from './share-payload.mjs?v=fdc36ae507bc';
+import { fa, untilInstant, title, esc } from './fmt.js?v=fdc36ae507bc';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1403,7 +1403,7 @@ export async function openTestScreen(name,score=0){
   if(name==='streak'){openDailyReward(true);return;}
   if(!['game','result'].includes(name))return;
   if(S.view!=='G01.READY')return;await startRun();if(!S.run)return;
-  const mod=await import('../play/server.js?v=7afa2313a516');const mode=name==='result'?'result':'ready';
+  const mod=await import('../play/server.js?v=fdc36ae507bc');const mode=name==='result'?'result':'ready';
   const run=mod.reviewer.scenario(S.run.runId,score,mode);S.gen++;S.fb=null;S.q=null;S.offer=null;S.ref=run.reference;S.ui.offline=false;S.result=null;
   if(mode==='result'){S.run=run;return finished(run);}
   S.run=run;go('G03.READY');

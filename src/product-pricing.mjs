@@ -1,4 +1,4 @@
-import { money, fa, esc } from './fmt.js?v=7afa2313a516';
+import { money, fa, esc } from './fmt.js?v=fdc36ae507bc';
 const amount=n=>n!==null&&n!==undefined&&n!==''&&typeof n!=='boolean'&&Number.isFinite(Number(n))&&Number(n)>=0?Number(n):null;
 const firstAmount=(values,positive=false)=>values.map(amount).find(n=>n!==null&&(!positive||n>0))??null;
 export function productPrices(p) {
