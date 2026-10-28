@@ -2,7 +2,7 @@
    These are presentation changes; deadlines, answers and rewards remain server-owned. */
 .p-track-heading,.p-card-label,.p-question,.p-ready-mascot,.p-time-track{display:none}
 html:has(.p-game,.p-end,.q-cp),html:has(.p-game,.p-end,.q-cp) body{height:100%;overflow:hidden;overscroll-behavior:none;background:#fffaf0!important}
-html:has(.p-game,.p-end,.q-cp) body{background-image:radial-gradient(#dfdfcb 1px,transparent 1px)!important;background-size:22px 22px!important}
+html:has(.p-game,.p-end,.q-cp) body{background-image:none!important;background-size:22px 22px!important}
 html:has(.p-game,.p-end,.q-cp) body::before{display:none!important}
 body.pe-play #app.gu:has(.p-game,.p-end,.q-cp){max-width:500px!important;height:100dvh!important;overflow:hidden;background:transparent}
 .gu .q-page.p-game,.gu .q-page.p-end{--gutter:16px;color:var(--h-ink);background:transparent;padding:calc(10px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));min-height:0;overflow:hidden}

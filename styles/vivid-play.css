@@ -142,7 +142,7 @@
 #app .p-end :is(.p-result-best,.p-result-streak)>b{font-size:17px;line-height:1.4}
 #app .p-end .p-result-streak small{font-size:11px}
 #app .p-end .q-end__h{position:absolute;right:12px;top:8px;font-size:12px;line-height:1.5;margin:0}
-#app .p-end--record .p-result{padding-top:30px}
+
 #app .p-end .q-end__main{gap:12px}
 #app .p-end .p-result-deals{padding:8px 12px}
 #app .p-result-deals>header{height:32px;min-height:32px;margin-bottom:4px}
@@ -179,3 +179,20 @@
 #app .end-product-grid .m-product-price{min-height:28px}
 @media(max-height:740px){#app .end-product-grid button{grid-template-rows:86px 32px minmax(28px,auto);gap:6px}#app .end-product-art{height:86px}}
 #app .p-game .q-ref.q-ref{background:#f0efe7}
+
+/* Slightly roomier result artwork, without reintroducing a record headline. */
+#app .p-end .p-result{padding:16px 12px;min-height:128px}
+#app .p-end--badge .p-result-art{height:108px;min-height:108px;max-height:108px}
+/* Round the visible bitmap itself, including portrait photos inside a wider contain slot. */
+#app :is(.q-img,.m-product-art,.end-product-art,.q-deal__img){border-radius:14px!important;overflow:hidden!important;display:flex;align-items:center;justify-content:center}
+#app :is(.q-img,.m-product-art,.end-product-art,.q-deal__img)>img{display:block;flex:none;width:auto!important;height:auto!important;max-width:100%;max-height:100%;object-fit:contain;border-radius:10px!important;clip-path:inset(0 round 10px);margin:auto}
+#app .q-img>svg{border-radius:10px;overflow:hidden}
+#app .p-streak-days{direction:rtl}
+#app .p-streak-days>li>span{position:relative}
+#app .p-streak-days li.is-done>span{background:#c8e5cb;color:#214e32}
+#app .p-streak-days i{top:-8px;left:50%;right:auto;transform:translateX(-50%);width:16px;height:16px;background:#286b43;border:2px solid #fffaf0}
+#app .p-streak-days i>svg{width:10px;height:10px}
+#app .p-game .q-img>img{border-radius:10px!important}
+#app .p-end--badge .p-result{grid-template-columns:92px minmax(0,1fr)}
+#app .p-end--badge .p-result-art{width:92px}
+@media(max-width:359px){#app .p-end--badge .p-result{grid-template-columns:84px minmax(0,1fr)}#app .p-end--badge .p-result-art{width:84px}}

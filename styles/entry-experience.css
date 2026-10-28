@@ -28,7 +28,7 @@
 .m-page-back>svg{width:23px;height:23px}
 .gu .p-game .q-hdr__end{display:flex;align-items:center;gap:6px}
 .gu .p-game .q-hdr__end>.p-sound{height:40px;width:36px;min-width:36px}
-html:has(.p-run-loading),html:has(.p-run-loading) body{height:100%;overflow:hidden;background:#fffaf0!important;background-image:radial-gradient(#dfdfcb 1px,transparent 1px)!important;background-size:22px 22px!important}
+html:has(.p-run-loading),html:has(.p-run-loading) body{height:100%;overflow:hidden;background:#fffaf0!important;background-image:none!important;background-size:22px 22px!important}
 html:has(.p-run-loading) body::before{display:none!important}
 body.pe-play #app.gu:has(.p-run-loading){max-width:500px!important;height:100dvh!important;background:transparent;overflow:hidden}
 .gu .q-page.p-run-loading{display:grid;grid-template-rows:56px minmax(0,1fr) auto;gap:16px;padding:calc(10px + env(safe-area-inset-top)) 20px calc(25px + env(safe-area-inset-bottom));background:transparent;color:#233f35;overflow:hidden}

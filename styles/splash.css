@@ -1,5 +1,5 @@
 /* Launch scene is independent of the application frame and never repeats on tab navigation. */
-.ps-splash{--ps-progress:0;position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:#fffaf0;color:#233f35;direction:rtl;font-family:Digikala,sans-serif;isolation:isolate;opacity:1;transition:opacity .18s ease;background-image:radial-gradient(#d8dfc6 1px,transparent 1px);background-size:22px 22px}
+.ps-splash{--ps-progress:0;position:fixed;inset:0;z-index:10000;display:grid;place-items:center;overflow:hidden;background:#fffaf0;color:#233f35;direction:rtl;font-family:Digikala,sans-serif;isolation:isolate;opacity:1;transition:opacity .18s ease;background-image:none;background-size:22px 22px}
 .ps-splash,.ps-splash *{box-sizing:border-box}
 .ps-splash[hidden],.ps-splash [hidden]{display:none!important}
 .ps-splash__safe{height:100%;width:100%;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);display:grid;place-items:center}

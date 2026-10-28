@@ -278,7 +278,7 @@ function resultDeals(items){
  return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid" tabindex="0" aria-label="کالاهای این دست؛ برای دیدن بقیه افقی ورق بزن">${slots}</ol></section>`;
 }
 export function vEnd(m) {
-  const headline = m.newRecord ? '<h1 class="q-end__h">رکوردت رو شکستی!</h1>' : '';
+  const headline = '';
   const earned='';
   const art = m.cp ? `<img src="${BADGE_SRC(badgeId(m.cp,m.cpIndex))}" alt="نشان ${esc(m.cp.title)}">` : '<img src="assets/brand-smile-v2.png" alt="">';
   const share = m.shareable;
