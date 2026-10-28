@@ -1,6 +1,6 @@
 // Launch splash (mobile visual language): shown on every page boot, never between questions or on internal navigation.
 // Imported first by play/boot.js so it mounts before anything else; main.js reuses the same instance (one module = one splash).
-import { createPriceShenasSplash } from './splash.js';
+import { createPriceShenasSplash } from './splash.js?v=e3889d140bf3';
 
 export const splash = createPriceShenasSplash({
   artUrl: new URL('../assets/brand-smile-v2.png', import.meta.url).href,

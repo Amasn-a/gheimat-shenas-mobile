@@ -1,5 +1,5 @@
-import {SplashTiming} from './splash-timing.mjs';
-import {entryArt,loadingDots} from './entry-art.js';
+import {SplashTiming} from './splash-timing.mjs?v=e3889d140bf3';
+import {entryArt,loadingDots} from './entry-art.js?v=e3889d140bf3';
 /** UI only. Does not start a paid game, fetch questions or change game rules. */
 export function createPriceShenasSplash({mount=document.body,artUrl,minVisibleMs=2000}={}){
   const root=document.createElement('section');

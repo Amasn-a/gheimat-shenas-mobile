@@ -1,4 +1,4 @@
-import { fa, esc } from './fmt.js';
+import { fa, esc } from './fmt.js?v=e3889d140bf3';
 export const TOUR_STEPS=[
  {target:'[data-tour="first"]',title:'این کالای اوله',copy:'قیمت و اسمش رو ببین.',next:'کالای دوم رو ببینیم'},
  {target:'[data-tour="second"]',title:'این کالای دومه',copy:'اینجا اسم و عکس کالای دوم رو می‌بینی و حدس می‌زنی که از کالای اول گرون‌تره یا ارزون‌تره!',next:'بریم انتخاب کنیم'},
@@ -9,17 +9,14 @@ export function tourMarkup(step,seconds,answerGuide=false,result=null){
   const title=result?(result.outcome==='correct'?'درست انتخاب کردی!':'این بار درست نبود'):t.title;
   const copy=result?(result.outcome==='correct'?'هدفون از ماگ گرون‌تره. حالا آماده‌ای بازی اصلی رو شروع کنی!':'جواب درست «گرون‌تره» بود؛ هدفون از ماگ گرون‌تره. حالا بریم بازی اصلی!'):t.copy.replace('{seconds}',fa(seconds));
   const locked=result?.busy?' disabled aria-busy="true"':'';
-  const actions=result?`<div class="l-coach-actions"><button class="l-coach-prev" data-act="learn-back"${locked}>قبلی</button><button class="l-btn" data-act="learn-play"${locked}>${result.busy?'<span class="q-spin" aria-hidden="true"></span><span>داریم شروع می‌کنیم…</span>':'بزن بریم!'}</button></div>`:answerGuide?'':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="${step?'learn-prev':'learn-back'}">قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`;
-  return `<div class="l-tour${answerGuide?' l-tour--answer':''}${result?' l-tour--result':''}" data-mkey="practice-tour"><div class="l-spotlight-ring" aria-hidden="true"></div><section class="l-coach${answerGuide?' l-coach--practice':''}" role="${answerGuide?'region':'dialog'}"${answerGuide?' data-answer-guide':' aria-modal="true"'} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta">${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'}</div><div class="l-coach-body" data-key="practice-copy-${step}-${result?result.outcome:'intro'}"${result?' role="status" aria-live="polite"':''}><h2 id="tour-title">${title}</h2><p id="tour-copy">${copy}</p></div>${result?.error?`<p class="l-coach-error" role="alert">${esc(result.error)}</p>`:''}${actions}</section></div>`;
+  const actions=result?`<div class="l-coach-actions"><button class="l-coach-prev" data-act="learn-back"${locked}>قبلی</button><button class="l-btn" data-act="learn-play"${locked}>${result.busy?'<span class="q-spin" aria-hidden="true"></span><span>داریم شروع می‌کنیم…</span>':'بزن بریم!'}</button></div>`:answerGuide?'<div class="l-coach-actions is-empty" aria-hidden="true"></div>':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="${step?'learn-prev':'learn-back'}">قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`;
+  return `<div class="l-tour is-positioned${answerGuide?' l-tour--answer':''}${result?' l-tour--result':''}" data-key="practice-tour"><div class="l-spotlight-ring" data-key="practice-ring" aria-hidden="true"></div><section class="l-coach${answerGuide?' l-coach--practice':''}" data-key="practice-coach" role="region"${answerGuide?' data-answer-guide':''} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta">${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'}</div><div class="l-coach-body" data-key="practice-copy-${step}-${result?result.outcome:'intro'}"${result?' role="status" aria-live="polite"':''}><h2 id="tour-title">${title}</h2><p id="tour-copy">${copy}</p><p class="l-coach-error"${result?.error?' role="alert"':' aria-hidden="true"'}>${result?.error?esc(result.error):''}</p></div>${actions}</section></div>`;
 }
 let cleanup=null;
+const spotlightState=new WeakMap();
 export function syncLearningSpotlight(root,step){
   cleanup?.();cleanup=null;
-  if(step===null){
-    const stage=root.querySelector('.l-coach-space'),dock=root.querySelector('.l-coach--practice'),answers=stage?.querySelector('.q-ans');
-    if(stage&&dock&&answers){const r=answers.getBoundingClientRect(),p=dock.getBoundingClientRect();if(r.bottom>p.top-18)stage.scrollTop+=r.bottom-p.top+18;}
-    return;
-  }
+  if(step===null)return;
   const layer=root.querySelector('.l-tour'),ring=layer?.querySelector('.l-spotlight-ring'),panel=layer?.querySelector('.l-coach'),target=TOUR_STEPS[step]?.target?root.querySelector(TOUR_STEPS[step].target):null;
   if(!ring||!panel)return;
   layer.classList.toggle('l-tour--overview',!target);
@@ -27,24 +24,31 @@ export function syncLearningSpotlight(root,step){
   if(!target){layer.dataset.step=String(step);layer.classList.add('is-positioned');return;}
   const extra=TOUR_STEPS[step]?.include?root.querySelector(TOUR_STEPS[step].include):null;
   const targetBox=()=>spotlightBounds([target,extra].filter(Boolean).map(el=>el.getBoundingClientRect()));
-  const stage=root.querySelector('.l-tour-active')||root.querySelector('.l-coach-space');
+  const stage=root.querySelector('.l-coach-space');
+  const previous=spotlightState.get(layer);
+  // The header and both cards have one fixed layout for every teaching phase.
+  // Never scroll the page in response to moving the spotlight.
+  if(stage?.scrollTop)stage.scrollTop=0;
+  let shouldMove=previous?.step!==step;
   function position(){
-    // Refit after a mobile viewport resize as well as at step changes. Oversized
-    // cards anchor at the top; only the answer pair must fit above the sheet.
-    if(stage){
-      const tr=targetBox(),pr=panel.getBoundingClientRect(),sr=stage.getBoundingClientRect();
-      const high=Math.max(8,sr.top+8),low=pr.top-18,height=tr.bottom-tr.top;
-      const top=height>low-high?high:Math.min(Math.max(tr.top,high),low-height);
-      const delta=tr.top-top;if(Math.abs(delta)>.5)stage.scrollTop+=delta;
-    }
     const r=targetBox(),w=window.innerWidth,h=window.innerHeight,pad=7;
-    const x=Math.max(8,r.left-pad),y=Math.max(8,r.top-pad),right=Math.min(w-8,r.right+pad),bottom=Math.min(h-8,r.bottom+pad);
-    Object.assign(ring.style,{left:`${x}px`,top:`${y}px`,width:`${right-x}px`,height:`${bottom-y}px`});
+    // offsetHeight ignores the entrance transform, preventing a moving bound.
+    const dockTop=h-panel.offsetHeight;
+    const x=Math.max(8,r.left-pad),y=Math.max(8,r.top-pad),right=Math.min(w-8,r.right+pad),bottom=Math.min(h-8,dockTop-8,r.bottom+pad);
+    const rect={left:`${x}px`,top:`${y}px`,width:`${Math.max(0,right-x)}px`,height:`${Math.max(0,bottom-y)}px`};
+    const old=spotlightState.get(layer);
+    Object.assign(ring.style,rect);
+    if(shouldMove&&old?.rect&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      old.animation?.cancel();
+      const animation=ring.animate([old.rect,rect],{duration:240,easing:'cubic-bezier(.2,.8,.2,1)'});
+      spotlightState.set(layer,{step,rect,animation});
+    }else spotlightState.set(layer,{step,rect,animation:old?.animation});
+    shouldMove=false;
     layer.dataset.step=String(step);layer.classList.add('is-positioned');
   }
   position();
-  const ro=new ResizeObserver(position);ro.observe(target);if(extra)ro.observe(extra);window.addEventListener('resize',position);stage?.addEventListener('scroll',position);window.visualViewport?.addEventListener('resize',position);
-  cleanup=()=>{ro.disconnect();stage?.removeEventListener('scroll',position);window.removeEventListener('resize',position);window.visualViewport?.removeEventListener('resize',position);};
+  const ro=new ResizeObserver(position);ro.observe(target);ro.observe(panel);if(extra)ro.observe(extra);window.addEventListener('resize',position);window.visualViewport?.addEventListener('resize',position);
+  cleanup=()=>{ro.disconnect();window.removeEventListener('resize',position);window.visualViewport?.removeEventListener('resize',position);};
 }
 
 export function spotlightBounds(rects){return {left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))};}

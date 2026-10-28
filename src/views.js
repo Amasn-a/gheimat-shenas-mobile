@@ -1,16 +1,16 @@
-import { GAME_URL } from './share-payload.mjs';
-import { renderStreakSheet } from './streak-view.js';
-import { productPriceMarkup } from './product-pricing.mjs';
-import { soundControl } from './feedback.mjs';
-import { entryArt, loadingDots } from './entry-art.js';
-import { renderLearning } from './learning.js';
-import { renderMobileHome } from './mobile-home.js';
+import { GAME_URL } from './share-payload.mjs?v=e3889d140bf3';
+import { renderStreakSheet } from './streak-view.js?v=e3889d140bf3';
+import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=e3889d140bf3';
+import { soundControl } from './feedback.mjs?v=e3889d140bf3';
+import { entryArt, loadingDots } from './entry-art.js?v=e3889d140bf3';
+import { renderLearning } from './learning.js?v=e3889d140bf3';
+import { renderMobileHome } from './mobile-home.js?v=e3889d140bf3';
 // Screen markup of the redesign of 2026-10-21 (white base, Digikala red actions, badge family). Views are pure functions
 // of the view model: they never read the network or the clock. All text from data goes through esc()/title().
 // Direction rules (§2): back/close sit at the physical right (first in RTL DOM order) and point right. Inside a button the
 // icon is written before the label, so it sits at the label's right; the play triangle is mirrored to point at the label (owner 2026-10-25).
-import { I } from './icons.js';
-import { fa, money, esc, title } from './fmt.js';
+import { I } from './icons.js?v=e3889d140bf3';
+import { fa, money, esc, title } from './fmt.js?v=e3889d140bf3';
 
 const L = ' disabled aria-disabled="true"';
 const ICO = (k, s = 20) => I[k].replace('width="24" height="24"', `width="${s}" height="${s}"`);
@@ -260,21 +260,21 @@ export function offerModal(){return '';}
 /** A seen product with its (simulated) deal: tile for the result screen and the deals page. */
 function dealTile(p, big) {
   const d = p.deal || {};
-  const tag = d.discountPercent ? `<span class="q-deal__off">${fa(d.discountPercent)}٪</span>` : '';
+  const tag = productDiscountMarkup(p,'q-deal__off');
   const coin = d.coinBack ? `<span class="q-deal__coin">${COIN}${fa(d.coinBack)}</span>` : '';
   const open = p.link ? ` data-act="open-product" data-link="${esc(p.link)}"` : ' disabled';
-  return `<li><button class="q-deal${big ? ' q-deal--row' : ''}"${open} aria-label="${esc(p.displayTitle)}${d.discountPercent ? `، ${fa(d.discountPercent)} درصد تخفیف` : ''}، مشاهده کالا">` +
+  return `<li><button class="q-deal${big ? ' q-deal--row' : ''}"${open} aria-label="${esc(p.displayTitle)}${tag ? '، دارای تخفیف' : ''}، مشاهده کالا">` +
     `<span class="q-deal__img">${p.imageUrl ? `<img src="${esc(p.imageUrl)}" alt="" decoding="async">` : ''}${tag}</span>` +
     `${big ? `<span class="q-deal__b"><span class="q-deal__t">${title(p.displayTitle)}</span>${coin}${productPriceMarkup(p)}<span class="q-deal__go">مشاهده کالا ${ICO('fwd', 16)}</span></span>` : coin}</button></li>`;
 }
-export const dealsOf = list => (list?.items || []).filter(p => p.deal && (p.deal.discountPercent || p.deal.coinBack));
+export const dealsOf = list => (list?.items || []).filter(p => productPrices(p).discounted || Number(p.deal?.coinBack)>0);
 /**
  * End screen 2 — the result. m: { title, score, best, newRecord, cp, cpIndex, better (percent or null), deals, dealsState,
  * note (payment message html), code, shareable, balance, toast }.
  */
 /** Compact, truthful preview: at most three seen products, with a responsive remainder count. */
 function resultDeals(items){
- const slots=Array.from({length:Math.max(3,items.length)},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}">${p.deal?.discountPercent>0?`<span class="end-product-discount" aria-label="${fa(p.deal.discountPercent)} درصد تخفیف">${fa(p.deal.discountPercent)}٪</span>`:''}<span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="" loading="lazy">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
+ const slots=Array.from({length:Math.max(3,items.length)},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}">${productDiscountMarkup(p,'end-product-discount')}<span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="" loading="lazy">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
  return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid" tabindex="0" aria-label="کالاهای این دست؛ برای دیدن بقیه افقی ورق بزن">${slots}</ol></section>`;
 }
 export function vEnd(m) {
@@ -287,7 +287,7 @@ export function vEnd(m) {
   return page(`q-end p-end${m.cp?' p-end--badge':''}${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="back" aria-label="بازگشت به صفحهٔ قبل">${I.back}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
     `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
     `<div class="p-result-art" aria-hidden="true">${art}</div>${headline}<div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
-    `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت:</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div></section>` +
+    `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div></section>` +
     `${earned}${limit}${m.note || ''}${m.code || ''}${deals}</main>` +
     `<footer class="q-end__foot">${m.restarting?`<button class="q-btn q-btn--primary" data-act="play-again" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی…</span></button>`:BTN('q-btn--primary','یه دست دیگه',' data-act="play-again"',I.play)}` +
     `${share ? (m.sharing?`<button class="q-btn q-btn--secondary" data-act="share-result" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی تصویر…</span></button>`:BTN('q-btn--secondary','اشتراک گذاری با دوستان',' data-act="share-result"',I.share)) : ''}</footer>`,toastHTML(m.toast));

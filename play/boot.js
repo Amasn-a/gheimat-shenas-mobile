@@ -1,14 +1,14 @@
 // Play entry (GitHub Pages). This Play-only redesign intentionally diverges from gheimat-shenas (src/, styles/, fonts/). This file
 // does what the Super App and the backend do in production: it configures the host adapter for a plain browser and
 // answers the player's API calls with the in-browser demo server (play/server.js). Reviewer controls: add ?review.
-import { HAPTIC_PATTERNS } from '../src/feedback.mjs';
-import { buildSharePayload } from '../src/share-payload.mjs';
-import { splash, BOOT_ERROR } from '../src/launch.js';   // first: the splash mounts before anything else loads
-import { configureHost } from '../src/host.js';
-import { install, API_ORIGIN, setCatalog, net, reviewer } from './server.js';
+import { HAPTIC_PATTERNS } from '../src/feedback.mjs?v=e3889d140bf3';
+import { buildSharePayload } from '../src/share-payload.mjs?v=e3889d140bf3';
+import { splash, BOOT_ERROR } from '../src/launch.js?v=e3889d140bf3';   // first: the splash mounts before anything else loads
+import { configureHost } from '../src/host.js?v=e3889d140bf3';
+import { install, API_ORIGIN, setCatalog, net, reviewer } from './server.js?v=e3889d140bf3';
 
 const app = document.getElementById('app');
-const rev = document.documentElement.dataset.source || '';
+const rev = document.documentElement.dataset.release || document.documentElement.dataset.source || '';
 
 window.PE_API_BASE = API_ORIGIN;
 configureHost({
@@ -81,8 +81,8 @@ if (/[?&]review\b/.test(location.search)) {
   setInterval(() => { const v = app.dataset.view; if (v) $('#dvState').textContent = v; }, 200);
 }
 
-const {configureDemo}=await import('../src/test-setup.js');
+const {configureDemo}=await import('../src/test-setup.js?v=e3889d140bf3');
 const testOptions=await configureDemo(reviewer);
 const booted=new Promise(resolve=>app.addEventListener('qs:boot',e=>resolve(e.detail.ok),{once:true}));
-await import('../src/main.js');
-if(await booted){const {openTestScreen}=await import('../src/game.js');if(testOptions)await openTestScreen(testOptions.screen,testOptions.score);}
+await import('../src/main.js?v=e3889d140bf3');
+if(await booted){const {openTestScreen}=await import('../src/game.js?v=e3889d140bf3');if(testOptions)await openTestScreen(testOptions.screen,testOptions.score);}

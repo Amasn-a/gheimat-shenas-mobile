@@ -1,5 +1,5 @@
-import { HAPTIC_PATTERNS } from './feedback.mjs';
-import { buildSharePayload, GAME_URL, singleShareLink } from './share-payload.mjs';
+import { HAPTIC_PATTERNS } from './feedback.mjs?v=e3889d140bf3';
+import { buildSharePayload, GAME_URL, singleShareLink } from './share-payload.mjs?v=e3889d140bf3';
 // Host adapter: every Super App interaction goes through here. The bridge contract (login token handover, back/close,
 // device id, haptics, share, deep link, WebView floor) is with the app team (D09) and is NOT in the supplied
 // sources, so no bridge object name or URL scheme is invented. The integration supplies an implementation through
@@ -51,24 +51,42 @@ export async function openProduct(url) {
   return !!window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-let backHandler=null,guardPushed=false,exiting=false,hostBackBound=false;
+const BACK_GUARD='__gheimatShenasBackGuard';
+const isBackGuard=state=>state?.[BACK_GUARD]===1||(state?.pe===1&&Object.keys(state).length===1);
+// A reload keeps the current history entry. Reuse that guard instead of adding
+// another one, otherwise Home's exit can land on an older copy of the game.
+let backHandler=null,guardPushed=isBackGuard(history.state),exiting=false,hostBackBound=false,exitBasePending=false,exitURL='';
+function pushBackGuard(){history.pushState({[BACK_GUARD]:1},'');guardPushed=true;}
 export function close() {
  exiting=true;
  if(typeof impl.close==='function'){impl.close();exiting=false;return;}
- const steps=guardPushed?2:1;guardPushed=false;history.go(-steps);
+ // Older releases could leave several guards after reloads. Walk past those
+ // owned entries and the app's base once, rather than assuming exactly two.
+ exitBasePending=guardPushed||isBackGuard(history.state);exitURL=location.href;
+ guardPushed=false;history.back();
 }
 export function setBackHandler(fn){
  backHandler=fn;exiting=false;
  if(typeof impl.onBack==='function'){
   if(!hostBackBound){hostBackBound=true;impl.onBack(()=>backHandler?backHandler():false);}return;
  }
- if(fn&&!guardPushed){history.pushState({pe:1},'');guardPushed=true;}
+ if(fn&&isBackGuard(history.state)){
+  guardPushed=true;
+  // Upgrade the older unnamespaced marker without adding a history entry.
+  if(history.state?.[BACK_GUARD]!==1)history.replaceState({[BACK_GUARD]:1},'');
+ }
+ if(fn&&!guardPushed)pushBackGuard();
 }
-window.addEventListener('popstate',()=>{
- if(exiting||!guardPushed)return;
+window.addEventListener('popstate',event=>{
+ if(exiting){
+  if(isBackGuard(event.state)){exitBasePending=true;exitURL=location.href;history.back();return;}
+  if(exitBasePending&&location.href===exitURL){exitBasePending=false;history.back();return;}
+  exiting=false;exitBasePending=false;return;
+ }
+ if(!guardPushed)return;
  guardPushed=false;
  const handled=backHandler&&backHandler();
- if(handled&&!exiting&&!guardPushed){history.pushState({pe:1},'');guardPushed=true;}
+ if(handled&&!exiting&&!guardPushed)pushBackGuard();
 });
 
 export async function copy(text) {

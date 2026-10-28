@@ -1,5 +1,5 @@
-import {fa} from './fmt.js';
-import {I} from './icons.js';
+import {fa} from './fmt.js?v=e3889d140bf3';
+import {I} from './icons.js?v=e3889d140bf3';
 // The calendar follows the current uninterrupted streak, never the last seven wall-clock dates.
 export function streakCells(d){
  const count=Math.max(0,Math.floor(Number(d.schedule?.streakDays??d.streakDays)||0));

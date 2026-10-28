@@ -1,7 +1,7 @@
-import {productPriceMarkup} from './product-pricing.mjs';
-import {soundControl} from './feedback.mjs';
-import {I} from './icons.js';
-import {fa,esc} from './fmt.js';
+import {productPriceMarkup,productDiscountMarkup} from './product-pricing.mjs?v=e3889d140bf3';
+import {soundControl} from './feedback.mjs?v=e3889d140bf3';
+import {I} from './icons.js?v=e3889d140bf3';
+import {fa,esc} from './fmt.js?v=e3889d140bf3';
 const svg=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const trophy=svg('<path d="M7 3h10v6c0 5-2 7-5 7s-5-2-5-7V3ZM7 5H3v4c0 3 2 5 5 5m9-9h4v4c0 3-2 5-5 5M12 17v4m-4 0h8"/>');
 const chart=svg('<path d="M4 20V4m0 16h16M8 16v-4m5 4V8m5 8V5"/>');
@@ -30,7 +30,7 @@ export function renderMobileHome(v,m,h){
  if(tab==='badges')content=`<section class="m-panel m-badges"><div class="m-personal" role="status"><span class="m-record-fire">${flame}</span><div><small>بهترین رکوردت</small><b>${fa(b.record)} <small>جواب درست</small></b></div></div><ol class="m-badge-grid">${cps.map((c,i)=>{const earned=b.record>=c.requiredCorrect,count=countOf(b,c);return `<li class="${earned?'is-earned':'is-locked'}">${earned?'':`<span class="m-badge-lock" aria-label="هنوز نگرفتی">${I.lock}</span>`}<img src="${h.BADGE_SRC(h.badgeId(c,i))}" alt="نشان ${esc(c.title)}"><small class="m-badge-threshold">${fa(c.requiredCorrect)} جواب درست</small>${earned?`<span class="m-badge-times" dir="rtl">${fa(count)} بار</span>`:''}</li>`;}).join('')}</ol></section>`;
  if(tab==='products'){
   const items=h.dealsOf(m.products),state=m.productsRetry?'error':m.historyState;
-  const tiles=items.map(p=>`<li><button data-act="open-product" data-link="${esc(p.link)}">${p.deal?.discountPercent>0?`<span class="m-product-discount" aria-label="${fa(p.deal.discountPercent)} درصد تخفیف">${fa(p.deal.discountPercent)}٪</span>`:''}<span class="m-product-art"><img src="${esc(p.imageUrl)}" alt="" loading="lazy"></span><b class="m-product-title">${esc(p.displayTitle)}</b>${productPriceMarkup(p)}<span class="m-product-go">دیدن کالا ${I.fwd}</span></button></li>`).join('');
+  const tiles=items.map(p=>`<li><button data-act="open-product" data-link="${esc(p.link)}">${productDiscountMarkup(p,'m-product-discount')}<span class="m-product-art"><img src="${esc(p.imageUrl)}" alt="" loading="lazy"></span><b class="m-product-title">${esc(p.displayTitle)}</b>${productPriceMarkup(p)}<span class="m-product-go">دیدن کالا ${I.fwd}</span></button></li>`).join('');
   content=`<section class="m-panel m-products">${state==='loading'?'<div class="m-empty" role="status"><span class="q-spin"></span><p>کالاها در راهن…</p></div>':state==='error'?`<div class="m-empty"><p>کالاها بارگذاری نشدن.</p><button data-act="deals-retry"${m.productsRetry?' disabled aria-busy="true"':''}>${m.productsRetry?'<span class="q-spin"></span>':'دوباره امتحان کن'}</button></div>`:tiles?`<ol class="m-product-grid">${tiles}</ol>`:empty('کالاهای بازی اینجا جمع می‌شن','یه دست بازی کن؛ بعد کالاهایی که دیدی رو اینجا پیدا کن.')}</section>`;
  }
  return h.page('h-home m-app',`<div class="m-shell">${header}${tab==='game'?quick:''}<main class="m-main${exhausted?' m-main--quota':''}" data-mobile-tab="${tab}"${tab!=='game'?' aria-labelledby="tab-title"':''}>${sectionTitle}${quotaBanner}${content}</main>${nav}</div>`,(m.modal||'')+h.toastHTML(m.toast));

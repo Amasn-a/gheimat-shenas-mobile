@@ -1,22 +1,22 @@
-import {createJourney} from './journey.mjs';
-import { createFeedback, buttonCueFor } from './feedback.mjs';
-import { patchHTML } from './dom-patch.mjs';
+import {createJourney} from './journey.mjs?v=e3889d140bf3';
+import { createFeedback, buttonCueFor } from './feedback.mjs?v=e3889d140bf3';
+import { patchHTML } from './dom-patch.mjs?v=e3889d140bf3';
 // Player state controller: one authoritative store drives the DOM. Explicit view states with transition guards; run,
 // question and operation identities plus a generation counter make stale responses and timers harmless. The server
 // decides timing, results, money and rewards; this file only renders what the server said and sends guarded intents.
 // Entry: splash → home → first-start practice → explicit play; the loss screen is the one surface for a miss and the continue
 // of the same run; checkpoint rewards are registered with the answer that crosses them, the celebration only continues.
-import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js';
-import { api, ApiError, newKey } from './api.js';
-import * as clock from './clock.js';
-import * as host from './host.js';
-import * as motion from './motion.js';
-import { DUR } from './durations.js';
-import * as V from './views.js';
-import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js';
-import { createShareCard, GAME_URL } from './share.js';
-import { shareCaption, shareStats } from './share-payload.mjs';
-import { fa, untilInstant, title, esc } from './fmt.js';
+import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js?v=e3889d140bf3';
+import { api, ApiError, newKey } from './api.js?v=e3889d140bf3';
+import * as clock from './clock.js?v=e3889d140bf3';
+import * as host from './host.js?v=e3889d140bf3';
+import * as motion from './motion.js?v=e3889d140bf3';
+import { DUR } from './durations.js?v=e3889d140bf3';
+import * as V from './views.js?v=e3889d140bf3';
+import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js?v=e3889d140bf3';
+import { createShareCard, GAME_URL } from './share.js?v=e3889d140bf3';
+import { shareCaption, shareStats } from './share-payload.mjs?v=e3889d140bf3';
+import { fa, untilInstant, title, esc } from './fmt.js?v=e3889d140bf3';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -268,6 +268,7 @@ async function playFromLearning(){
   const g=S.gen;
   try{
     let b=await api.bootstrap();if(g!==S.gen)return;
+    if(b.activeRun&&!b.activeRun.onThisDevice)throw new Error('other-device');
     if(b.activeRun?.onThisDevice){
       if(b.activeRun.state==='PAYMENT_PENDING')throw new Error('pending');
       const key=S.keys['practice-leave:'+b.activeRun.runId]||=newKey();
@@ -277,9 +278,9 @@ async function playFromLearning(){
     if(b.firstVisit){await api.onboarding(S.keys.onboarding||=newKey());if(g!==S.gen)return;S.keys.onboarding=null;b.firstVisit=false;}
     S.boot=b;S.balance=b.balance;S.ui.learn=null;S.ui.guideFrom=null;S.ui.daily=null;
     S.home.appTab='game';S.home.tabReturnTo=null;journey.clear();
-    go(b.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED');
-    if(S.view==='G01.READY')return startRun();
-  }catch(e){if(g!==S.gen)return;l.busy=false;l.error=e.message==='pending'?'تسویهٔ دست قبلی هنوز تموم نشده؛ کمی بعد دوباره بزن.':'بازی آماده نشد؛ اتصال رو بررسی کن و دوباره بزن.';render();}
+    if(b.quota.playsLeft>0)return startRun(null,true);
+    go('G01.QUOTA_EXHAUSTED');
+  }catch(e){if(g!==S.gen)return;l.busy=false;l.error=e.message==='pending'?'تسویهٔ دست قبلی هنوز تموم نشده؛ کمی بعد دوباره بزن.':e.message==='other-device'?'یه دست روی دستگاه دیگه بازه؛ اول اون دست رو تموم کن.':'بازی آماده نشد؛ اتصال رو بررسی کن و دوباره بزن.';render();}
 }
 function guidePlay() {
   closeGuide();
@@ -301,7 +302,7 @@ async function finishOnboarding(play=false) {
       await api.onboarding(key);
       if (g !== S.gen) return;
       S.keys.onboarding = null; S.boot.firstVisit = false; S.ui.onb = null;
-      if(play) { S.ui.daily=null;S.ui.learn=null;S.home.appTab='game';S.home.tabReturnTo=null;journey.clear(); go(S.boot.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED'); if(S.view==='G01.READY') return startRun(o.campaignId); return; }
+      if(play) { S.ui.daily=null;S.ui.learn=null;S.home.appTab='game';S.home.tabReturnTo=null;journey.clear(); if(S.boot.quota.playsLeft>0)return startRun(o.campaignId,true);return go('G01.QUOTA_EXHAUSTED'); }
       return routeHome();
     } catch (e) {
       if (g !== S.gen) return;
@@ -598,11 +599,12 @@ function closeGuide() { stopLearningClock(); S.ui.learn=null;  const v = S.ui.gu
 
 // ------------------------------------------------------------------------------------------------ start / resume
 function clearStartKeys() { for(const key of Object.keys(S.keys)) if(key.startsWith('start:')) delete S.keys[key]; }
-export async function startRun(campaignId = null) {
-  if (S.view !== 'G01.READY' || S.ui.offline) return;
+export async function startRun(campaignId = null, fromPractice = false) {
+  const practiceStart=fromPractice&&['G02.GUIDE','G02.ONBOARDING'].includes(S.view);
+  if ((S.view !== 'G01.READY'&&!practiceStart) || S.ui.offline) return;
   if (S.boot.firstVisit) return startOnboarding(campaignId);
   const intent='start:'+(campaignId||'standard');
-  go('G01.STARTING');
+  go(practiceStart?'G03.LOADING':'G01.STARTING');
   const key = S.keys[intent] ||= newKey();
   try {
     const st = await api.start(key,campaignId);
@@ -1372,7 +1374,7 @@ export async function openTestScreen(name,score=0){
   if(name==='streak'){openDailyReward(true);return;}
   if(!['game','result'].includes(name))return;
   if(S.view!=='G01.READY')return;await startRun();if(!S.run)return;
-  const mod=await import('../play/server.js');const mode=name==='result'?'result':'ready';
+  const mod=await import('../play/server.js?v=e3889d140bf3');const mode=name==='result'?'result':'ready';
   const run=mod.reviewer.scenario(S.run.runId,score,mode);S.gen++;S.fb=null;S.q=null;S.offer=null;S.ref=run.reference;S.ui.offline=false;S.result=null;
   if(mode==='result'){S.run=run;return finished(run);}
   S.run=run;go('G03.READY');

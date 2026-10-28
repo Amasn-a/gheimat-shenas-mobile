@@ -1,20 +1,64 @@
-/* Keep the practice result in the same teaching sheet and product layout. */
-#app .l-tour--answer.l-tour--result .l-coach{pointer-events:auto}
-#app .l-tour--answer.l-tour--result .l-coach-actions{display:grid}
-#app .l-tour--result .l-coach-body{grid-template-rows:32px 76px;gap:8px}
+/* One stable lesson canvas: the header, both products and choice stay visible. */
+#app{--lesson-sheet:280px;--lesson-header:72px;--lesson-reference:115px;--lesson-gap:16px;--lesson-bottom:24px;--lesson-actions:52px}
+#app .q-page.p-game.l-practice.l-coach-space{display:grid;grid-template-rows:calc(var(--lesson-header) + env(safe-area-inset-top)) minmax(0,1fr);gap:var(--lesson-gap);height:100dvh;padding:0 16px calc(var(--lesson-sheet) + env(safe-area-inset-bottom) + var(--lesson-bottom));overflow:hidden}
+#app .l-practice>.q-hdr{height:calc(var(--lesson-header) + env(safe-area-inset-top));min-height:calc(var(--lesson-header) + env(safe-area-inset-top));padding-block:calc(12px + env(safe-area-inset-top)) 12px;z-index:125}
+#app .l-practice .q-game__main{grid-template-rows:var(--lesson-reference) minmax(0,1fr);gap:var(--lesson-gap);min-height:0;overflow:visible}
+#app .l-practice :is(.q-ref,.q-cmp)>.q-img{height:100%;min-height:0;max-height:100%;width:100%;max-width:100%;padding:0;aspect-ratio:auto}
+#app .l-practice .q-img>svg{width:auto;height:100%;max-width:100%;max-height:100%;object-fit:contain}
+#app .l-practice .q-cmp{min-height:0}
+#app .l-practice .q-cmp>.q-decide{margin-inline:0;width:100%}
+/* The teaching region keeps header mute and back reachable. */
+#app .l-tour{pointer-events:none}
+#app .l-tour .l-coach{pointer-events:auto;display:grid;grid-template-rows:minmax(0,1fr) var(--lesson-actions);gap:12px;height:calc(var(--lesson-sheet) + env(safe-area-inset-bottom));padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow:hidden;animation:learning-sheet-open .24s cubic-bezier(.2,.8,.2,1) both}
+#app .l-coach-meta,#app .l-tour--answer .l-coach-meta{display:block;position:absolute;height:0;inset:0 0 auto;pointer-events:none}
+#app .l-coach-meta>button{top:12px;right:12px;left:auto;width:28px;height:28px;pointer-events:auto;z-index:1}
+#app .l-coach-meta>button svg{width:19px;height:19px}
+#app .l-coach-body,#app .l-tour--result .l-coach-body{display:grid;grid-template-rows:32px minmax(0,1fr) 24px;align-items:center;align-content:stretch;gap:8px;padding:0;min-height:0;animation:learning-copy-open .2s ease-out both}
+#app .l-coach-body h2{line-height:32px;margin:0;align-self:center;width:100%;text-align:center}
+#app .l-coach-body>p{align-self:center;margin:0;max-height:100%;overflow:auto}
+#app .l-coach-body>#tour-copy{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 #app .l-tour--result .l-coach h2{color:#245c3b}
-#app .l-tour--result .l-coach-actions>button{display:flex;align-items:center;justify-content:center;gap:8px}
-#app .l-tour--result .l-coach-actions>button:disabled{opacity:.65;cursor:wait}
-#app .l-coach .l-coach-error{color:#9a332f;font-size:11px;line-height:1.5;margin:0;max-height:36px;overflow:auto;flex:none}
-
-/* A short fade and lift for openings; step copy changes without a hard cut. */
-#app .l-tour.is-positioned .l-coach{animation:learning-sheet-open .24s cubic-bezier(.2,.8,.2,1) both}
-#app .l-tour.is-positioned .l-spotlight-ring{animation:learning-shade-open .2s ease-out both}
-#app .l-coach-body[data-key]{animation:learning-copy-open .2s ease-out both}
-#app .l-guide.l-overview .l-main,#app .l-rule.is-open>p{animation:learning-copy-open .2s ease-out both}
-@keyframes learning-sheet-open{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
+#app .l-coach .l-coach-error{color:#9a332f;font-size:11px;line-height:1.5;max-height:24px;overflow:auto;margin:0}
+#app .l-coach-actions,#app .l-tour--answer .l-coach-actions{display:grid;grid-template-columns:minmax(64px,.72fr) minmax(0,1.9fr);height:var(--lesson-actions);gap:12px;grid-row:2;min-height:0}
+#app .l-coach-actions.is-empty{visibility:hidden}
+#app .l-coach-actions>button{display:flex;align-items:center;justify-content:center;gap:8px;height:var(--lesson-actions);min-height:var(--lesson-actions)}
+#app .l-coach-actions>button:disabled{opacity:.65;cursor:wait}
+#app .l-spotlight-ring{transition:none;animation:learning-shade-open .2s ease-out both}
+#app .l-guide.l-overview .l-main{animation:learning-copy-open .2s ease-out both}
+#app .l-rule-copy{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
+#app .l-rule.is-open .l-rule-copy{grid-template-rows:1fr;opacity:1}
+#app .l-rule-copy>div{min-height:0;overflow:hidden}
+#app .l-rule-copy p{font-size:12px;line-height:1.9;color:#3f5137;margin:0;padding:0 16px 16px}
+@media(max-height:740px){
+ #app{--lesson-sheet:220px;--lesson-header:60px;--lesson-reference:94px;--lesson-gap:12px;--lesson-bottom:16px;--lesson-actions:46px}
+ #app .l-practice>.q-hdr{padding-block:calc(8px + env(safe-area-inset-top)) 8px}
+ #app .l-practice :is(.q-ref,.q-cmp){padding:10px;gap:8px}
+ #app .l-practice .q-cmp{grid-template-rows:minmax(0,1fr) 88px}
+ #app .l-practice .q-cmp>.q-decide{grid-template-rows:36px 44px;gap:8px}
+ #app .l-practice .q-ans{gap:10px}
+ #app .l-practice .q-ab{height:44px;min-height:44px;font-size:16px}
+ #app .l-practice .p-question{padding:2px}
+ #app .l-practice .p-question>span{font-size:10px;line-height:14px}
+ #app .l-practice .p-question>b{font-size:16px;line-height:20px}
+ #app .l-practice :is(.q-ref__b,.p-cmp-info){gap:4px}
+ #app .l-practice :is(.q-ref__t,.q-cmp__t){font-size:14px;line-height:22px}
+ #app .l-practice :is(.q-ref,.q-cmp) .q-price{height:36px;min-height:36px;padding:4px 8px}
+ #app .l-practice .q-price b{font-size:22px}
+ #app .l-tour .l-coach{padding:12px 16px calc(12px + env(safe-area-inset-bottom));gap:8px}
+ #app .l-coach-body,#app .l-tour--result .l-coach-body{grid-template-rows:28px minmax(0,1fr) 20px;gap:6px}
+ #app .l-coach-body h2{font-size:19px;line-height:28px}
+ #app .l-coach-body>p{font-size:12px;line-height:1.75}
+ #app .l-coach .l-coach-error{font-size:10px;line-height:1.5;max-height:20px}
+}
+@media(max-height:600px){
+ #app{--lesson-sheet:204px;--lesson-header:56px;--lesson-reference:82px;--lesson-gap:8px;--lesson-bottom:12px}
+ #app .l-practice :is(.q-ref,.q-cmp){padding:8px}
+ #app .l-practice .q-hdr__t{font-size:18px}
+}
+@keyframes learning-sheet-open{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes learning-shade-open{from{opacity:0}to{opacity:1}}
-@keyframes learning-copy-open{from{opacity:0;translate:0 5px}to{opacity:1;translate:0 0}}
+@keyframes learning-copy-open{from{opacity:0;translate:0 4px}to{opacity:1;translate:0 0}}
 @media(prefers-reduced-motion:reduce){
- #app .l-tour.is-positioned .l-coach,#app .l-tour.is-positioned .l-spotlight-ring,#app .l-coach-body[data-key],#app .l-guide.l-overview .l-main,#app .l-rule.is-open>p{animation:none!important}
+ #app .l-tour .l-coach,#app .l-spotlight-ring,#app .l-coach-body,#app .l-guide.l-overview .l-main{animation:none!important;transition:none!important}
+ #app .l-rule-copy{transition:none!important}
 }
