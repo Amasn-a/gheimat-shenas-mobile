@@ -65,7 +65,7 @@ export function toastHTML(t) {
 }
 /** Page header: back/close at the physical right, title, an optional end slot at the left. */
 export function hdr(t, act, label, end = '', cls = '') {
-  return `<header class="q-hdr${cls}"><button class="q-iconbtn" data-act="${act}" aria-label="${label}">${I.back}</button>${t ? `<h1 class="q-hdr__t">${t}</h1>` : '<span></span>'}<div class="q-hdr__end">${end}</div></header>`;
+  return `<header class="q-hdr${cls}"><button class="q-iconbtn" data-act="${act}" aria-label="${label}">${I.back}</button>${t ? `<h1 class="q-hdr__t">${t}</h1>` : '<h1 class="q-hdr__t">قیمت‌شناس</h1>'}<div class="q-hdr__end">${end}</div></header>`;
 }
 // a modal on top makes the page behind it inert (focus, taps, screen readers)
 export const page = (cls, inner, extra = '') => `<div class="q-page ${cls}"${/q-modal/.test(extra) ? ' inert' : ''}>${inner}</div>${extra}`;
@@ -284,9 +284,9 @@ export function vEnd(m) {
   const deals = resultDeals(m.deals || []);
   const limit='';
   return page(`q-end p-end${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="end-home" aria-label="رفتن به صفحه اصلی">${ICO('home',22)}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
-    `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد"><p class="p-result-streak">${fa(m.streakDays||0)} روز حضور پشت‌سرهم</p>` +
+    `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
     `<div class="p-result-art" aria-hidden="true">${art}</div><h1 class="q-end__h">${headline}</h1><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
-    `<div class="p-result-best"><span>بهترین رکوردت:</span><b>${fa(m.best)}</b></div></section>` +
+    `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت:</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div></section>` +
     `${earned}${limit}${m.note || ''}${m.code || ''}${deals}</main>` +
     `<footer class="q-end__foot">${m.restarting?`<button class="q-btn q-btn--primary" data-act="play-again" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی…</span></button>`:BTN('q-btn--primary','یه دست دیگه',' data-act="play-again"',I.play)}` +
     `${share ? (m.sharing?`<button class="q-btn q-btn--secondary" data-act="share-result" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی تصویر…</span></button>`:BTN('q-btn--secondary','اشتراک گذاری با دوستان',' data-act="share-result"',I.share)) : ''}</footer>`,toastHTML(m.toast));
