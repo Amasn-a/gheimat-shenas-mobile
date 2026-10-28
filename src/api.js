@@ -1,7 +1,7 @@
 // API adapter. One wire convention (snake_case) is mapped to camelCase here and nowhere else. Every POST carries an
 // Idempotency-Key that stays the same for every retry of the same intent. Responses feed the server clock.
-import * as clock from './clock.js?v=fdc36ae507bc';
-import * as host from './host.js?v=fdc36ae507bc';
+import * as clock from './clock.js?v=183490631a6f';
+import * as host from './host.js?v=183490631a6f';
 
 export const BASE = (window.PE_API_BASE || '') + '/v1/gamification/price-expert';
 

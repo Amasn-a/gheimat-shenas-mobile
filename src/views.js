@@ -1,16 +1,16 @@
-import { GAME_URL } from './share-payload.mjs?v=fdc36ae507bc';
-import { renderStreakSheet } from './streak-view.js?v=fdc36ae507bc';
-import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=fdc36ae507bc';
-import { soundControl } from './feedback.mjs?v=fdc36ae507bc';
-import { entryArt, loadingDots } from './entry-art.js?v=fdc36ae507bc';
-import { renderLearning } from './learning.js?v=fdc36ae507bc';
-import { renderMobileHome } from './mobile-home.js?v=fdc36ae507bc';
+import { GAME_URL } from './share-payload.mjs?v=183490631a6f';
+import { renderStreakSheet } from './streak-view.js?v=183490631a6f';
+import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=183490631a6f';
+import { soundControl } from './feedback.mjs?v=183490631a6f';
+import { entryArt, loadingDots } from './entry-art.js?v=183490631a6f';
+import { renderLearning } from './learning.js?v=183490631a6f';
+import { renderMobileHome } from './mobile-home.js?v=183490631a6f';
 // Screen markup of the redesign of 2026-10-21 (white base, Digikala red actions, badge family). Views are pure functions
 // of the view model: they never read the network or the clock. All text from data goes through esc()/title().
 // Direction rules (§2): back/close sit at the physical right (first in RTL DOM order) and point right. Inside a button the
 // icon is written before the label, so it sits at the label's right; the play triangle is mirrored to point at the label (owner 2026-10-25).
-import { I } from './icons.js?v=fdc36ae507bc';
-import { fa, money, esc, title } from './fmt.js?v=fdc36ae507bc';
+import { I } from './icons.js?v=183490631a6f';
+import { fa, money, esc, title } from './fmt.js?v=183490631a6f';
 
 const L = ' disabled aria-disabled="true"';
 const ICO = (k, s = 20) => I[k].replace('width="24" height="24"', `width="${s}" height="${s}"`);

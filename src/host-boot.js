@@ -2,7 +2,7 @@
 // host.js and main.js into ONE module graph, so the configureHost call below and the game share the same adapter.
 // The Super App bridge contract (D09) is not available here, so nothing is wired: the game shows G11.AUTH_ERROR until
 // the integration replaces the empty object with the real bridge (getToken, refreshToken, deviceId, haptic, …).
-import { configureHost } from './host.js?v=fdc36ae507bc';
+import { configureHost } from './host.js?v=183490631a6f';
 
 configureHost({});
-import('./main.js?v=fdc36ae507bc');                     // dynamic: main.js must evaluate after configureHost (static imports run first)
+import('./main.js?v=183490631a6f');                     // dynamic: main.js must evaluate after configureHost (static imports run first)

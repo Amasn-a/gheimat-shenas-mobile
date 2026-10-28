@@ -1,4 +1,4 @@
-import { fa, esc } from './fmt.js?v=fdc36ae507bc';
+import { fa, esc } from './fmt.js?v=183490631a6f';
 export const TOUR_STEPS=[
  {target:'[data-tour="first"]',title:'این کالای اوله',copy:'قیمت و اسمش رو ببین.',next:'کالای دوم رو ببینیم'},
  {target:'[data-tour="second"]',title:'این کالای دومه',copy:'اینجا اسم و عکس کالای دوم رو می‌بینی و حدس می‌زنی که از کالای اول گرون‌تره یا ارزون‌تره!',next:'بریم انتخاب کنیم'},
@@ -30,15 +30,12 @@ export function syncLearningSpotlight(root,step){
   // short screens; ordinary re-renders preserve the player's scroll position.
   let shouldMove=previous?.step!==step;
   function position(reveal=false){
-    // Reserve the actual sheet height, including safe-area and wrapped copy.
-    // offsetHeight ignores its entrance transform, so controls never slide
-    // beneath the sheet while that animation is running.
-    const dockHeight=`${panel.offsetHeight}px`;
-    if(stage&&stage.style.getPropertyValue('--lesson-dock-height')!==dockHeight)stage.style.setProperty('--lesson-dock-height',dockHeight);
+    // The coach owns a real grid row. The canvas cannot extend beneath it.
     let scrolled=false;
     if(canvas&&reveal){
       const viewport=canvas.getBoundingClientRect();
-      const anchor=step===1?target.querySelector('.p-cmp-info')||target:target;
+      const fits=target.getBoundingClientRect().height<=viewport.height-24;
+      const anchor=step===1&&!fits?target.querySelector('.p-cmp-info')||target:target;
       const visibleTarget=anchor.getBoundingClientRect();
       const before=canvas.scrollTop;
       if(visibleTarget.top<viewport.top+12)canvas.scrollTop-=viewport.top+12-visibleTarget.top;
@@ -46,7 +43,7 @@ export function syncLearningSpotlight(root,step){
       scrolled=canvas.scrollTop!==before;
     }
     const r=targetBox(),w=window.innerWidth,h=window.innerHeight,pad=7;
-    const visible=canvas?.getBoundingClientRect(),dockTop=h-panel.offsetHeight;
+    const visible=canvas?.getBoundingClientRect(),dockTop=panel.getBoundingClientRect().top;
     const x=Math.max(8,r.left-pad),y=Math.max(8,visible?.top||0,r.top-pad),right=Math.min(w-8,r.right+pad),bottom=Math.min(h-8,dockTop-8,visible?.bottom||h,r.bottom+pad);
     const rect={left:`${x}px`,top:`${y}px`,width:`${Math.max(0,right-x)}px`,height:`${Math.max(0,bottom-y)}px`};
     const old=spotlightState.get(layer);

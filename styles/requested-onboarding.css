@@ -1,6 +1,6 @@
 /* One stable lesson canvas: the header, both products and choice stay visible. */
 #app{--lesson-sheet:280px;--lesson-header:72px;--lesson-reference:115px;--lesson-comparison:276px;--lesson-gap:16px;--lesson-bottom:24px;--lesson-actions:52px}
-#app .q-page.p-game.l-practice.l-coach-space{display:grid;grid-template-rows:calc(var(--lesson-header) + env(safe-area-inset-top)) minmax(0,1fr);gap:var(--lesson-gap);height:100dvh;padding:0 16px calc(var(--lesson-dock-height,var(--lesson-sheet) + env(safe-area-inset-bottom)) + var(--lesson-bottom));overflow:hidden}
+#app .q-page.p-game.l-practice.l-coach-space{display:grid;grid-template-rows:calc(var(--lesson-header) + env(safe-area-inset-top)) minmax(0,1fr) auto;gap:var(--lesson-gap);height:100dvh;padding:0 16px;overflow:hidden}
 #app .l-practice>.q-hdr{height:calc(var(--lesson-header) + env(safe-area-inset-top));min-height:calc(var(--lesson-header) + env(safe-area-inset-top));padding-block:calc(12px + env(safe-area-inset-top)) 12px;z-index:125}
 #app .l-practice .q-game__main{grid-template-rows:var(--lesson-reference) minmax(var(--lesson-comparison),1fr);gap:var(--lesson-gap);min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;scroll-padding-block:8px}
 #app .l-practice .q-game__main::-webkit-scrollbar{display:none}
@@ -10,8 +10,8 @@
 #app .l-practice .q-cmp>.q-decide{margin-inline:0;width:100%}
 #app .l-practice .q-decide>.p-question{background:transparent;border:0;box-shadow:none}
 /* The teaching region keeps header mute and back reachable. */
-#app .l-tour{pointer-events:none}
-#app .l-tour .l-coach{pointer-events:auto;display:grid;grid-template-rows:minmax(0,1fr) var(--lesson-actions);gap:12px;height:calc(var(--lesson-sheet) + env(safe-area-inset-bottom));padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow:hidden;animation:learning-sheet-open .24s cubic-bezier(.2,.8,.2,1) both}
+#app .l-practice>.l-tour{display:contents;position:static;pointer-events:none}
+#app .l-tour .l-coach{grid-row:3;position:relative;inset:auto;transform:none;translate:none;width:auto;max-width:none;max-height:none;margin:0 -16px;z-index:125;box-shadow:none;pointer-events:auto;display:grid;grid-template-rows:minmax(0,1fr) var(--lesson-actions);gap:12px;height:calc(var(--lesson-sheet) + env(safe-area-inset-bottom));padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow:hidden;animation:learning-sheet-open .24s cubic-bezier(.2,.8,.2,1) both}
 #app .l-coach-meta,#app .l-tour--answer .l-coach-meta{display:block;position:absolute;height:0;inset:0 0 auto;pointer-events:none}
 #app .l-coach-meta>button{top:12px;right:12px;left:auto;width:28px;height:28px;pointer-events:auto;z-index:1}
 #app .l-coach-meta>button svg{width:19px;height:19px}
@@ -60,9 +60,9 @@
  #app .l-practice :is(.q-ref,.q-cmp){padding:8px}
  #app .l-practice .q-hdr__t{font-size:18px}
 }
-@keyframes learning-sheet-open{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes learning-sheet-open{from{opacity:0}to{opacity:1}}
 @keyframes learning-shade-open{from{opacity:0}to{opacity:1}}
-@keyframes learning-copy-open{from{opacity:0;translate:0 4px}to{opacity:1;translate:0 0}}
+@keyframes learning-copy-open{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){
  #app .l-tour .l-coach,#app .l-spotlight-ring,#app .l-coach-body,#app .l-guide.l-overview .l-main{animation:none!important;transition:none!important}
  #app .l-rule-copy{transition:none!important}
@@ -70,3 +70,7 @@
 /* A permanent gap protects the complete choice pair, including its pressed edge. */
 #app{--lesson-bottom:24px}
 #app .l-practice .q-game__main{padding-bottom:8px;scroll-padding-block:12px}
+#app .l-tour .l-coach-actions{grid-template-rows:var(--lesson-actions)}
+#app .l-tour .l-coach-actions>:is(.l-btn,.l-coach-prev){height:var(--lesson-actions);min-height:var(--lesson-actions);grid-row:1}
+#app .l-practice .l-coach{background:#f6f2e7;border-top:1px solid #dedaca;border-radius:24px 24px 0 0}
+#app .l-practice .l-coach{max-height:calc(100dvh - var(--lesson-header) - env(safe-area-inset-top) - 128px)}
