@@ -1,4 +1,4 @@
-import { fa, esc } from './fmt.js?v=e3889d140bf3';
+import { fa, esc } from './fmt.js?v=7afa2313a516';
 export const TOUR_STEPS=[
  {target:'[data-tour="first"]',title:'این کالای اوله',copy:'قیمت و اسمش رو ببین.',next:'کالای دوم رو ببینیم'},
  {target:'[data-tour="second"]',title:'این کالای دومه',copy:'اینجا اسم و عکس کالای دوم رو می‌بینی و حدس می‌زنی که از کالای اول گرون‌تره یا ارزون‌تره!',next:'بریم انتخاب کنیم'},
@@ -24,31 +24,50 @@ export function syncLearningSpotlight(root,step){
   if(!target){layer.dataset.step=String(step);layer.classList.add('is-positioned');return;}
   const extra=TOUR_STEPS[step]?.include?root.querySelector(TOUR_STEPS[step].include):null;
   const targetBox=()=>spotlightBounds([target,extra].filter(Boolean).map(el=>el.getBoundingClientRect()));
-  const stage=root.querySelector('.l-coach-space');
+  const stage=root.querySelector('.l-coach-space'),canvas=stage?.querySelector('.q-game__main');
   const previous=spotlightState.get(layer);
-  // The header and both cards have one fixed layout for every teaching phase.
-  // Never scroll the page in response to moving the spotlight.
-  if(stage?.scrollTop)stage.scrollTop=0;
+  // Keep the page and sheet still. Only the bounded card canvas may scroll on
+  // short screens; ordinary re-renders preserve the player's scroll position.
   let shouldMove=previous?.step!==step;
-  function position(){
+  function position(reveal=false){
+    // Reserve the actual sheet height, including safe-area and wrapped copy.
+    // offsetHeight ignores its entrance transform, so controls never slide
+    // beneath the sheet while that animation is running.
+    const dockHeight=`${panel.offsetHeight}px`;
+    if(stage&&stage.style.getPropertyValue('--lesson-dock-height')!==dockHeight)stage.style.setProperty('--lesson-dock-height',dockHeight);
+    let scrolled=false;
+    if(canvas&&reveal){
+      const viewport=canvas.getBoundingClientRect();
+      const anchor=step===1?target.querySelector('.p-cmp-info')||target:target;
+      const visibleTarget=anchor.getBoundingClientRect();
+      const before=canvas.scrollTop;
+      if(visibleTarget.top<viewport.top+4)canvas.scrollTop-=viewport.top+4-visibleTarget.top;
+      else if(visibleTarget.bottom>viewport.bottom-4)canvas.scrollTop+=visibleTarget.bottom-(viewport.bottom-4);
+      scrolled=canvas.scrollTop!==before;
+    }
     const r=targetBox(),w=window.innerWidth,h=window.innerHeight,pad=7;
-    // offsetHeight ignores the entrance transform, preventing a moving bound.
-    const dockTop=h-panel.offsetHeight;
-    const x=Math.max(8,r.left-pad),y=Math.max(8,r.top-pad),right=Math.min(w-8,r.right+pad),bottom=Math.min(h-8,dockTop-8,r.bottom+pad);
+    const visible=canvas?.getBoundingClientRect(),dockTop=h-panel.offsetHeight;
+    const x=Math.max(8,r.left-pad),y=Math.max(8,visible?.top||0,r.top-pad),right=Math.min(w-8,r.right+pad),bottom=Math.min(h-8,dockTop-8,visible?.bottom||h,r.bottom+pad);
     const rect={left:`${x}px`,top:`${y}px`,width:`${Math.max(0,right-x)}px`,height:`${Math.max(0,bottom-y)}px`};
     const old=spotlightState.get(layer);
+    const moved=!old?.rect||Object.keys(rect).some(k=>old.rect[k]!==rect[k]);
+    if(moved||shouldMove)old?.animation?.cancel();
+    ring.hidden=right<=x||bottom<=y;
     Object.assign(ring.style,rect);
-    if(shouldMove&&old?.rect&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-      old.animation?.cancel();
+    if(shouldMove&&old?.rect&&!scrolled&&!ring.hidden&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
       const animation=ring.animate([old.rect,rect],{duration:240,easing:'cubic-bezier(.2,.8,.2,1)'});
       spotlightState.set(layer,{step,rect,animation});
     }else spotlightState.set(layer,{step,rect,animation:old?.animation});
     shouldMove=false;
     layer.dataset.step=String(step);layer.classList.add('is-positioned');
   }
-  position();
-  const ro=new ResizeObserver(position);ro.observe(target);ro.observe(panel);if(extra)ro.observe(extra);window.addEventListener('resize',position);window.visualViewport?.addEventListener('resize',position);
-  cleanup=()=>{ro.disconnect();window.removeEventListener('resize',position);window.visualViewport?.removeEventListener('resize',position);};
+  position(shouldMove);
+  const resize=()=>position(true),scroll=()=>position(false);
+  const size=()=>[target.offsetWidth,target.offsetHeight,panel.offsetWidth,panel.offsetHeight,canvas?.clientWidth,canvas?.clientHeight].join(':');
+  let lastSize=size();
+  const ro=new ResizeObserver(()=>{const next=size();if(next!==lastSize){lastSize=next;resize();}});ro.observe(target);ro.observe(panel);if(canvas)ro.observe(canvas);if(extra)ro.observe(extra);
+  canvas?.addEventListener('scroll',scroll,{passive:true});window.addEventListener('resize',resize);window.visualViewport?.addEventListener('resize',resize);
+  cleanup=()=>{ro.disconnect();canvas?.removeEventListener('scroll',scroll);window.removeEventListener('resize',resize);window.visualViewport?.removeEventListener('resize',resize);};
 }
 
 export function spotlightBounds(rects){return {left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))};}

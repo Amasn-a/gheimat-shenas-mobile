@@ -1,8 +1,8 @@
-import {tourMarkup} from './learning-spotlight.js?v=e3889d140bf3';
-import {soundControl} from './feedback.mjs?v=e3889d140bf3';
-import {I} from './icons.js?v=e3889d140bf3';
-import {fa,esc} from './fmt.js?v=e3889d140bf3';
-import {DEMO_FIRST,DEMO_SECOND,DEMO_SECOND_PRICE} from './demo.js?v=e3889d140bf3';
+import {tourMarkup} from './learning-spotlight.js?v=7afa2313a516';
+import {soundControl} from './feedback.mjs?v=7afa2313a516';
+import {I} from './icons.js?v=7afa2313a516';
+import {fa,esc} from './fmt.js?v=7afa2313a516';
+import {DEMO_FIRST,DEMO_SECOND,DEMO_SECOND_PRICE} from './demo.js?v=7afa2313a516';
 export function renderLearning(m,h){
  const phase=m.learn?.phase||'overview',c=m.config;
  const button=(text,act,secondary=false)=>`<button class="l-btn${secondary?' l-btn--secondary':''}" data-act="${act}"${m.busy?' disabled aria-busy="true"':''}>${m.busy?'<span class="q-spin"></span>':text}</button>`;

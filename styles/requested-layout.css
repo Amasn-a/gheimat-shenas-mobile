@@ -1,4 +1,18 @@
-/* Restore the large vertical result summary; product geometry stays unchanged. */
+/* A complete result card above the dock; products keep their existing geometry. */
+#app .p-end { padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+#app .p-end .q-end__main {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 0 0 6px;
+  scroll-padding-bottom: 6px;
+}
+#app .p-end .q-end__foot {
+  position: relative;
+  inset: auto;
+  flex: none;
+  padding: 0 0 4px;
+  gap: 12px;
+}
 #app .p-end .p-result {
   display: flex;
   flex-direction: column;
@@ -67,7 +81,28 @@
 #app .p-end :is(.p-result-best, .p-result-streak) > span { font-size: 12px; }
 #app .p-end :is(.p-result-best, .p-result-streak) > b { font-size: 26px; line-height: 1.2; }
 #app .p-end .p-result-streak small { font-size: 12px; }
-#app .p-end .q-end__main { overflow-y: auto; min-height: 0; }
+
+/* Keep the rounded lower edge and both facts above the actions on small phones. */
+@media (max-height: 740px) {
+  #app .p-end .p-result { padding-block: 16px; gap: 10px; }
+  #app .p-end .p-result-art {
+    height: 140px;
+    min-height: 140px;
+    max-height: 140px;
+  }
+  #app .p-end .p-result-stats { padding-top: 12px; }
+  #app .p-end :is(.p-result-best, .p-result-streak) { min-height: 84px; padding-block: 10px; }
+}
+@media (max-height: 620px) {
+  #app .p-end .p-result { padding-block: 14px; gap: 8px; }
+  #app .p-end .p-result-art {
+    height: clamp(92px, calc(100dvh - 458px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 140px);
+    min-height: 0;
+    max-height: 140px;
+  }
+  #app .p-end .p-result-number > b { font-size: 56px; }
+  #app .p-end :is(.p-result-best, .p-result-streak) { min-height: 76px; gap: 4px; }
+}
 
 /* Remaining chances is a live fact, with no misleading rewards action. */
 #app .m-quick-chances {

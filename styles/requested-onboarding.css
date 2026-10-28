@@ -1,12 +1,14 @@
 /* One stable lesson canvas: the header, both products and choice stay visible. */
-#app{--lesson-sheet:280px;--lesson-header:72px;--lesson-reference:115px;--lesson-gap:16px;--lesson-bottom:24px;--lesson-actions:52px}
-#app .q-page.p-game.l-practice.l-coach-space{display:grid;grid-template-rows:calc(var(--lesson-header) + env(safe-area-inset-top)) minmax(0,1fr);gap:var(--lesson-gap);height:100dvh;padding:0 16px calc(var(--lesson-sheet) + env(safe-area-inset-bottom) + var(--lesson-bottom));overflow:hidden}
+#app{--lesson-sheet:280px;--lesson-header:72px;--lesson-reference:115px;--lesson-comparison:276px;--lesson-gap:16px;--lesson-bottom:24px;--lesson-actions:52px}
+#app .q-page.p-game.l-practice.l-coach-space{display:grid;grid-template-rows:calc(var(--lesson-header) + env(safe-area-inset-top)) minmax(0,1fr);gap:var(--lesson-gap);height:100dvh;padding:0 16px calc(var(--lesson-dock-height,var(--lesson-sheet) + env(safe-area-inset-bottom)) + var(--lesson-bottom));overflow:hidden}
 #app .l-practice>.q-hdr{height:calc(var(--lesson-header) + env(safe-area-inset-top));min-height:calc(var(--lesson-header) + env(safe-area-inset-top));padding-block:calc(12px + env(safe-area-inset-top)) 12px;z-index:125}
-#app .l-practice .q-game__main{grid-template-rows:var(--lesson-reference) minmax(0,1fr);gap:var(--lesson-gap);min-height:0;overflow:visible}
+#app .l-practice .q-game__main{grid-template-rows:var(--lesson-reference) minmax(var(--lesson-comparison),1fr);gap:var(--lesson-gap);min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;scroll-padding-block:8px}
+#app .l-practice .q-game__main::-webkit-scrollbar{display:none}
 #app .l-practice :is(.q-ref,.q-cmp)>.q-img{height:100%;min-height:0;max-height:100%;width:100%;max-width:100%;padding:0;aspect-ratio:auto}
 #app .l-practice .q-img>svg{width:auto;height:100%;max-width:100%;max-height:100%;object-fit:contain}
 #app .l-practice .q-cmp{min-height:0}
 #app .l-practice .q-cmp>.q-decide{margin-inline:0;width:100%}
+#app .l-practice .q-decide>.p-question{background:transparent;border:0;box-shadow:none}
 /* The teaching region keeps header mute and back reachable. */
 #app .l-tour{pointer-events:none}
 #app .l-tour .l-coach{pointer-events:auto;display:grid;grid-template-rows:minmax(0,1fr) var(--lesson-actions);gap:12px;height:calc(var(--lesson-sheet) + env(safe-area-inset-bottom));padding:16px 16px calc(16px + env(safe-area-inset-bottom));overflow:hidden;animation:learning-sheet-open .24s cubic-bezier(.2,.8,.2,1) both}
@@ -24,13 +26,16 @@
 #app .l-coach-actions>button{display:flex;align-items:center;justify-content:center;gap:8px;height:var(--lesson-actions);min-height:var(--lesson-actions)}
 #app .l-coach-actions>button:disabled{opacity:.65;cursor:wait}
 #app .l-spotlight-ring{transition:none;animation:learning-shade-open .2s ease-out both}
+/* Once a choice is available, only the outline remains: no veil over controls. */
+#app .l-tour--answer .l-spotlight-ring{box-shadow:none!important;background:transparent}
+#app .l-spotlight-ring:after{display:none}
 #app .l-guide.l-overview .l-main{animation:learning-copy-open .2s ease-out both}
 #app .l-rule-copy{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease}
 #app .l-rule.is-open .l-rule-copy{grid-template-rows:1fr;opacity:1}
 #app .l-rule-copy>div{min-height:0;overflow:hidden}
 #app .l-rule-copy p{font-size:12px;line-height:1.9;color:#3f5137;margin:0;padding:0 16px 16px}
 @media(max-height:740px){
- #app{--lesson-sheet:220px;--lesson-header:60px;--lesson-reference:94px;--lesson-gap:12px;--lesson-bottom:16px;--lesson-actions:46px}
+ #app{--lesson-sheet:220px;--lesson-header:60px;--lesson-reference:94px;--lesson-comparison:180px;--lesson-gap:12px;--lesson-bottom:16px;--lesson-actions:46px}
  #app .l-practice>.q-hdr{padding-block:calc(8px + env(safe-area-inset-top)) 8px}
  #app .l-practice :is(.q-ref,.q-cmp){padding:10px;gap:8px}
  #app .l-practice .q-cmp{grid-template-rows:minmax(0,1fr) 88px}
@@ -51,7 +56,7 @@
  #app .l-coach .l-coach-error{font-size:10px;line-height:1.5;max-height:20px}
 }
 @media(max-height:600px){
- #app{--lesson-sheet:204px;--lesson-header:56px;--lesson-reference:82px;--lesson-gap:8px;--lesson-bottom:12px}
+ #app{--lesson-sheet:204px;--lesson-header:56px;--lesson-reference:82px;--lesson-comparison:176px;--lesson-gap:8px;--lesson-bottom:12px}
  #app .l-practice :is(.q-ref,.q-cmp){padding:8px}
  #app .l-practice .q-hdr__t{font-size:18px}
 }

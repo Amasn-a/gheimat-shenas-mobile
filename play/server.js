@@ -7,9 +7,9 @@
 // DEMO ONLY: one account per browser (localStorage), DigiCoin SIMULATED in this page (start balance 1000). Nothing is
 // charged or credited anywhere. A static page cannot verify the real backend or the real DigiCoin integration.
 
-import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=e3889d140bf3';
-import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=e3889d140bf3';
-import { rememberReward, rewardHistoryView } from './reward-history.js?v=e3889d140bf3';
+import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=7afa2313a516';
+import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=7afa2313a516';
+import { rememberReward, rewardHistoryView } from './reward-history.js?v=7afa2313a516';
 const PREFIX = '/v1/gamification/price-expert';
 export const API_ORIGIN = 'https://play.invalid';   // never resolves: a call that escapes the interceptor fails, it reaches no server
 const STORE = 'pe.home-redesign.state.v1';

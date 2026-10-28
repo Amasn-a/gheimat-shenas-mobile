@@ -1,18 +1,24 @@
-import {productPriceMarkup,productDiscountMarkup} from './product-pricing.mjs?v=e3889d140bf3';
-import {soundControl} from './feedback.mjs?v=e3889d140bf3';
-import {I} from './icons.js?v=e3889d140bf3';
-import {fa,esc} from './fmt.js?v=e3889d140bf3';
+import {productPriceMarkup,productDiscountMarkup} from './product-pricing.mjs?v=7afa2313a516';
+import {soundControl} from './feedback.mjs?v=7afa2313a516';
+import {I} from './icons.js?v=7afa2313a516';
+import {fa,esc} from './fmt.js?v=7afa2313a516';
 const svg=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const trophy=svg('<path d="M7 3h10v6c0 5-2 7-5 7s-5-2-5-7V3ZM7 5H3v4c0 3 2 5 5 5m9-9h4v4c0 3-2 5-5 5M12 17v4m-4 0h8"/>');
 const chart=svg('<path d="M4 20V4m0 16h16M8 16v-4m5 4V8m5 8V5"/>');
 const bag=svg('<path d="M5 7h14l1 14H4L5 7Zm3 1V6a4 4 0 0 1 8 0v2"/>');
 const flame=svg('<path d="M13 3c1 6 6 7 6 12a7 7 0 0 1-14 0c0-3 2-5 4-7-1 4 1 5 2 4 2-2 2-5 2-9Z"/>');
 const chance=svg('<path d="M4 5h16v5a2 2 0 0 0 0 4v5H4v-5a2 2 0 0 0 0-4V5Z"/><path d="M15 5v3m0 3v2m0 3v3"/>');
-const empty=(title,text,icon=bag)=>`<div class="m-empty m-empty--illustrated"><span class="m-empty-art" aria-hidden="true">${icon}<i></i><i></i></span><h2>${title}</h2><p>${text}</p><button data-act="nav-game">بریم بازی کنیم ${I.fwd}</button></div>`;
+const empty=(title,text,icon=bag,play='')=>`<div class="m-empty m-empty--illustrated"><span class="m-empty-art" aria-hidden="true">${icon}<i></i><i></i></span><h2>${title}</h2><p>${text}</p>${play}</div>`;
 const countOf=(b,c)=>(Array.isArray(b.badgeCounts)?b.badgeCounts.find(x=>x.checkpointId===c.checkpointId)?.count:b.badgeCounts?.[c.checkpointId])||0;
 export function renderMobileHome(v,m,h){
  const b=m.boot,cps=b.config.checkpoints,daily=b.dailyReward,history=b.rewardHistory||{items:[],totalCoins:0};
  const tab=['game','badges','rewards','products'].includes(m.appTab)?m.appTab:'game';
+ const playBusy=m.tabPlayBusy||m.resumeBusy||['G01.STARTING','G01.REFRESHING','G01.QUOTA_CHECKING'].includes(v);
+ const playPending=v==='G01.OPERATION_PENDING'||b.activeRun?.state==='PAYMENT_PENDING';
+ const playActive=!!b.activeRun?.onThisDevice;
+ const playBlocked=playBusy||playPending||m.offline||(!playActive&&b.quota.playsLeft<=0);
+ const playLabel=playBusy?'داریم بازی رو آماده می‌کنیم…':playPending?'منتظر نتیجهٔ پرداخت قبلی…':m.offline?'اتصال اینترنت رو بررسی کن':playActive?'ادامهٔ دست فعلی':b.quota.playsLeft<=0?'شانس‌های امروزت تموم شده':'بریم بازی کنیم';
+ const play=`<button data-act="tab-play"${playBlocked?' disabled aria-disabled="true"':''}${playBusy?' aria-busy="true"':''}>${playBusy?'<span class="q-spin" aria-hidden="true"></span>':''}${playLabel} ${I.fwd}</button>`;
  const navItems=[['game','بازی',I.home],['rewards','جوایز',I.gift],['badges','نشان‌ها',trophy],...(m.productsOn?[['products','کالاها',bag]]:[])];
  const titles={game:'قیمت‌شناس',rewards:'جایزه‌های تو',badges:'نشان‌های تو',products:'کشف تخفیف‌ها'};
  const header=`<header class="m-header"><div class="m-brand"><button class="m-app-back q-iconbtn" data-act="${tab==='game'?'exit-app':'back'}" aria-label="${tab==='game'&&!m.backToOrigin?'بازگشت به دیجی‌کوین':'بازگشت به صفحهٔ قبل'}">${I.back}</button><b>قیمت‌شناس</b></div><div class="m-head-actions"><button class="m-help" data-act="guide" aria-label="راهنمای بازی">${I.help}</button>${soundControl(m.soundOn!==false)}</div></header>`;
@@ -25,13 +31,13 @@ export function renderMobileHome(v,m,h){
  if(tab==='game')content=`<section class="m-play" aria-labelledby="mobile-title"><div class="m-play-copy"><h1 id="mobile-title" tabindex="-1">گرون‌تره<br>یا <span>ارزون‌تر؟</span></h1></div><div class="m-stage" aria-hidden="true"><div class="m-orbit"></div><span class="m-float m-float-up">${I.up} گرون‌تره</span><img class="m-mascot" src="assets/brand-smile-v2.png" alt=""><span class="m-float m-float-down">${I.down} ارزون‌تره</span></div><div class="m-play-foot"><p class="m-play-line">حدس بزن، رکورد بزن، دیجی‌کوین بگیر!</p>${h.homeSheet(v,m)}</div></section>`;
  if(tab==='rewards'){
   const rows=history.items.map(r=>`<li><span class="m-reward-coin">${h.COIN}</span><div><b>${esc(r.title)}</b><time>${new Intl.DateTimeFormat('fa-IR',{timeZone:'Asia/Tehran',day:'numeric',month:'long'}).format(new Date(r.receivedAt))}</time></div><span class="m-reward-value"><b>+${fa(r.amount)}</b></span></li>`).join('');
-  content=`<section class="m-panel m-prizes"><button class="m-daily-link" data-act="nav-streak">${flame}<span>${fa(daily?.streakDays||0)} روز حضور در بازی</span>${I.fwd}</button><div class="m-list-heading"><h2>تاریخچهٔ دریافت‌ها</h2><span>${fa(history.items.length)} جایزه</span></div>${rows?`<ol class="m-reward-list">${rows}</ol>`:empty('اولین جایزه‌ات در راهه','با جواب‌های درست، نشان و جایزه بگیر.',I.gift)}</section>`;
+  content=`<section class="m-panel m-prizes"><button class="m-daily-link" data-act="nav-streak">${flame}<span>${fa(daily?.streakDays||0)} روز حضور در بازی</span>${I.fwd}</button><div class="m-list-heading"><h2>تاریخچهٔ دریافت‌ها</h2><span>${fa(history.items.length)} جایزه</span></div>${rows?`<ol class="m-reward-list">${rows}</ol>`:empty('اولین جایزه‌ات در راهه','با جواب‌های درست، نشان و جایزه بگیر.',I.gift,play)}</section>`;
  }
  if(tab==='badges')content=`<section class="m-panel m-badges"><div class="m-personal" role="status"><span class="m-record-fire">${flame}</span><div><small>بهترین رکوردت</small><b>${fa(b.record)} <small>جواب درست</small></b></div></div><ol class="m-badge-grid">${cps.map((c,i)=>{const earned=b.record>=c.requiredCorrect,count=countOf(b,c);return `<li class="${earned?'is-earned':'is-locked'}">${earned?'':`<span class="m-badge-lock" aria-label="هنوز نگرفتی">${I.lock}</span>`}<img src="${h.BADGE_SRC(h.badgeId(c,i))}" alt="نشان ${esc(c.title)}"><small class="m-badge-threshold">${fa(c.requiredCorrect)} جواب درست</small>${earned?`<span class="m-badge-times" dir="rtl">${fa(count)} بار</span>`:''}</li>`;}).join('')}</ol></section>`;
  if(tab==='products'){
   const items=h.dealsOf(m.products),state=m.productsRetry?'error':m.historyState;
   const tiles=items.map(p=>`<li><button data-act="open-product" data-link="${esc(p.link)}">${productDiscountMarkup(p,'m-product-discount')}<span class="m-product-art"><img src="${esc(p.imageUrl)}" alt="" loading="lazy"></span><b class="m-product-title">${esc(p.displayTitle)}</b>${productPriceMarkup(p)}<span class="m-product-go">دیدن کالا ${I.fwd}</span></button></li>`).join('');
-  content=`<section class="m-panel m-products">${state==='loading'?'<div class="m-empty" role="status"><span class="q-spin"></span><p>کالاها در راهن…</p></div>':state==='error'?`<div class="m-empty"><p>کالاها بارگذاری نشدن.</p><button data-act="deals-retry"${m.productsRetry?' disabled aria-busy="true"':''}>${m.productsRetry?'<span class="q-spin"></span>':'دوباره امتحان کن'}</button></div>`:tiles?`<ol class="m-product-grid">${tiles}</ol>`:empty('کالاهای بازی اینجا جمع می‌شن','یه دست بازی کن؛ بعد کالاهایی که دیدی رو اینجا پیدا کن.')}</section>`;
+  content=`<section class="m-panel m-products">${state==='loading'?'<div class="m-empty" role="status"><span class="q-spin"></span><p>کالاها در راهن…</p></div>':state==='error'?`<div class="m-empty"><p>کالاها بارگذاری نشدن.</p><button data-act="deals-retry"${m.productsRetry?' disabled aria-busy="true"':''}>${m.productsRetry?'<span class="q-spin"></span>':'دوباره امتحان کن'}</button></div>`:tiles?`<ol class="m-product-grid">${tiles}</ol>`:empty('کالاهای بازی اینجا جمع می‌شن','یه دست بازی کن؛ بعد کالاهایی که دیدی رو اینجا پیدا کن.',bag,play)}</section>`;
  }
  return h.page('h-home m-app',`<div class="m-shell">${header}${tab==='game'?quick:''}<main class="m-main${exhausted?' m-main--quota':''}" data-mobile-tab="${tab}"${tab!=='game'?' aria-labelledby="tab-title"':''}>${sectionTitle}${quotaBanner}${content}</main>${nav}</div>`,(m.modal||'')+h.toastHTML(m.toast));
 }
