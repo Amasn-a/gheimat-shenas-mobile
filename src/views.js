@@ -144,13 +144,16 @@ const coinStack = () => `<span class="q-stack">${COIN}</span>`;
 /** Main progress bar (kept, §10): fills with the score; each checkpoint shows its real reward — the badge when it pays no coin. */
 export function checkpointProgress(score,cps){
  const levels=cps.filter(c=>Number.isFinite(c.requiredCorrect)&&c.requiredCorrect>0).slice().sort((a,b)=>a.requiredCorrect-b.requiredCorrect);
- const next=levels.find(c=>c.requiredCorrect>score),prev=[...levels].reverse().find(c=>c.requiredCorrect<=score),last=levels.at(-1)?.requiredCorrect||20;
- const start=prev?.requiredCorrect||0,end=next?.requiredCorrect||last,span=Math.max(1,end-start),value=next?Math.max(0,score-start):1;
- return {next,start,end,span:next?span:1,value,f:next?Math.min(1,value/span):1,fire:score>last};
+ const last=levels.at(-1)?.requiredCorrect||20,interval=Math.max(1,last-(levels.at(-2)?.requiredCorrect||Math.max(0,last-5)));
+ const configured=levels.find(c=>c.requiredCorrect>score);
+ const start=configured?([...levels].reverse().find(c=>c.requiredCorrect<=score)?.requiredCorrect||0):last+Math.floor(Math.max(0,score-last)/interval)*interval;
+ const next=configured||{requiredCorrect:start+interval,progressOnly:true,title:'هدف بعدی'};
+ const end=next.requiredCorrect,span=Math.max(1,end-start),value=Math.max(0,score-start);
+ return {next,start,end,span,value,f:Math.min(1,value/span),fire:score>20};
 }
 export function track(score,cps){
- const p=checkpointProgress(score,cps),label=p.next?`${fa(score)} جواب درست؛ ${fa(p.next.requiredCorrect-score)} جواب تا چک‌پوینت ${esc(p.next.title)}`:'همهٔ نشان‌ها رو گرفتی؛ ادامه بده!';
- return `<div class="q-track${p.fire?' is-fire':''}" role="progressbar" aria-valuemin="0" aria-valuemax="${p.span}" aria-valuenow="${Math.min(p.value,p.span)}" aria-label="${label}"><div class="p-track-heading" aria-hidden="true"><span>${p.next?`${fa(p.next.requiredCorrect-score)} جواب کم داری تا ${esc(p.next.title)}`:'همهٔ نشان‌ها رو گرفتی!'}</span><small>${p.fire?'روی دور رکوردی!':p.next?.rewardAmount>0?`${fa(p.next.rewardAmount)} دیجی‌کوین جایزه`:'هر حدس، یک قدم جلوتر'}</small></div><div class="q-track__line"><i style="--f:${p.f.toFixed(4)}"></i>${p.fire?'<span class="p-track-flame" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="#f05b22" d="M13 1c1 8 8 9 8 15a9 9 0 0 1-18 0c0-4 2-7 6-10-1 5 1 6 2 4 2-3 2-6 2-9Z"/><path fill="#ffce43" d="M12 12c-1 4-4 4-4 7a4 4 0 0 0 8 0c0-3-3-4-4-7Z"/></svg></span>':''}</div></div>`;
+ const p=checkpointProgress(score,cps),label=`${fa(score)} جواب درست؛ ${fa(p.next.requiredCorrect-score)} جواب تا ${p.next.progressOnly?'هدف '+fa(p.next.requiredCorrect):'چک‌پوینت '+esc(p.next.title)}`;
+ return `<div class="q-track${p.fire?' is-fire':''}" role="progressbar" aria-valuemin="0" aria-valuemax="${p.span}" aria-valuenow="${Math.min(p.value,p.span)}" aria-label="${label}"><div class="p-track-heading" aria-hidden="true"><span>${p.next.progressOnly?`${fa(p.next.requiredCorrect-score)} جواب تا هدف بعدی: ${fa(p.next.requiredCorrect)}`:`${fa(p.next.requiredCorrect-score)} جواب کم داری تا ${esc(p.next.title)}`}</span><small>${p.fire?'روی دور رکوردی!':p.next?.rewardAmount>0?`${fa(p.next.rewardAmount)} دیجی‌کوین جایزه`:'هر حدس، یک قدم جلوتر'}</small></div><div class="q-track__line"><i style="--f:${p.f.toFixed(4)}"></i>${p.fire?'<span class="p-track-flame" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="#f05b22" d="M13 1c1 8 8 9 8 15a9 9 0 0 1-18 0c0-4 2-7 6-10-1 5 1 6 2 4 2-3 2-6 2-9Z"/><path fill="#ffce43" d="M12 12c-1 4-4 4-4 7a4 4 0 0 0 8 0c0-3-3-4-4-7Z"/></svg></span>':''}</div></div>`;
 }
 /**
  * Timer plate above the products (§7): the words on the right, the seconds on the left in a pulsing cap, no bar.
@@ -275,15 +278,15 @@ function resultDeals(items){
  return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid" tabindex="0" aria-label="کالاهای این دست؛ برای دیدن بقیه افقی ورق بزن">${slots}</ol></section>`;
 }
 export function vEnd(m) {
-  const headline = m.newRecord ? 'رکوردت رو شکستی!' : m.cp ? 'چه دست خوبی!' : m.score > 0 ? 'هر بار، یه قدم جلوتر!' : 'دست بعدی مال توئه!';
+  const headline = m.newRecord ? '<h1 class="q-end__h">رکوردت رو شکستی!</h1>' : '';
   const earned='';
   const art = m.cp ? `<img src="${BADGE_SRC(badgeId(m.cp,m.cpIndex))}" alt="نشان ${esc(m.cp.title)}">` : '<img src="assets/brand-smile-v2.png" alt="">';
   const share = m.shareable;
   const deals = resultDeals(m.deals || []);
   const limit='';
-  return page(`q-end p-end${m.cp?' p-end--badge':''}${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="end-home" aria-label="رفتن به صفحه اصلی">${ICO('home',22)}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
+  return page(`q-end p-end${m.cp?' p-end--badge':''}${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="back" aria-label="بازگشت به صفحهٔ قبل">${I.back}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
     `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
-    `<div class="p-result-art" aria-hidden="true">${art}</div><h1 class="q-end__h">${headline}</h1><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
+    `<div class="p-result-art" aria-hidden="true">${art}</div>${headline}<div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
     `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت:</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div></section>` +
     `${earned}${limit}${m.note || ''}${m.code || ''}${deals}</main>` +
     `<footer class="q-end__foot">${m.restarting?`<button class="q-btn q-btn--primary" data-act="play-again" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی…</span></button>`:BTN('q-btn--primary','یه دست دیگه',' data-act="play-again"',I.play)}` +
@@ -306,10 +309,10 @@ export function codeCard(c, copied) {
 
 // ---------------------------------------------------------------- G10 connection, G11 unavailable
 export function vSystem(v, m) {
-  const pg = (ic, k, t, p, a) => page('q-sys', hdr('', 'exit-app', 'بازگشت به اپ') + statecard(ic, k, t, p, a), toastHTML(m.toast));
+  const pg = (ic, k, t, p, a) => page('q-sys', hdr('', 'back', 'بازگشت به صفحهٔ قبل') + statecard(ic, k, t, p, a), toastHTML(m.toast));
   const R = m.ended || {};
   const HOME = SECONDARY('صفحه اصلی', ' data-act="home"', I.home);
-  if (v === 'G10.RESUMING') return page('q-sys', hdr('', 'exit-app', 'بازگشت به اپ') + `<div class="q-state" role="status">${SPIN}<h2>برگشتی!</h2><p>داریم آخرین وضعیت دستت رو از سرور می‌گیریم…</p></div>`);
+  if (v === 'G10.RESUMING') return page('q-sys', hdr('', 'back', 'بازگشت به صفحهٔ قبل') + `<div class="q-state" role="status">${SPIN}<h2>برگشتی!</h2><p>داریم آخرین وضعیت دستت رو از سرور می‌گیریم…</p></div>`);
   if (v === 'G10.INACTIVITY_END') return pg('clock', 'warn', 'این دست تموم شد', `بیشتر از ۳ دقیقه بین سؤال‌ها کاری انجام نشد. دستت با ${fa(R.score || 0)} جواب درست ثبت شد.`, PRIMARY('صفحه اصلی', ' data-act="home"', I.home));
   if (v === 'G11.GAME_OFF') return pg('power', '', 'بازی موقتاً در دسترس نیست', m.playerMessage ? esc(m.playerMessage) : 'در حال به‌روزرسانی هستیم. کمی بعد دوباره سر بزن.', SECONDARY('بازگشت به اپ', ' data-act="exit-app"'));
   if (v === 'G11.AUTH_ERROR') return pg('user', 'no', 'ورود انجام نشد', 'برای بازی باید وارد حساب دیجی‌کالا باشی. از داخل اپ دوباره وارد شو.', PRIMARY('بازگشت به اپ', ' data-act="exit-app"'));

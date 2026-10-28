@@ -2,14 +2,8 @@
 #app{--bar-surface:#f7f3e9;--ink:#203a30;--muted:#526149}
 #app .m-bottom{background:#fffaf0;border-top:1px solid #b8bfab;margin-inline:-16px;width:calc(100% + 32px)}
 #app .m-bottom>button{color:#546048}
-#app .m-bottom>button:nth-child(1) .m-nav-icon{color:#147148}
-#app .m-bottom>button:nth-child(2) .m-nav-icon{color:#b04528}
-#app .m-bottom>button:nth-child(3) .m-nav-icon{color:#a76000}
-#app .m-bottom>button:nth-child(4) .m-nav-icon{color:#6250a0}
-#app .m-bottom>button[aria-current=page] .m-nav-icon{background:#e4ead9}
-#app .m-bottom>button:nth-child(2)[aria-current=page] .m-nav-icon{background:#ffe1d3}
-#app .m-bottom>button:nth-child(3)[aria-current=page] .m-nav-icon{background:#ffedb0}
-#app .m-bottom>button:nth-child(4)[aria-current=page] .m-nav-icon{background:#e9e0ff}
+#app .m-bottom .m-nav-icon{color:#575757;background:transparent}
+#app .m-bottom>button[aria-current=page] .m-nav-icon{background:#e7e7e2;color:#333333}
 #app .m-icon-trophy svg{fill:#ffce3b;stroke:#9d5b08;color:#9d5b08;transform-origin:center;animation:cup-turn 7s ease-in-out infinite}
 #app .m-icon-flame svg,#app .m-record-fire svg{fill:#f86523;stroke:#b13311;color:#b13311;transform-origin:50% 90%;animation:flame-dance 1.8s ease-in-out infinite}
 #app .m-icon-gift{color:#a04479}
@@ -123,3 +117,65 @@
 #app .q-ab.is-no{background:#b83b34;color:#fff;opacity:1}
 /* Fixed title and copy slots avoid text jumping between teaching steps. */
 #app .l-coach-body{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:32px 76px;align-content:center;align-items:center;justify-items:center;gap:12px}
+
+/* Restore the two quiet product cards; the second has a restrained cool tint. */
+#app .p-game :is(.q-ref,.q-ref--strip){background:#f0efe7;border:0!important;border-radius:24px;box-shadow:none!important}
+#app .p-game :is(.q-cmp,.q-cmp.is-ok,.q-cmp.is-no,.q-cmp.is-time,.q-invite){background:#e5eceb;border:0!important;border-radius:24px;box-shadow:none!important}
+/* Pulse the live timer without moving the surrounding layout or replaying page transitions. */
+#app .q-timer:is(.is-run,.is-low) .q-timer__n{animation:timer-breathe 1s ease-in-out infinite;transform-origin:center}
+#app .q-timer:is(.is-run,.is-low) .p-time-track i{animation:timer-line-breathe 1s ease-in-out infinite;transform-origin:center}
+#app .q-timer.is-low :is(.q-timer__n,.p-time-track i){animation-duration:.65s}
+@keyframes timer-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes timer-line-breathe{0%,100%{filter:brightness(1);transform:scaleY(1)}50%{filter:brightness(1.12);transform:scaleY(1.35)}}
+/* Keep the first complete product cards in view above the fixed result actions. */
+#app .p-end{gap:12px}
+#app .p-end .p-result{position:relative;display:grid;grid-template-columns:80px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:4px 12px;padding:12px;min-height:112px;text-align:center}
+#app .p-end .p-result-art{grid-column:1;grid-row:1 / span 2;height:48px;min-height:48px;max-height:48px;margin:0;width:80px}
+#app .p-end--badge .p-result-art{height:96px;min-height:96px;max-height:96px}
+#app .p-end .p-result-art img{width:100%;height:100%;object-fit:contain}
+#app .p-end .p-result-number{grid-column:2;grid-row:1;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;margin:0}
+#app .p-end .p-result-number>b{font-size:42px;line-height:1.15}
+#app .p-end .p-result-number>span{font-size:12px;line-height:1.5}
+#app .p-end .p-result-stats{grid-column:2;grid-row:2;gap:4px;padding-top:6px;margin:0}
+#app .p-end :is(.p-result-best,.p-result-streak){gap:8px;line-height:1.4}
+#app .p-end :is(.p-result-best,.p-result-streak)>span{font-size:11px;white-space:nowrap}
+#app .p-end :is(.p-result-best,.p-result-streak)>b{font-size:17px;line-height:1.4}
+#app .p-end .p-result-streak small{font-size:11px}
+#app .p-end .q-end__h{position:absolute;right:12px;top:8px;font-size:12px;line-height:1.5;margin:0}
+#app .p-end--record .p-result{padding-top:30px}
+#app .p-end .q-end__main{gap:12px}
+#app .p-end .p-result-deals{padding:8px 12px}
+#app .p-result-deals>header{height:32px;min-height:32px;margin-bottom:4px}
+#app .p-result-deals header>button{min-height:32px}
+#app .end-product-grid button{grid-template-rows:96px 36px minmax(28px,auto);gap:8px;min-height:196px;padding:10px}
+#app .end-product-art{height:96px}
+#app .end-product-grid button>b{line-height:1.5}
+#app .end-product-discount{bottom:12px}
+/* The chance-ended banner is one clear tap target and never appears while chances remain. */
+#app .m-main[data-mobile-tab=game].m-main--quota{display:grid;grid-template-rows:116px minmax(0,1fr);gap:12px;overflow:hidden}
+#app .m-quota-banner{position:relative;isolation:isolate;display:flex;align-items:center;gap:8px;padding:12px;border:1px solid #f5b1a0;border-radius:22px;background:linear-gradient(115deg,#ffbca8,#ffded3 60%,#ffece1);color:#702218;text-align:right;width:100%;min-height:116px;overflow:hidden;box-shadow:0 3px 0 #c17b68}
+#app .m-quota-banner:before{content:'';position:absolute;left:-28px;top:-42px;width:180px;height:180px;border-radius:50%;border:18px solid #fff7e538;z-index:-1}
+#app .m-quota-banner>img{width:86px;height:90px;object-fit:contain;flex:none}
+#app .m-quota-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+#app .m-quota-copy>b{font-size:14px;font-weight:950;line-height:1.7}
+#app .m-quota-copy>span{font-size:11px;line-height:1.6;color:#71382a}
+#app .m-quota-copy>strong{display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.6;color:#a3221c}
+#app .m-quota-copy svg{width:18px;height:18px;transform:rotate(180deg)}
+#app .m-main--quota .m-play{height:100%;min-height:0;flex:none}
+#app .m-main--quota .m-play-copy{padding-top:8px}
+#app .m-main--quota .m-play h1{font-size:27px;margin:4px 0}
+#app .m-main--quota .m-play-line{display:none}
+#app .m-main--quota .m-play-foot{padding:4px 12px 12px}
+#app .m-main--quota .m-stage{min-height:40px}
+#app .m-main--quota .m-mascot{max-height:150px}
+#app .m-main--quota .m-float{font-size:8px;padding:3px 6px}
+@media(max-width:359px){#app .m-quota-banner>img{width:64px}#app .m-quota-copy>b{font-size:13px}#app .p-end .p-result{grid-template-columns:68px minmax(0,1fr);gap-inline:8px}#app .p-end .p-result-art{width:68px}}
+@media(max-height:600px){#app .m-main[data-mobile-tab=game].m-main--quota{grid-template-rows:100px minmax(0,1fr);gap:8px}#app .m-quota-banner{min-height:100px;padding:8px 12px}#app .m-quota-banner>img{height:80px}#app .m-main--quota .m-play h1{font-size:23px}#app .m-main--quota .m-play-copy{padding-top:4px}#app .m-main--quota .m-play-foot{padding-bottom:8px}}
+@media(prefers-reduced-motion:reduce){#app .q-timer:is(.is-run,.is-low) :is(.q-timer__n,.p-time-track i){animation:none!important}}
+#app .p-end :is(.p-result,.p-result-deals){flex:none}
+#app .p-end .p-result-number{flex-direction:column;gap:0}
+#app .p-end .p-result-number>b{font-size:34px;line-height:1}
+#app .p-end .p-result-number>span{font-size:11px;line-height:1.5}
+#app .end-product-grid .m-product-price{min-height:28px}
+@media(max-height:740px){#app .end-product-grid button{grid-template-rows:86px 32px minmax(28px,auto);gap:6px}#app .end-product-art{height:86px}}
+#app .p-game .q-ref.q-ref{background:#f0efe7}

@@ -51,19 +51,24 @@ export async function openProduct(url) {
   return !!window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-export function close() { if (typeof impl.close === 'function') impl.close(); else history.back(); }
-
-/** Back handling: host onBack when available; otherwise a history entry at run start and popstate (handoff). */
-let backHandler = null, guardPushed = false;
-export function setBackHandler(fn) {
-  backHandler = fn;
-  if (typeof impl.onBack === 'function') { impl.onBack(() => (backHandler ? backHandler() : false)); return; }
-  if (fn && !guardPushed) { history.pushState({ pe: 1 }, ''); guardPushed = true; }
+let backHandler=null,guardPushed=false,exiting=false,hostBackBound=false;
+export function close() {
+ exiting=true;
+ if(typeof impl.close==='function'){impl.close();exiting=false;return;}
+ const steps=guardPushed?2:1;guardPushed=false;history.go(-steps);
 }
-window.addEventListener('popstate', () => {
-  if (!guardPushed) return;
-  guardPushed = false;
-  if (backHandler && backHandler()) { history.pushState({ pe: 1 }, ''); guardPushed = true; }
+export function setBackHandler(fn){
+ backHandler=fn;exiting=false;
+ if(typeof impl.onBack==='function'){
+  if(!hostBackBound){hostBackBound=true;impl.onBack(()=>backHandler?backHandler():false);}return;
+ }
+ if(fn&&!guardPushed){history.pushState({pe:1},'');guardPushed=true;}
+}
+window.addEventListener('popstate',()=>{
+ if(exiting||!guardPushed)return;
+ guardPushed=false;
+ const handled=backHandler&&backHandler();
+ if(handled&&!exiting&&!guardPushed){history.pushState({pe:1},'');guardPushed=true;}
 });
 
 export async function copy(text) {

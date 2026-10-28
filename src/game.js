@@ -1,3 +1,4 @@
+import {createJourney} from './journey.mjs';
 import { createFeedback, audioMenu, buttonCueFor } from './feedback.mjs';
 import { patchHTML } from './dom-patch.mjs';
 // Player state controller: one authoritative store drives the DOM. Explicit view states with transition guards; run,
@@ -37,6 +38,13 @@ export const S = {
   gen: 0,
 };
 
+const journey=createJourney();
+const routeSnapshot=()=>({view:S.view,tab:S.home.appTab||'game',dealsSrc:S.ui.dealsSrc,dealsFrom:S.ui.dealsFrom});
+function restorePrevious(){
+ const route=journey.previous();if(!route)return false;
+ S.home.appTab=route.tab;S.ui.dealsSrc=route.dealsSrc;S.ui.dealsFrom=route.dealsFrom;
+ go(route.view);refocus('[data-act="back"],.m-app-back');return true;
+}
 let root = null, screenEl = null, cpEl = null, offerEl = null;
 let offerMarkup = null, lastRenderedView = null;
 const now = () => performance.now();
@@ -192,13 +200,12 @@ async function loadEndDeals(runId) {
   if (isLoss(S.view) || S.view === 'G12.DEALS') render();
 }
 function openDeals(src) {
-  S.ui.dealsFrom = S.view; S.ui.dealsSrc = src;
-  host.setBackHandler(() => { if (S.view === 'G12.DEALS') { homeTab('game',true); return true; } return false; });
+  journey.remember(routeSnapshot()); S.ui.dealsFrom = S.view; S.ui.dealsSrc = src;
   go('G12.DEALS');
 }
 function closeDeals() {
+  if(restorePrevious())return;
   const v = S.ui.dealsFrom || 'G01.READY'; S.ui.dealsFrom = null;
-  host.setBackHandler(isLoss(v) ? LOSS_BACK : null);
   go(v);
 }
 // ------------------------------------------------------------------------------------------------ onboarding (§14)
@@ -215,8 +222,13 @@ function learningPhase(phase) {
   refocus(phase==='intro'?'[data-tour-next]':'.l-header button,.l-practice .q-iconbtn');
 }
 function learningBack() {
-  if (S.ui.learn?.phase !== 'overview') return learningPhase('overview');
-  if (S.view==='G02.ONBOARDING') { S.ui.onb=null; S.ui.learn=null; host.setBackHandler(null); return routeHome(); }
+  if(S.ui.onb?.busy)return;
+  const l=S.ui.learn;
+  if(l?.phase==='intro'&&(l.tourStep||0)>0)return advanceLearningTour(-1);
+  if(l?.phase==='question'){S.ui.learn={phase:'intro',tourStep:1};render();return;}
+  if(l?.phase==='feedback'||l?.phase==='done'){S.ui.learn={phase:'question',answerGuide:true};render();return;}
+  if(l?.phase!=='overview')return learningPhase('overview');
+  if(S.view==='G02.ONBOARDING'){S.ui.onb=null;S.ui.learn=null;return routeHome();}
   closeGuide();
 }
 function advanceLearningTour(delta=1) {
@@ -247,7 +259,6 @@ function guidePlay() {
 function startOnboarding(campaignId=null) {
   S.ui.daily = null;
   S.ui.onb = { busy: false, error: null, campaignId }; S.ui.learn = {phase:'overview'};
-  host.setBackHandler(() => { if(!S.ui.onb)return false;learningBack();return true; });
   go('G02.ONBOARDING'); refocus('.l-header h1');
 }
 /** Finishing or skipping is stored on the account (one request, same key on retry); the home follows. No play is spent. */
@@ -259,7 +270,7 @@ async function finishOnboarding(play=false) {
     try {
       await api.onboarding(key);
       if (g !== S.gen) return;
-      S.keys.onboarding = null; S.boot.firstVisit = false; S.ui.onb = null; host.setBackHandler(null);
+      S.keys.onboarding = null; S.boot.firstVisit = false; S.ui.onb = null;
       if(play) { S.ui.daily=null; go(S.boot.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED'); if(S.view==='G01.READY') return startRun(o.campaignId); return; }
       return routeHome();
     } catch (e) {
@@ -369,7 +380,15 @@ function wireImages() {
   if (im.complete && im.naturalWidth) done(); else { im.addEventListener('load', done, { once: true }); im.addEventListener('error', () => {}, { once: true }); }
 }
 
-function go(view) { S.view = view; render(); }
+function go(view) {
+ if(view!==S.view&&(/^G1[01]\./.test(view)||view==='G03.NO_PRODUCTS_LEFT')&&!S.view.startsWith('G00.')){
+   const previous=routeSnapshot();
+   if(inRun(S.view)&&S.run?.state==='FINISHED')previous.view='G05.LOSS';
+   if(previous.view==='G01.REFRESHING')previous.view=S.boot?.quota?.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED';
+   journey.remember(previous);
+ }
+ S.view=view;host.setBackHandler(onBack);render();
+}
 /** Ready for the next product and nothing in the way (checkpoint, offline): ask for it, which starts the 5 s lead. */
 let autoT = 0;
 function scheduleAuto() {
@@ -411,12 +430,12 @@ export async function boot() {
   return ok;
 }
 async function bootInner() {
+  journey.clear(); S.home.appTab='game';
   if(S.ui.share?.url)URL.revokeObjectURL(S.ui.share.url);S.ui.share=null;S.ui.soundMenu=false;S.ui.resumeBusy=false;
   S.gen++; motion.end();
   Object.assign(S, { run: null, ref: null, q: null, fb: null, offer: null, op: null, result: null, keys: {} });
   resetRunUi();
   Object.assign(S.ui, { toast: null, onb: null, daily: null });
-  host.setBackHandler(null);
   if (!S.boot) go('G00.SPLASH');
   else go('G01.REFRESHING');                                   // back home between runs: no splash again (§3)
   try { S.boot = await api.bootstrap(); }
@@ -434,7 +453,6 @@ function routeHome() {
   const b = S.boot;
   if (b.activeRun && b.activeRun.onThisDevice) return go('G01.ACTIVE_RUN');
   S.ui.daily=null;
-  host.setBackHandler(onBack);
   go(b.quota.playsLeft > 0 ? 'G01.READY' : 'G01.QUOTA_EXHAUSTED');
 
 }
@@ -548,10 +566,9 @@ async function checkDaily() {
 // ------------------------------------------------------------------------------------------------ guide (G02.GUIDE)
 function openGuide() {
   S.ui.guideFrom = S.view; S.ui.daily = null; S.ui.learn={phase:'overview'};
-  host.setBackHandler(() => { if (S.view === 'G02.GUIDE') { learningBack(); return true; } return false; });
   go('G02.GUIDE'); refocus('.l-header h1');
 }
-function closeGuide() { stopLearningClock(); S.ui.learn=null; host.setBackHandler(null); const v = S.ui.guideFrom || 'G01.READY'; S.ui.guideFrom = null; go(v); refocus('[data-act="guide"]'); }   // opening and closing creates nothing
+function closeGuide() { stopLearningClock(); S.ui.learn=null;  const v = S.ui.guideFrom || 'G01.READY'; S.ui.guideFrom = null; go(v); refocus('[data-act="guide"]'); }   // opening and closing creates nothing
 
 // ------------------------------------------------------------------------------------------------ start / resume
 function clearStartKeys() { for(const key of Object.keys(S.keys)) if(key.startsWith('start:')) delete S.keys[key]; }
@@ -568,7 +585,6 @@ export async function startRun(campaignId = null) {
     S.result = null; S.ended = null;
     resetRunUi();
     S.run = st.run; S.ref = st.run.reference;
-    host.setBackHandler(onBack);
     react('start',S.run.runId);
     go('G03.READY');
   } catch (e) {
@@ -589,7 +605,7 @@ export async function resume(runId) {
   if(S.ui.resumeBusy)return;
   if(S.view.startsWith('G01.')){S.ui.resumeBusy=true;render();}else go('G10.RESUMING');
   const g = S.gen;
-  try { const run = await api.run(runId); if (g !== S.gen) return;S.ui.resumeBusy=false;host.setBackHandler(onBack);applyRun(run,'resume'); }
+  try { const run = await api.run(runId); if (g !== S.gen) return;S.ui.resumeBusy=false;applyRun(run,'resume'); }
   catch(e){S.ui.resumeBusy=false;if(g===S.gen)handleError(e);}
 }
 
@@ -660,7 +676,7 @@ export async function reveal(immediate=false) {
     if (g !== S.gen) return;
     S.keys.reveal = null;
     S.run = run;
-    if (run.state === 'FINISHED' && run.finishReason === 'no_products') { S.ended = endedFrom(run); host.setBackHandler(null); return go('G03.NO_PRODUCTS_LEFT'); }
+    if (run.state === 'FINISHED' && run.finishReason === 'no_products') { S.ended = endedFrom(run);  return go('G03.NO_PRODUCTS_LEFT'); }
     if (run.state !== 'QUESTION_OPEN') return applyRun(run);
     S.q = { ...run.question, imgReady: false, imgSlow: false, pick: null, key: null, buzz: 0 };
     countdown(S.q);
@@ -963,7 +979,6 @@ function offerTimeUp() {
  * «صفحه اصلی» and back on the loss screen (§11, §12): the run ends once — an open offer is declined with its own key —
  * and the home opens without any old decision modal. Locked while a payment or the offer activation is in flight.
  */
-const LOSS_BACK = () => { if (isLoss(S.view)) { lossHome(); return true; } return false; };
 /** «رد کردن» or ✕ on the offer (end screen 1): the offer is declined once with its own key; the run then ends and the result shows. */
 async function skipOffer() {
   if (!S.offer || S.op || S.ui.skipping || S.ui.offerOver || !['G05.OFFER', 'G06.FAILED_RETRY'].includes(S.view)) return;
@@ -990,13 +1005,24 @@ async function lossHome() {
 }
 
 function onBack() {
-  if(S.view.startsWith('G01.')&&(S.home.appTab||'game')!=='game'){homeTab('game',true);return true;}
-  if (!S.run) return false;
-  if (S.ui.cp) return true;                                   // the celebration closes with its own button only
-  if (S.op || S.view === 'G03.ANSWER_PENDING') return true;   // back is blocked while an answer or a payment is in flight
-  if (isLoss(S.view)) { lossHome(); return true; }
-  if (inRun(S.view)) { S.ui.leave = true; render(); return true; }
-  return false;
+  if(S.ui.soundMenu){S.ui.soundMenu=false;render();return true;}
+  if(S.ui.share){if(S.ui.share.url)URL.revokeObjectURL(S.ui.share.url);S.ui.share=null;render();return true;}
+  if(S.ui.daily){S.ui.daily=null;render();return true;}
+  if(S.ui.leave){S.ui.leave=false;render();return true;}
+  if(S.home.campaignInfo||S.home.streakInfo){S.home.campaignInfo=false;S.home.streakInfo=false;render();return true;}
+  if(S.ui.cp){closeCp();return true;}
+  if(S.op||S.view==='G03.ANSWER_PENDING')return true;
+  if(['G02.GUIDE','G02.ONBOARDING'].includes(S.view)){learningBack();return true;}
+  if(S.view==='G12.DEALS'){closeDeals();return true;}
+  if(S.view.startsWith('G01.')){
+    if((S.home.appTab||'game')==='game'){host.close();return true;}
+    if(!restorePrevious())homeTab('game',true);return true;
+  }
+  if(isLoss(S.view)){lossHome();return true;}
+  if(inRun(S.view)){S.ui.leave=true;render();return true;}
+  if(restorePrevious())return true;
+  if(S.boot){S.home.appTab='game';boot();return true;}
+  host.close();return true;
 }
 
 export async function leaveConfirmed() {
@@ -1116,7 +1142,6 @@ function finished(run, view = 'G05.LOSS') {
   const ui = { lossReason: S.ui.lossReason, noOffer: S.ui.noOffer };
   resetRunUi(); Object.assign(S.ui, ui);
   S.ended = endedFrom(run);
-  host.setBackHandler(null);
   const r = run.finishReason;
   if (r === 'inactive') return go('G10.INACTIVITY_END');
   if (r === 'replaced') return go('G11.OTHER_DEVICE');
@@ -1125,7 +1150,6 @@ function finished(run, view = 'G05.LOSS') {
   if (r === 'left') return boot();
   if (r === 'no_products') return go('G03.NO_PRODUCTS_LEFT');
   if (!S.ui.lossReason && run.lastResult) S.ui.lossReason = run.lastResult.result === 'timeout' ? 'timeout' : 'wrong';
-  host.setBackHandler(LOSS_BACK);
   go(view);
   loadResult(run.runId);
   loadEndDeals(run.runId);
@@ -1172,6 +1196,7 @@ function setOffline(off) {
 
 export function init(el) {
   root = el;
+  host.setBackHandler(onBack);
   root.innerHTML = '<div class="q-screenhost"></div><div class="q-offerhost"></div><div class="q-cphost"></div>';
   offerEl=root.querySelector('.q-offerhost');
   screenEl = root.firstElementChild; cpEl = root.lastElementChild;
@@ -1216,10 +1241,12 @@ export function init(el) {
 /** Focus returns to the control that opened a dismissed dialog (or the screen's main action). */
 const refocus = sel => requestAnimationFrame(() => { const t = root.querySelector(sel); if (t && !t.disabled) t.focus({ preventScroll: true }); });
 async function homeTab(tab,fromBack=false) {
-  if(S.view==='G12.DEALS') { if(tab==='products')return; S.ui.dealsFrom=null; await boot(); if(!S.view.startsWith('G01.'))return; }
-  S.home.appTab = tab; S.home.streakInfo = false; S.home.campaignInfo = false;
-  if(fromBack)(S.home.tabScroll||={}).game=0;
-  render(); refocus(fromBack?'#mobile-title':`[data-act="nav-${tab}"][data-step="tab"]`);
+  const current=S.home.appTab||'game';
+  if(S.view==='G12.DEALS'&&tab==='products')return;
+  if(!fromBack&&(S.view==='G12.DEALS'||tab!==current))journey.remember(routeSnapshot());
+  if(S.view==='G12.DEALS')S.view=S.boot.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED';
+  S.home.appTab=tab;S.home.streakInfo=false;S.home.campaignInfo=false;
+  render();refocus(fromBack?'#mobile-title':`[data-act="nav-${tab}"][data-step="tab"]`);
 }
 function onClick(e) {
   if(e.target.matches('.q-scrim,.q-offerlayer,.q-cp,.l-tour')){
@@ -1229,7 +1256,7 @@ function onClick(e) {
   const el = e.target.closest('[data-act]'); if (!el || el.disabled || el.getAttribute('aria-disabled') === 'true') return;
   const a = el.dataset.act;
   const acts = {
-    'tab-home': () => homeTab('game',true),
+    'tab-home': () => onBack(),
     'sound-toggle': () => {S.ui.soundMenu=!S.ui.soundMenu;render();},
     'test-setup': () => location.reload(),
     'sound-close': () => {S.ui.soundMenu=false;render();refocus('[data-act="sound-toggle"]');},
@@ -1265,7 +1292,7 @@ function onClick(e) {
     'onb-start': () => finishOnboarding(true),
     'onb-finish':()=>finishOnboarding(false),
     'onb-rules': () => learningPhase('overview'),
-    'offer-skip': skipOffer, 'end-close': lossHome, 'end-home': lossHome,
+    'offer-skip': skipOffer, 'end-close': onBack, 'end-home': onBack,
     'play-again': playAgain,
     deals: () => openDeals('home'), 'deals-end': () => openDeals('end'), 'deals-close': closeDeals,
     'deals-retry': retryDeals,
@@ -1289,7 +1316,8 @@ function onClick(e) {
     'share-send': sendShare,
     'share-copy-link': async () => {const ok=await host.copy(shareCaption(S.ui.share?.score||0));if(S.ui.share){S.ui.share.notice=ok?'متن دعوت و لینک بازی کپی شد؛ همراه تصویر برای دوستات بفرست.':'کپی انجام نشد؛ دوباره امتحان کن.';render();refocus('[data-act="share-copy-link"]');}},
     copy: copyCode,
-    'exit-app': () => host.close(),
+    'exit-app': () => onBack(),
+    'digicoin-home': () => host.close(),
   };
   if (acts[a]) {const cue=buttonCueFor(a);if(/^nav-|^tab-/.test(a)){if(reactions.settings().haptics&&feat('haptics'))host.haptic('tap');}else if(cue)react(cue,`${a}:${now()}`);acts[a]();}
 }
