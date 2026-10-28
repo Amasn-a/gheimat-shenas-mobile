@@ -274,7 +274,7 @@ export const dealsOf = list => (list?.items || []).filter(p => p.deal && (p.deal
  */
 /** Compact, truthful preview: at most three seen products, with a responsive remainder count. */
 function resultDeals(items){
- const slots=Array.from({length:Math.max(3,items.length)},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}"><span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="" loading="lazy">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}${p.deal?.discountPercent?`<span class="end-product-discount">${fa(p.deal.discountPercent)}٪</span>`:''}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
+ const slots=Array.from({length:Math.max(3,items.length)},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}">${p.deal?.discountPercent>0?`<span class="end-product-discount" aria-label="${fa(p.deal.discountPercent)} درصد تخفیف">${fa(p.deal.discountPercent)}٪</span>`:''}<span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="" loading="lazy">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
  return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid" tabindex="0" aria-label="کالاهای این دست؛ برای دیدن بقیه افقی ورق بزن">${slots}</ol></section>`;
 }
 export function vEnd(m) {

@@ -1,0 +1,20 @@
+/* Keep the practice result in the same teaching sheet and product layout. */
+#app .l-tour--answer.l-tour--result .l-coach{pointer-events:auto}
+#app .l-tour--answer.l-tour--result .l-coach-actions{display:grid}
+#app .l-tour--result .l-coach-body{grid-template-rows:32px 76px;gap:8px}
+#app .l-tour--result .l-coach h2{color:#245c3b}
+#app .l-tour--result .l-coach-actions>button{display:flex;align-items:center;justify-content:center;gap:8px}
+#app .l-tour--result .l-coach-actions>button:disabled{opacity:.65;cursor:wait}
+#app .l-coach .l-coach-error{color:#9a332f;font-size:11px;line-height:1.5;margin:0;max-height:36px;overflow:auto;flex:none}
+
+/* A short fade and lift for openings; step copy changes without a hard cut. */
+#app .l-tour.is-positioned .l-coach{animation:learning-sheet-open .24s cubic-bezier(.2,.8,.2,1) both}
+#app .l-tour.is-positioned .l-spotlight-ring{animation:learning-shade-open .2s ease-out both}
+#app .l-coach-body[data-key]{animation:learning-copy-open .2s ease-out both}
+#app .l-guide.l-overview .l-main,#app .l-rule.is-open>p{animation:learning-copy-open .2s ease-out both}
+@keyframes learning-sheet-open{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes learning-shade-open{from{opacity:0}to{opacity:1}}
+@keyframes learning-copy-open{from{opacity:0;translate:0 5px}to{opacity:1;translate:0 0}}
+@media(prefers-reduced-motion:reduce){
+ #app .l-tour.is-positioned .l-coach,#app .l-tour.is-positioned .l-spotlight-ring,#app .l-coach-body[data-key],#app .l-guide.l-overview .l-main,#app .l-rule.is-open>p{animation:none!important}
+}

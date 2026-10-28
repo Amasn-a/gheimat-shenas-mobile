@@ -1,5 +1,5 @@
 import {createJourney} from './journey.mjs';
-import { createFeedback, audioMenu, buttonCueFor } from './feedback.mjs';
+import { createFeedback, buttonCueFor } from './feedback.mjs';
 import { patchHTML } from './dom-patch.mjs';
 // Player state controller: one authoritative store drives the DOM. Explicit view states with transition guards; run,
 // question and operation identities plus a generation counter make stale responses and timers harmless. The server
@@ -39,11 +39,18 @@ export const S = {
 };
 
 const journey=createJourney();
-const routeSnapshot=()=>({view:S.view,tab:S.home.appTab||'game',dealsSrc:S.ui.dealsSrc,dealsFrom:S.ui.dealsFrom});
+const routeSnapshot=()=>({view:S.view,tab:S.home.appTab||'game',dealsSrc:S.ui.dealsSrc,dealsFrom:S.ui.dealsFrom,tabReturnTo:S.home.tabReturnTo});
+function restoreRoute(route){
+ S.home.appTab=route.tab;S.home.tabReturnTo=route.tabReturnTo;S.ui.dealsSrc=route.dealsSrc;S.ui.dealsFrom=route.dealsFrom;
+ go(route.view);refocus('[data-act="back"],.m-app-back');
+}
 function restorePrevious(){
  const route=journey.previous();if(!route)return false;
- S.home.appTab=route.tab;S.ui.dealsSrc=route.dealsSrc;S.ui.dealsFrom=route.dealsFrom;
- go(route.view);refocus('[data-act="back"],.m-app-back');return true;
+ restoreRoute(route);return true;
+}
+function returnFromTabs(){
+ const origin=S.home.tabReturnTo;if(!origin)return false;
+ S.home.tabReturnTo=null;restoreRoute(origin);return true;
 }
 let root = null, screenEl = null, cpEl = null, offerEl = null;
 let offerMarkup = null, lastRenderedView = null;
@@ -63,7 +70,7 @@ const feat = k => { const f = cfg().features; return !f || f[k] !== false; };
 let soundStorage;
 try{soundStorage=localStorage;}catch{}
 const reactions=createFeedback({storage:soundStorage,createContext:()=>{const Audio=window.AudioContext||window.webkitAudioContext;return Audio?new Audio():null;},visible:()=>document.visibilityState==='visible',haptic:kind=>host.haptic(kind)});
-const soundIsOn=()=>{const x=reactions.settings();return x.effects||x.music;};
+const soundIsOn=()=>reactions.isEnabled();
 const react=(kind,key)=>reactions.react(kind,{key,haptics:feat('haptics')});
 const cpIndex = c => cfg().checkpoints.findIndex(x => x.checkpointId === c.checkpointId);
 const nextCp = score => cfg().checkpoints.find(x => x.requiredCorrect > score) || null;
@@ -90,7 +97,7 @@ function homeScreen() {
     boot: b, soundOn: soundIsOn(), balance: S.balance, toast: S.ui.toast, offline: S.ui.offline,
     untilReset: untilInstant(clock.ms(b.quota.resetsAt) - clock.serverNow()),
     historyPage: S.home.page, productsOn: feat('products'), products: S.home.products, historyState: S.home.state,
-    productsRetry:!!S.ui.productsRetry,resumeBusy:!!S.ui.resumeBusy,appTab: S.home.appTab || 'game', streakInfo: !!S.home.streakInfo, campaignInfo: S.home.campaignInfo, campaignNow: clock.serverNow(),
+    productsRetry:!!S.ui.productsRetry,resumeBusy:!!S.ui.resumeBusy,appTab: S.home.appTab || 'game', backToOrigin:!!S.home.tabReturnTo, streakInfo: !!S.home.streakInfo, campaignInfo: S.home.campaignInfo, campaignNow: clock.serverNow(),
     modal: S.ui.daily && b.dailyReward ? V.dailyModal(b.dailyReward, {...S.ui.daily,nextRewardAt:b.quota.resetsAt,now:clock.serverNow(),canPlay:S.view==='G01.READY'&&!S.ui.offline}) : '',
   });
 }
@@ -200,10 +207,13 @@ async function loadEndDeals(runId) {
   if (isLoss(S.view) || S.view === 'G12.DEALS') render();
 }
 function openDeals(src) {
-  journey.remember(routeSnapshot()); S.ui.dealsFrom = S.view; S.ui.dealsSrc = src;
+  const origin=routeSnapshot();
+  if(origin.view.startsWith('G01.')){origin.tab='game';origin.tabReturnTo=null;}
+  S.home.tabReturnTo=origin;S.ui.dealsFrom = S.view; S.ui.dealsSrc = src;
   go('G12.DEALS');
 }
 function closeDeals() {
+  if(returnFromTabs())return;
   if(restorePrevious())return;
   const v = S.ui.dealsFrom || 'G01.READY'; S.ui.dealsFrom = null;
   go(v);
@@ -211,7 +221,7 @@ function closeDeals() {
 // ------------------------------------------------------------------------------------------------ onboarding (§14)
 function learningModel() {
   const l=S.ui.learn || {phase:'overview'};
-  return {soundOn:soundIsOn(),config:cfg(),learn:l,remaining:Math.max(0,(l.deadline || 0)-now()),hasActive:!!S.boot?.activeRun?.onThisDevice,hasChances:(S.boot?.quota?.playsLeft||0)>0};
+  return {soundOn:soundIsOn(),config:cfg(),learn:l,busy:!!(S.ui.onb?.busy||l.busy),error:S.ui.onb?.error||l.error,remaining:Math.max(0,(l.deadline || 0)-now()),hasActive:!!S.boot?.activeRun?.onThisDevice,hasChances:(S.boot?.quota?.playsLeft||0)>0};
 }
 function onboardScreen() { return V.vOnboard({...learningModel(),busy:S.ui.onb.busy,error:S.ui.onb.error}); }
 let learnTimer=0;
@@ -222,7 +232,7 @@ function learningPhase(phase) {
   refocus(phase==='intro'?'[data-tour-next]':'.l-header button,.l-practice .q-iconbtn');
 }
 function learningBack() {
-  if(S.ui.onb?.busy)return;
+  if(S.ui.onb?.busy||S.ui.learn?.busy)return;
   const l=S.ui.learn;
   if(l?.phase==='intro'&&(l.tourStep||0)>0)return advanceLearningTour(-1);
   if(l?.phase==='question'){S.ui.learn={phase:'intro',tourStep:1};render();return;}
@@ -249,7 +259,27 @@ function answerLearning(choice) {
   stopLearningClock();
   const outcome=choice==='higher'?'correct':'wrong';
   react(outcome==='correct'?'correct':'wrong',`practice:${now()}`);
-  S.ui.learn={phase:'feedback',outcome,choice};render();refocus('[data-act="onb-finish"],[data-act="guide-close"]');
+  S.ui.learn={phase:'feedback',outcome,choice,answerGuide:true};render();refocus('[data-act="learn-play"]');
+}
+async function playFromLearning(){
+  if(!['G02.GUIDE','G02.ONBOARDING'].includes(S.view)||!['feedback','done'].includes(S.ui.learn?.phase))return;
+  if(S.view==='G02.ONBOARDING')return finishOnboarding(true);
+  const l=S.ui.learn;if(l.busy)return;l.busy=true;l.error=null;render();
+  const g=S.gen;
+  try{
+    let b=await api.bootstrap();if(g!==S.gen)return;
+    if(b.activeRun?.onThisDevice){
+      if(b.activeRun.state==='PAYMENT_PENDING')throw new Error('pending');
+      const key=S.keys['practice-leave:'+b.activeRun.runId]||=newKey();
+      await api.leave(b.activeRun.runId,key);if(g!==S.gen)return;
+      b=await api.bootstrap();if(g!==S.gen)return;
+    }
+    if(b.firstVisit){await api.onboarding(S.keys.onboarding||=newKey());if(g!==S.gen)return;S.keys.onboarding=null;b.firstVisit=false;}
+    S.boot=b;S.balance=b.balance;S.ui.learn=null;S.ui.guideFrom=null;S.ui.daily=null;
+    S.home.appTab='game';S.home.tabReturnTo=null;journey.clear();
+    go(b.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED');
+    if(S.view==='G01.READY')return startRun();
+  }catch(e){if(g!==S.gen)return;l.busy=false;l.error=e.message==='pending'?'تسویهٔ دست قبلی هنوز تموم نشده؛ کمی بعد دوباره بزن.':'بازی آماده نشد؛ اتصال رو بررسی کن و دوباره بزن.';render();}
 }
 function guidePlay() {
   closeGuide();
@@ -271,7 +301,7 @@ async function finishOnboarding(play=false) {
       await api.onboarding(key);
       if (g !== S.gen) return;
       S.keys.onboarding = null; S.boot.firstVisit = false; S.ui.onb = null;
-      if(play) { S.ui.daily=null; go(S.boot.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED'); if(S.view==='G01.READY') return startRun(o.campaignId); return; }
+      if(play) { S.ui.daily=null;S.ui.learn=null;S.home.appTab='game';S.home.tabReturnTo=null;journey.clear(); go(S.boot.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED'); if(S.view==='G01.READY') return startRun(o.campaignId); return; }
       return routeHome();
     } catch (e) {
       if (g !== S.gen) return;
@@ -296,15 +326,11 @@ export function render() {
   if (mobileScroll) (S.home.tabScroll ||= {})[mobileScroll.dataset.mobileTab] = mobileScroll.scrollTop;
   const active = document.activeElement?.closest('[data-act]');
   const focusAct = active?.dataset.act, focusStep = active?.dataset.step;
-  const markup=screen()+(S.ui.share?.url?V.shareModal(S.ui.share):'')+(S.ui.soundMenu?audioMenu(reactions.settings()):'');
+  const markup=screen()+(S.ui.share?.url?V.shareModal(S.ui.share):'');
   patchHTML(screenEl,markup);
   syncOfferModal();
   syncLearningSpotlight(root,['G02.GUIDE','G02.ONBOARDING'].includes(S.view)?S.ui.learn?.answerGuide?TOUR_STEPS.length-1:S.ui.learn?.phase==='intro'?S.ui.learn.tourStep||0:null:null);
   if (S.ui.share?.url) screenEl.querySelector('.q-page')?.setAttribute('inert','');
-  root.querySelectorAll('.p-sound').forEach(el=>{
-    el.setAttribute('aria-expanded',String(!!S.ui.soundMenu));
-    if(S.ui.soundMenu){el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';el.setAttribute('aria-label','بستن تنظیمات صدا');}
-  });
   reactions.setUrgent(S.view==='G03.QUESTION_ACTIVE'&&S.q&&timerNow().rem<=3000);
   const same = focusAct && [...screenEl.querySelectorAll('[data-act]')].find(e=>e.dataset.act===focusAct && e.dataset.step===focusStep && !e.disabled);
   if (same) same.focus({preventScroll:true});
@@ -430,8 +456,8 @@ export async function boot() {
   return ok;
 }
 async function bootInner() {
-  journey.clear(); S.home.appTab='game';
-  if(S.ui.share?.url)URL.revokeObjectURL(S.ui.share.url);S.ui.share=null;S.ui.soundMenu=false;S.ui.resumeBusy=false;
+  journey.clear(); S.home.appTab='game';S.home.tabReturnTo=null;
+  if(S.ui.share?.url)URL.revokeObjectURL(S.ui.share.url);S.ui.share=null;S.ui.resumeBusy=false;
   S.gen++; motion.end();
   Object.assign(S, { run: null, ref: null, q: null, fb: null, offer: null, op: null, result: null, keys: {} });
   resetRunUi();
@@ -581,6 +607,7 @@ export async function startRun(campaignId = null) {
   try {
     const st = await api.start(key,campaignId);
     clearStartKeys();
+    journey.clear();S.home.tabReturnTo=null;
     S.gen++;
     S.result = null; S.ended = null;
     resetRunUi();
@@ -1005,7 +1032,6 @@ async function lossHome() {
 }
 
 function onBack() {
-  if(S.ui.soundMenu){S.ui.soundMenu=false;render();return true;}
   if(S.ui.share){if(S.ui.share.url)URL.revokeObjectURL(S.ui.share.url);S.ui.share=null;render();return true;}
   if(S.ui.daily){S.ui.daily=null;render();return true;}
   if(S.ui.leave){S.ui.leave=false;render();return true;}
@@ -1015,8 +1041,9 @@ function onBack() {
   if(['G02.GUIDE','G02.ONBOARDING'].includes(S.view)){learningBack();return true;}
   if(S.view==='G12.DEALS'){closeDeals();return true;}
   if(S.view.startsWith('G01.')){
+    if(returnFromTabs())return true;
     if((S.home.appTab||'game')==='game'){host.close();return true;}
-    if(!restorePrevious())homeTab('game',true);return true;
+    homeTab('game',true);return true;
   }
   if(isLoss(S.view)){lossHome();return true;}
   if(inRun(S.view)){S.ui.leave=true;render();return true;}
@@ -1233,8 +1260,6 @@ export function init(el) {
   root.addEventListener('pointerdown',e=>{root.dataset.input='pointer';if(e.isTrusted)reactions.unlock();},{passive:true});
   root.addEventListener('keydown',e=>{root.dataset.input='keyboard';if(e.isTrusted&&(e.key==='Enter'||e.key===' '))reactions.unlock();});
   document.addEventListener('visibilitychange',()=>reactions.setActive(document.visibilityState==='visible'));
-  document.addEventListener('pointerdown',e=>{if(S.ui.soundMenu&&!e.target.closest('.p-audio-menu,.p-sound')){S.ui.soundMenu=false;render();}},{passive:true});
-  root.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.ui.soundMenu){S.ui.soundMenu=false;render();refocus('[data-act="sound-toggle"]');}});
   boot();
 }
 
@@ -1243,7 +1268,6 @@ const refocus = sel => requestAnimationFrame(() => { const t = root.querySelecto
 async function homeTab(tab,fromBack=false) {
   const current=S.home.appTab||'game';
   if(S.view==='G12.DEALS'&&tab==='products')return;
-  if(!fromBack&&(S.view==='G12.DEALS'||tab!==current))journey.remember(routeSnapshot());
   if(S.view==='G12.DEALS')S.view=S.boot.quota.playsLeft>0?'G01.READY':'G01.QUOTA_EXHAUSTED';
   S.home.appTab=tab;S.home.streakInfo=false;S.home.campaignInfo=false;
   render();refocus(fromBack?'#mobile-title':`[data-act="nav-${tab}"][data-step="tab"]`);
@@ -1257,12 +1281,8 @@ function onClick(e) {
   const a = el.dataset.act;
   const acts = {
     'tab-home': () => onBack(),
-    'sound-toggle': () => {S.ui.soundMenu=!S.ui.soundMenu;render();},
+    'sound-toggle': () => {reactions.setEnabled(!reactions.isEnabled());render();},
     'test-setup': () => location.reload(),
-    'sound-close': () => {S.ui.soundMenu=false;render();refocus('[data-act="sound-toggle"]');},
-    'audio-music': () => {reactions.setMusic(!reactions.settings().music);render();},
-    'audio-effects': () => {reactions.setEnabled(!reactions.settings().effects);render();},
-    'audio-haptics': () => {reactions.setHaptics(!reactions.settings().haptics);render();},
     'nav-game': () => homeTab('game'), 'nav-rewards': () => homeTab('rewards'),
     'nav-badges': () => homeTab('badges'), 'nav-products': () => homeTab('products'),
     'nav-streak': () => openDailyReward(true),
@@ -1283,6 +1303,7 @@ function onClick(e) {
     'learn-practice': () => learningPhase('intro'), 'learn-start': startLearningQuestion,
     'learn-next':()=>advanceLearningTour(), 'learn-prev':()=>advanceLearningTour(-1),
     'learn-higher': () => answerLearning('higher'), 'learn-lower': () => answerLearning('lower'),
+    'learn-play': playFromLearning,
     'learn-done': () => learningPhase('done'), 'learn-overview': () => learningPhase('overview'),
     'learn-rewards': () => learningPhase('rewards'), 'learn-revive': () => learningPhase('revive'),
     'learn-rule':()=>{const l=S.ui.learn||={phase:'overview'},i=Number(el.dataset.rule);if(!Number.isInteger(i)||i<0||i>3)return;l.openRules=(l.openRules||[]).includes(i)?l.openRules.filter(x=>x!==i):[...(l.openRules||[]),i];render();},

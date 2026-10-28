@@ -1,0 +1,99 @@
+/* Restore the large vertical result summary; product geometry stays unchanged. */
+#app .p-end .p-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  grid-template-columns: none;
+  grid-template-rows: none;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  padding: 20px 16px;
+  gap: 12px;
+  flex: none;
+  overflow: visible;
+}
+#app .p-end .p-result-art {
+  grid-area: auto;
+  width: 100%;
+  height: 72px;
+  min-height: 72px;
+  max-height: 72px;
+  margin: 0;
+  flex: none;
+}
+#app .p-end--badge .p-result-art {
+  width: 100%;
+  height: 154px;
+  min-height: 154px;
+  max-height: 154px;
+}
+#app .p-end--badge .p-result-art > img { max-width: 190px; }
+#app .p-end .p-result-number {
+  grid-area: auto;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+#app .p-end .p-result-number > b { font-size: 68px; line-height: 1.1; }
+#app .p-end .p-result-number > span { font-size: 13px; line-height: 1.6; }
+#app .p-end .p-result-stats {
+  grid-area: auto;
+  width: 100%;
+  gap: 10px;
+  padding-top: 14px;
+  margin: 2px 0 0;
+}
+#app .p-end :is(.p-result-best, .p-result-streak) { gap: 16px; line-height: 1.7; }
+#app .p-end :is(.p-result-best, .p-result-streak) > span { font-size: 13px; }
+#app .p-end :is(.p-result-best, .p-result-streak) > b { font-size: 23px; line-height: 1.4; }
+#app .p-end .p-result-streak small { font-size: 13px; }
+#app .p-end .q-end__main { overflow-y: auto; min-height: 0; }
+
+/* Remaining chances is a live fact, with no misleading rewards action. */
+#app .m-quick-chances {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid #e9dfba;
+  border-radius: 16px;
+  background: #fff7da;
+}
+#app .m-quick-chances > span:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  white-space: nowrap;
+}
+#app .m-icon-chance { color: #976224; }
+
+/* Top-corner tags are outside text flow, preserving every photo and card size. */
+#app .m-product-grid button { position: relative; }
+#app :is(.m-product-discount, .end-product-discount) {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  bottom: auto;
+  left: auto;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: #ce2540;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.6;
+  white-space: nowrap;
+  pointer-events: none;
+}
+@media (max-width: 359px) {
+  #app .m-quick-chances { padding: 6px; gap: 4px; }
+}

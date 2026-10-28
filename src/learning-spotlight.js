@@ -1,12 +1,16 @@
-import { fa } from './fmt.js';
+import { fa, esc } from './fmt.js';
 export const TOUR_STEPS=[
  {target:'[data-tour="first"]',title:'این کالای اوله',copy:'قیمت و اسمش رو ببین.',next:'کالای دوم رو ببینیم'},
  {target:'[data-tour="second"]',title:'این کالای دومه',copy:'اینجا اسم و عکس کالای دوم رو می‌بینی و حدس می‌زنی که از کالای اول گرون‌تره یا ارزون‌تره!',next:'بریم انتخاب کنیم'},
  {target:'[data-tour="answers"]',title:'حالا انتخاب کن',copy:'حالا بین این دو تا گزینه انتخاب کن.',next:''}
 ];
-export function tourMarkup(step,seconds,answerGuide=false){
+export function tourMarkup(step,seconds,answerGuide=false,result=null){
   const t=TOUR_STEPS[step]||TOUR_STEPS[0],last=step===TOUR_STEPS.length-1;
-  return `<div class="l-tour${answerGuide?' l-tour--answer':''}" data-mkey="practice-tour"><div class="l-spotlight-ring" aria-hidden="true"></div><section class="l-coach" role="${answerGuide?'region':'dialog'}"${answerGuide?' data-answer-guide':' aria-modal="true"'} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta">${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'}</div><div class="l-coach-body"><h2 id="tour-title">${t.title}</h2><p id="tour-copy">${t.copy.replace('{seconds}',fa(seconds))}</p></div>${answerGuide?'':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="${step?'learn-prev':'learn-back'}">قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`}</section></div>`;
+  const title=result?(result.outcome==='correct'?'درست انتخاب کردی!':'این بار درست نبود'):t.title;
+  const copy=result?(result.outcome==='correct'?'هدفون از ماگ گرون‌تره. حالا آماده‌ای بازی اصلی رو شروع کنی!':'جواب درست «گرون‌تره» بود؛ هدفون از ماگ گرون‌تره. حالا بریم بازی اصلی!'):t.copy.replace('{seconds}',fa(seconds));
+  const locked=result?.busy?' disabled aria-busy="true"':'';
+  const actions=result?`<div class="l-coach-actions"><button class="l-coach-prev" data-act="learn-back"${locked}>قبلی</button><button class="l-btn" data-act="learn-play"${locked}>${result.busy?'<span class="q-spin" aria-hidden="true"></span><span>داریم شروع می‌کنیم…</span>':'بزن بریم!'}</button></div>`:answerGuide?'':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="${step?'learn-prev':'learn-back'}">قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`;
+  return `<div class="l-tour${answerGuide?' l-tour--answer':''}${result?' l-tour--result':''}" data-mkey="practice-tour"><div class="l-spotlight-ring" aria-hidden="true"></div><section class="l-coach${answerGuide?' l-coach--practice':''}" role="${answerGuide?'region':'dialog'}"${answerGuide?' data-answer-guide':' aria-modal="true"'} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta">${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'}</div><div class="l-coach-body" data-key="practice-copy-${step}-${result?result.outcome:'intro'}"${result?' role="status" aria-live="polite"':''}><h2 id="tour-title">${title}</h2><p id="tour-copy">${copy}</p></div>${result?.error?`<p class="l-coach-error" role="alert">${esc(result.error)}</p>`:''}${actions}</section></div>`;
 }
 let cleanup=null;
 export function syncLearningSpotlight(root,step){
