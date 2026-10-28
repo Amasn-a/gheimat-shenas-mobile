@@ -142,17 +142,15 @@ export function gameTop(score, backLocked, soundOn=true) {
 /** A paying checkpoint shows the DigiCoin alone (owner 2026-10-25: no amount on it, the coin says «you earn DigiCoin here»). */
 const coinStack = () => `<span class="q-stack">${COIN}</span>`;
 /** Main progress bar (kept, §10): fills with the score; each checkpoint shows its real reward — the badge when it pays no coin. */
-export function track(score, cps) {
-  const last = cps.length ? cps[cps.length - 1].requiredCorrect : 1;
-  const f = Math.min(1, score / last);
-  const nodes = cps.map((c, i) => {
-    const ic = c.rewardAmount > 0 ? coinStack() : `<img src="${BADGE_SRC(badgeId(c, i))}" alt="" width="34" height="33">`;
-    return `<li class="${c.requiredCorrect <= score ? 'is-done' : ''}" style="--x:${(100 * c.requiredCorrect / last).toFixed(2)}%"><span class="q-track__ic">${ic}</span><span class="q-track__n">${fa(c.requiredCorrect)}</span></li>`;
-  }).join('');
-  const next = cps.find(c => c.requiredCorrect > score);
-  const label = next ? `${fa(score)} جواب درست؛ چک‌پوینت بعدی با ${fa(next.requiredCorrect)} جواب درست${next.rewardAmount > 0 ? ` و ${fa(next.rewardAmount)} دیجی‌کوین` : ''}` : `${fa(score)} جواب درست؛ همه‌ی چک‌پوینت‌ها رو گرفتی`;
-  return `<div class="q-track" role="progressbar" aria-valuemin="0" aria-valuemax="${last}" aria-valuenow="${Math.min(score, last)}" aria-label="${label}">` +
-    `<div class="p-track-heading" aria-hidden="true"><span>${next ? `${fa(next.requiredCorrect - score)} جواب کم داری تا ${esc(next.title)}` : 'همهٔ نشان‌ها رو گرفتی!'}</span><small>${next?.rewardAmount > 0 ? `${fa(next.rewardAmount)} دیجی‌کوین جایزه` : 'هر حدس، یک قدم جلوتر'}</small></div><div class="q-track__line"><i style="--f:${f.toFixed(4)}"></i></div><ol aria-hidden="true">${nodes}</ol></div>`;
+export function checkpointProgress(score,cps){
+ const levels=cps.filter(c=>Number.isFinite(c.requiredCorrect)&&c.requiredCorrect>0).slice().sort((a,b)=>a.requiredCorrect-b.requiredCorrect);
+ const next=levels.find(c=>c.requiredCorrect>score),prev=[...levels].reverse().find(c=>c.requiredCorrect<=score),last=levels.at(-1)?.requiredCorrect||20;
+ const start=prev?.requiredCorrect||0,end=next?.requiredCorrect||last,span=Math.max(1,end-start),value=next?Math.max(0,score-start):1;
+ return {next,start,end,span:next?span:1,value,f:next?Math.min(1,value/span):1,fire:score>last};
+}
+export function track(score,cps){
+ const p=checkpointProgress(score,cps),label=p.next?`${fa(score)} جواب درست؛ ${fa(p.next.requiredCorrect-score)} جواب تا چک‌پوینت ${esc(p.next.title)}`:'همهٔ نشان‌ها رو گرفتی؛ ادامه بده!';
+ return `<div class="q-track${p.fire?' is-fire':''}" role="progressbar" aria-valuemin="0" aria-valuemax="${p.span}" aria-valuenow="${Math.min(p.value,p.span)}" aria-label="${label}"><div class="p-track-heading" aria-hidden="true"><span>${p.next?`${fa(p.next.requiredCorrect-score)} جواب کم داری تا ${esc(p.next.title)}`:'همهٔ نشان‌ها رو گرفتی!'}</span><small>${p.fire?'روی دور رکوردی!':p.next?.rewardAmount>0?`${fa(p.next.rewardAmount)} دیجی‌کوین جایزه`:'هر حدس، یک قدم جلوتر'}</small></div><div class="q-track__line"><i style="--f:${p.f.toFixed(4)}"></i>${p.fire?'<span class="p-track-flame" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="#f05b22" d="M13 1c1 8 8 9 8 15a9 9 0 0 1-18 0c0-4 2-7 6-10-1 5 1 6 2 4 2-3 2-6 2-9Z"/><path fill="#ffce43" d="M12 12c-1 4-4 4-4 7a4 4 0 0 0 8 0c0-3-3-4-4-7Z"/></svg></span>':''}</div></div>`;
 }
 /**
  * Timer plate above the products (§7): the words on the right, the seconds on the left in a pulsing cap, no bar.
@@ -167,10 +165,10 @@ export function timer(o) {
       `<span class="q-timer__n q-timer__v${o.pop ? ' q-pop-once' : ''}" aria-hidden="true">${ICO(ic, 24)}</span></div>`;
   }
   const n = mode === 'idle' ? fa(10) : mode === 'zero' ? fa(0) : o.t;
-  const lab = { idle: 'برای هر حدس، ۱۰ ثانیه', run: 'ثانیه برای انتخابت', low: 'زود باش، وقت داره تموم می‌شه!', zero: 'زمان تموم شد', busy: 'در حال بررسی پاسخ…' }[mode];
+  const lab = { idle: 'کالای بعدیت داره میاد', run: 'ثانیه برای انتخابت', low: 'زود باش، وقت داره تموم می‌شه!', zero: 'زمان تموم شد', busy: 'در حال بررسی پاسخ…' }[mode];
   const num = mode === 'busy' ? `<span class="q-timer__n">${SPIN}</span>` : `<b class="q-timer__n">${n}</b>`;
   const live = mode === 'run' || mode === 'low';
-  return `<div class="q-timer is-${mode}" style="--p:${o.p ?? (mode === 'zero' ? 0 : 1)}" data-tour="timer" ${live ? 'role="timer" data-timer' : 'role="status"'} aria-label="${mode === 'zero' ? lab : mode === 'busy' ? 'در حال بررسی پاسخ' : `${n} ${lab}`}">` +
+  return `<div class="q-timer is-${mode}" style="--p:${o.p ?? (mode === 'zero' ? 0 : 1)}" data-tour="timer" ${live ? 'role="timer" data-timer' : 'role="status"'} aria-label="${mode === 'idle' ? 'کالای بعدیت داره میاد؛ برای انتخاب بعدی ۱۰ ثانیه وقت داری' : mode === 'zero' ? lab : mode === 'busy' ? 'در حال بررسی پاسخ' : `${n} ${lab}`}">` +
     `<span class="q-timer__l">${lab}</span>${num}<span class="p-time-track" aria-hidden="true"><i></i></span></div>`;
 }
 export function refCard(card, strip) {
@@ -273,8 +271,8 @@ export const dealsOf = list => (list?.items || []).filter(p => p.deal && (p.deal
  */
 /** Compact, truthful preview: at most three seen products, with a responsive remainder count. */
 function resultDeals(items){
- const slots=Array.from({length:3},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}"><span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
- return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid">${slots}</ol></section>`;
+ const slots=Array.from({length:Math.max(3,items.length)},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}"><span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="" loading="lazy">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}${p.deal?.discountPercent?`<span class="end-product-discount">${fa(p.deal.discountPercent)}٪</span>`:''}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
+ return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid" tabindex="0" aria-label="کالاهای این دست؛ برای دیدن بقیه افقی ورق بزن">${slots}</ol></section>`;
 }
 export function vEnd(m) {
   const headline = m.newRecord ? 'رکوردت رو شکستی!' : m.cp ? 'چه دست خوبی!' : m.score > 0 ? 'هر بار، یه قدم جلوتر!' : 'دست بعدی مال توئه!';
@@ -283,7 +281,7 @@ export function vEnd(m) {
   const share = m.shareable;
   const deals = resultDeals(m.deals || []);
   const limit='';
-  return page(`q-end p-end${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="end-home" aria-label="رفتن به صفحه اصلی">${ICO('home',22)}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
+  return page(`q-end p-end${m.cp?' p-end--badge':''}${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="end-home" aria-label="رفتن به صفحه اصلی">${ICO('home',22)}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
     `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
     `<div class="p-result-art" aria-hidden="true">${art}</div><h1 class="q-end__h">${headline}</h1><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
     `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت:</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div></section>` +

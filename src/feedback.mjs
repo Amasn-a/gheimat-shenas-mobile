@@ -1,5 +1,6 @@
 import {createSoundPalette} from './sound-design.mjs';
 import {BPM,BASS,CHORDS,MELODY,midi} from './music-score.mjs';
+export const AUDIO_LEVELS={effects:.21,music:.1425,urgent:.0525,duck:.018};
 export const HAPTIC_PATTERNS={tap:10,start:[15,35,22],correct:18,wrong:[35,45,35],loss:[60,70,100],revive:[18,45,18],record:[20,35,20,35,65],checkpoint:[18,35,18,35,35],tick:9,urgent:14};
 const NOTES={tap:[[520,0,.035]],start:[[392,0,.09],[587,.075,.16]],correct:[[659,0,.09],[880,.065,.13]],wrong:[[277,0,.11],[220,.09,.18]],loss:[[330,0,.16],[261.6,.14,.18],[196,.3,.34]],revive:[[392,0,.1],[493.9,.12,.12],[587.3,.25,.24]],record:[[659,0,.1],[784,.1,.1],[988,.2,.12],[1318,.32,.3]],checkpoint:[[523,0,.1],[659,.08,.1],[784,.16,.1],[1046,.24,.2]],tick:[[720,0,.035]],urgent:[[960,0,.045]]};
 export function createFeedback({storage,createContext,visible=()=>true,haptic=()=>{},setIntervalFn=setInterval,clearIntervalFn=clearInterval}={}){
@@ -40,7 +41,7 @@ export function createFeedback({storage,createContext,visible=()=>true,haptic=()
   function unlock(){
     if(!visible())return;unlocked=true;
     try{
-      if(!ctx&&(enabled||music)){ctx=createContext?.();if(!ctx)return;sfxBus=ctx.createGain();musicBus=ctx.createGain();palette=createSoundPalette(ctx);sfxBus.gain.value=.14;musicBus.gain.value=.095;const limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-14;limiter.knee.value=12;limiter.ratio.value=5;limiter.attack.value=.004;limiter.release.value=.18;sfxBus.connect(limiter);musicBus.connect(limiter);limiter.connect(ctx.destination);}
+      if(!ctx&&(enabled||music)){ctx=createContext?.();if(!ctx)return;sfxBus=ctx.createGain();musicBus=ctx.createGain();palette=createSoundPalette(ctx);sfxBus.gain.value=AUDIO_LEVELS.effects;musicBus.gain.value=AUDIO_LEVELS.music;const limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-14;limiter.knee.value=12;limiter.ratio.value=5;limiter.attack.value=.004;limiter.release.value=.18;sfxBus.connect(limiter);musicBus.connect(limiter);limiter.connect(ctx.destination);}
       if(ctx?.state==='suspended')Promise.resolve(ctx.resume()).then(syncMusic).catch(()=>{});else syncMusic();
     }catch{ctx=null;unlocked=false;}
   }
@@ -48,7 +49,7 @@ export function createFeedback({storage,createContext,visible=()=>true,haptic=()
   function setMusic(v){music=!!v;save('pe.audio.music',music);if(music)unlock();else stopMusic();return music;}
   function setHaptics(v){haptics=!!v;save('pe.audio.haptics',haptics);return haptics;}
   function setActive(v){active=!!v;if(!active)stop();else syncMusic();}
-  function setUrgent(v){if(urgent===v)return;urgent=v;if(musicBus&&ctx){musicBus.gain.cancelScheduledValues?.(ctx.currentTime);musicBus.gain.setTargetAtTime?.(urgent?.035:.095,ctx.currentTime,.12);}}
+  function setUrgent(v){if(urgent===v)return;urgent=v;if(musicBus&&ctx){musicBus.gain.cancelScheduledValues?.(ctx.currentTime);musicBus.gain.setTargetAtTime?.(urgent?AUDIO_LEVELS.urgent:AUDIO_LEVELS.music,ctx.currentTime,.12);}}
   function react(kind,{key,haptics:allowHaptics=true}={}){
     if(!(NOTES[kind]||['swoosh','spotlight','select-high','select-low','open','nav','back','share','claim','confirm'].includes(kind))||!active||!visible())return false;const id=key&&`${kind}:${key}`;
     if(id&&seen.has(id))return false;if(id){seen.add(id);if(seen.size>180)seen.delete(seen.values().next().value);}
@@ -58,8 +59,8 @@ export function createFeedback({storage,createContext,visible=()=>true,haptic=()
       const at=ctx.currentTime+.005;
       if(['record','checkpoint','revive'].includes(kind)){
         duckUntil=Math.max(duckUntil,at+(kind==='record'?1.05:.65));
-        musicBus.gain.cancelScheduledValues(ctx.currentTime);musicBus.gain.setTargetAtTime(.012,ctx.currentTime,.035);
-        musicBus.gain.setTargetAtTime(urgent?.035:.095,duckUntil,.22);
+        musicBus.gain.cancelScheduledValues(ctx.currentTime);musicBus.gain.setTargetAtTime(AUDIO_LEVELS.duck,ctx.currentTime,.035);
+        musicBus.gain.setTargetAtTime(urgent?AUDIO_LEVELS.urgent:AUDIO_LEVELS.music,duckUntil,.22);
       }
       return palette.effect(kind,at,sfxBus,effects);
     }catch{return false;}

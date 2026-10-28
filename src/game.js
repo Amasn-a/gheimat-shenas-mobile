@@ -1258,6 +1258,7 @@ function onClick(e) {
     'learn-higher': () => answerLearning('higher'), 'learn-lower': () => answerLearning('lower'),
     'learn-done': () => learningPhase('done'), 'learn-overview': () => learningPhase('overview'),
     'learn-rewards': () => learningPhase('rewards'), 'learn-revive': () => learningPhase('revive'),
+    'learn-rule':()=>{const l=S.ui.learn||={phase:'overview'},i=Number(el.dataset.rule);if(!Number.isInteger(i)||i<0||i>3)return;l.openRules=(l.openRules||[]).includes(i)?l.openRules.filter(x=>x!==i):[...(l.openRules||[]),i];render();},
     'learn-back': learningBack, 'guide-play': guidePlay,
     guide: openGuide, 'guide-close': closeGuide,
     'onb-skip': () => finishOnboarding(),
@@ -1298,9 +1299,9 @@ async function shareResult() {
   const run = S.run, {score,record}=shareStats(run.score,S.result?.record,S.boot?.record,run.record), cp = run.highestCheckpoint;
   S.ui.share = {busy:true}; render();
   try {
-    const blob = await createShareCard({score,record,title:cp?.title || '',badgeAssetId:cp?.badgeAssetId});
+    const blob = await createShareCard({score,record,title:cp?.title || '',badgeAssetId:cp?.badgeAssetId,streakDays:S.boot?.dailyReward?.streakDays||0});
     if (S.run !== run || !S.ui.share) return;
-    S.ui.share = {blob,url:URL.createObjectURL(blob),score,record}; render();
+    S.ui.share = {blob,url:URL.createObjectURL(blob),score,record,streakDays:S.boot?.dailyReward?.streakDays||0}; render();
   } catch(e) {S.ui.share=null;toast('تصویر آماده نشد؛ دوباره امتحان کن.',true);render();}
 }
 

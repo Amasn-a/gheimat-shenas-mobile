@@ -6,7 +6,7 @@ export const TOUR_STEPS=[
 ];
 export function tourMarkup(step,seconds,answerGuide=false){
   const t=TOUR_STEPS[step]||TOUR_STEPS[0],last=step===TOUR_STEPS.length-1;
-  return `<div class="l-tour${answerGuide?' l-tour--answer':''}" data-mkey="practice-tour"><div class="l-spotlight-ring" aria-hidden="true"></div><section class="l-coach" role="${answerGuide?'region':'dialog'}"${answerGuide?' data-answer-guide':' aria-modal="true"'} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta"><span>${fa(step+1)} از ${fa(TOUR_STEPS.length)}</span>${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین">×</button>'}</div><h2 id="tour-title">${t.title}</h2><p id="tour-copy">${t.copy.replace('{seconds}',fa(seconds))}</p>${answerGuide?'':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="${step?'learn-prev':'learn-back'}">${step?'قبلی':'راهنما'}</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`}<div class="l-coach-dots" aria-hidden="true">${TOUR_STEPS.map((_,i)=>`<i class="${i===step?'is-active':''}"></i>`).join('')}</div></section></div>`;
+  return `<div class="l-tour${answerGuide?' l-tour--answer':''}" data-mkey="practice-tour"><div class="l-spotlight-ring" aria-hidden="true"></div><section class="l-coach" role="${answerGuide?'region':'dialog'}"${answerGuide?' data-answer-guide':' aria-modal="true"'} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta">${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'}</div><div class="l-coach-body"><h2 id="tour-title">${t.title}</h2><p id="tour-copy">${t.copy.replace('{seconds}',fa(seconds))}</p></div>${answerGuide?'':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="${step?'learn-prev':'learn-back'}">قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`}</section></div>`;
 }
 let cleanup=null;
 export function syncLearningSpotlight(root,step){
@@ -24,14 +24,15 @@ export function syncLearningSpotlight(root,step){
   const extra=TOUR_STEPS[step]?.include?root.querySelector(TOUR_STEPS[step].include):null;
   const targetBox=()=>spotlightBounds([target,extra].filter(Boolean).map(el=>el.getBoundingClientRect()));
   const stage=root.querySelector('.l-tour-active')||root.querySelector('.l-coach-space');
-  // The dock never moves. Only the small-phone canvas scrolls to expose a target.
-  if(stage){
-    const tr=targetBox(),pr=panel.getBoundingClientRect(),sr=stage.getBoundingClientRect();
-    const low=pr.top-18,high=Math.max(8,sr.top+8);
-    if(tr.bottom>low)stage.scrollTop+=tr.bottom-low;
-    else if(tr.top<high)stage.scrollTop-=high-tr.top;
-  }
   function position(){
+    // Refit after a mobile viewport resize as well as at step changes. Oversized
+    // cards anchor at the top; only the answer pair must fit above the sheet.
+    if(stage){
+      const tr=targetBox(),pr=panel.getBoundingClientRect(),sr=stage.getBoundingClientRect();
+      const high=Math.max(8,sr.top+8),low=pr.top-18,height=tr.bottom-tr.top;
+      const top=height>low-high?high:Math.min(Math.max(tr.top,high),low-height);
+      const delta=tr.top-top;if(Math.abs(delta)>.5)stage.scrollTop+=delta;
+    }
     const r=targetBox(),w=window.innerWidth,h=window.innerHeight,pad=7;
     const x=Math.max(8,r.left-pad),y=Math.max(8,r.top-pad),right=Math.min(w-8,r.right+pad),bottom=Math.min(h-8,r.bottom+pad);
     Object.assign(ring.style,{left:`${x}px`,top:`${y}px`,width:`${right-x}px`,height:`${bottom-y}px`});

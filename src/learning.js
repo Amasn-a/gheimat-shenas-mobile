@@ -10,7 +10,7 @@ export function renderLearning(m,h){
  const header=text=>`<header class="l-header"><button data-act="${onb?'onb-skip':'guide-close'}" aria-label="برگشت به خانه">${I.back}</button><h1>${text}</h1>${soundControl(m.soundOn!==false)}</header>`;
  if(phase==='feedback'||phase==='done'){
   const ok=m.learn?.outcome==='correct';
-  return h.page('l-guide l-outcome',header(ok?'درست انتخاب کردی!':'این بار درست نبود')+`<main class="l-main"><h2>${ok?'آفرین، گرون‌تر بود!':'هدفون از ماگ گرون‌تر بود'}</h2><p>توی این بازی هم نشان می‌گیری، هم کد تخفیف و هم دیجی‌کوین!</p>${badges}</main><footer class="l-footer l-footer-pair">${button('صفحه اصلی',onb?'onb-finish':'guide-close')}${button('نفهمیدم، یه بار دیگه','learn-practice',true)}</footer>`);
+  return h.page('l-guide l-outcome',header('یه دور تمرینی')+`<main class="l-main"><h2>${ok?'درست انتخاب کردی!':'این بار درست نبود'}</h2><p>توی این بازی هم نشان می‌گیری، هم کد تخفیف و هم دیجی‌کوین!</p>${badges}</main><footer class="l-footer l-footer-pair">${button('صفحه اصلی',onb?'onb-finish':'guide-close')}${button('قبلی','learn-practice',true)}</footer>`);
  }
  if(phase==='intro'||phase==='question'){
   const first={...DEMO_FIRST,displayTitle:'ماگ سرامیکی'},second={...DEMO_SECOND,displayTitle:'هدفون بی‌سیم'};
@@ -22,5 +22,7 @@ export function renderLearning(m,h){
   else page=page.replace('data-act="learn-back"','disabled data-act="learn-back"').replace('data-act="sound-toggle"','disabled data-act="sound-toggle"')+tourMarkup(2,0,true);
   return page;
  }
- return h.page('l-guide',header('چطور بازی کنیم؟')+`<main class="l-main"><ol class="l-steps"><li><b>۱</b><div><h3>اسم و قیمت کالای اول رو ببین</h3></div>${I.image}</li><li><b>۲</b><div><h3>اسم و عکس کالای دوم رو ببین</h3></div>${I.image}</li><li><b>۳</b><div><h3>حالا حدس بزن که گرون‌تره یا ارزون‌تر!</h3></div>${I.help}</li><li><b>۴</b><div><h3>جواب‌های درستت جایزه دارن</h3></div>${I.gift}</li></ol><h2 class="l-inline-rewards">نشان‌ها و جایزه‌ها</h2>${badges}</main><footer class="l-footer">${m.error?`<p role="alert">${esc(m.error)}</p>`:''}${button('یه دور تمرینی و مجانی بزنیم!','learn-practice')}</footer>`);
+ const rules=[['اسم و قیمت کالای اول رو ببین','کالای اول، مرجع مقایسه‌ست. اسم و قیمتش رو بخون تا قیمت کالای بعدی رو باهاش مقایسه کنی.'],['اسم و عکس کالای دوم رو ببین','قیمت کالای دوم مخفیه. با کمک عکس و اسمش تخمین بزن چقدر می‌ارزه.'],['حالا حدس بزن که گرون‌تره یا ارزون‌تر!','یکی از دو دکمه رو بزن. هر جواب درست، یه امتیاز به همین دست اضافه می‌کنه.'],['جواب‌های درستت جایزه دارن','در چک‌پوینت‌ها نشان می‌گیری و جایزهٔ همون مرحله بهت تعلق می‌گیره. آستانهٔ هر نشان رو پایین می‌بینی.']];
+ const steps=rules.map(([title,copy],i)=>{const open=(m.learn?.openRules||[]).includes(i);return `<li class="l-rule${open?' is-open':''}"><button data-act="learn-rule" data-step="rule-${i}" data-rule="${i}" aria-expanded="${open}" aria-controls="learning-rule-${i}"><b>${fa(i+1)}</b><span class="l-rule-title">${title}</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 5 5 6 5-6Z" fill="currentColor"/></svg></button><p id="learning-rule-${i}"${open?'':' hidden'}>${copy}</p></li>`;}).join('');
+ return h.page('l-guide l-overview',header('چطور بازی کنیم؟')+`<main class="l-main"><ol class="l-steps">${steps}</ol>${badges}</main><footer class="l-footer">${m.error?`<p role="alert">${esc(m.error)}</p>`:''}${button('یه دور تمرینی و مجانی بزنیم!','learn-practice')}</footer>`);
 }
