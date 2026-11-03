@@ -74,3 +74,27 @@
 #app .l-tour .l-coach-actions>:is(.l-btn,.l-coach-prev){height:var(--lesson-actions);min-height:var(--lesson-actions);grid-row:1}
 #app .l-practice .l-coach{background:#f6f2e7;border-top:1px solid #dedaca;border-radius:24px 24px 0 0}
 #app .l-practice .l-coach{max-height:calc(100dvh - var(--lesson-header) - env(safe-area-inset-top) - 128px)}
+
+/* Lesson emphasis is local to the tutorial; the game cards keep their original order. */
+#app .l-overview-lead{font-size:14px;line-height:1.9;text-align:center;color:#233f35;margin:0;padding:0 8px}
+#app .l-tour .l-coach-meta{height:18px;top:12px;inset-inline:16px;display:flex;justify-content:center;align-items:center}
+#app .l-coach-meta>button{width:40px;height:40px;top:-6px;right:-6px;background:transparent}
+#app .l-coach-meta>button::before{content:"";position:absolute;inset:6px;border-radius:50%;background:#e9e5d9;z-index:-1}
+#app .l-step-track{display:flex;gap:5px;direction:rtl}
+#app .l-step-track i{width:20px;height:3px;border-radius:3px;background:#d6d6c8}
+#app .l-step-track i.is-done{background:#435e48}
+#app .l-tour .l-coach-body{padding-top:18px}
+#app #tour-copy>span{max-width:33ch;text-align:center}
+#app #tour-copy strong{color:#233f35;font-weight:900}
+#app .l-stage-0 .q-ref .q-price{background:#fff1bd;color:#233f35}
+#app .l-stage-1 .q-cmp .q-decide{opacity:.45}
+#app .l-stage-choose .l-spotlight-ring{box-shadow:0 0 0 9999px #102e2966!important}
+#app .l-stage-choose .q-ab{animation:lesson-choice-ready .65s ease-out 2}
+#app .l-stage-result .l-spotlight-ring{display:none}
+#app .l-tour .l-coach{height:calc(240px + env(safe-area-inset-bottom))}
+@media(max-height:740px){#app .l-tour .l-coach{height:calc(212px + env(safe-area-inset-bottom))}#app .l-tour .l-coach-body{padding-top:16px}}
+@media(max-height:600px){#app .l-tour .l-coach{height:calc(204px + env(safe-area-inset-bottom))}}
+@keyframes lesson-choice-ready{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
+@media(prefers-reduced-motion:reduce){#app .l-stage-choose .q-ab{animation:none!important}}
+
+#app .l-tour--wrong .l-coach h2{color:#653d33}

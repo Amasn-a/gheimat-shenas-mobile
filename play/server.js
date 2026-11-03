@@ -2,33 +2,34 @@
 // in-browser port of the gheimat-shenas backend (application/service/*, domain/*) at the revision named in index.html.
 // Play-only timing: question 10 s visible / 12.5 s arrival deadline; continue decisions are untimed.
 // Admitted payments resolve within 60 s from admission. Receipt-first admission,
-// R-41 bands with look-ahead (starts aligned to 5/10/15/20), each checkpoint paid once when crossed (0/1/3/5), record
-// reward (1 for matching a record above 20, once per run), continue 5, daily reward claim, 100 plays a day (Asia/Tehran; owner 2026-10-25, temporary for QA).
-// DEMO ONLY: one account per browser (localStorage), DigiCoin SIMULATED in this page (start balance 1000). Nothing is
+// Scenario B: at finish only, highest checkpoint = Plus demo code / 3 coins / 5 coins / gold demo card.
+// No record bonus or revive; 3 runs a day. Attendance remains independent.
+// DEMO ONLY: one account per browser (localStorage), DigiCoin SIMULATED in this page (start balance 0). Nothing is
 // charged or credited anywhere. A static page cannot verify the real backend or the real DigiCoin integration.
 
-import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=183490631a6f';
-import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=183490631a6f';
-import { rememberReward, rewardHistoryView } from './reward-history.js?v=183490631a6f';
+import {REWARD_POLICY,finalCheckpoint} from './reward-policy.mjs?v=ba94ef0d5297';
+import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=ba94ef0d5297';
+import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=ba94ef0d5297';
+import { rememberReward, rewardHistoryView } from './reward-history.js?v=ba94ef0d5297';
 const PREFIX = '/v1/gamification/price-expert';
 export const API_ORIGIN = 'https://play.invalid';   // never resolves: a call that escapes the interceptor fails, it reaches no server
 const STORE = 'pe.home-redesign.state.v1';
 
 // LaunchConfig.value() of gheimat-shenas (R-20, R-33, R-41, R-47, brief 2026-10-20, redesign 2026-10-21)
 const CFG = {
-  configVersion: 1, catalogVersion: 2, playsPerDay: 100,   // owner 2026-10-25: temporary QA value, spec is 3
+  configVersion: 2, rewardPolicy: REWARD_POLICY, catalogVersion: 2, playsPerDay: 3,   // Scenario B, source design 2026-11-02.
   inputMs: 10_000, acceptMs: 12_500,
   leadMs: 5_000,   // owner 2026-10-26: 5 s between questions; the next product is sent hidden at its start so its photo can load
  offerMs: null, offerAcceptMs: null, paymentResolutionMs: 60_000,
   inactivityMs: 180_000, offerActivationMs: 180_000, timeoutGraceMs: 1_000, checkpointAutoContinueMs: 5_000,
   checkpoints: [
-    { id: 'cp_5', requiredCorrect: 5, title: 'قیمت‌شناس', badgeAssetId: 'badge_5', reward: 0, percent: 50 },
-    { id: 'cp_10', requiredCorrect: 10, title: 'تریدر', badgeAssetId: 'badge_10', reward: 1, percent: 70 },
-    { id: 'cp_15', requiredCorrect: 15, title: 'بازاری', badgeAssetId: 'badge_15', reward: 3, percent: 90 },
-    { id: 'cp_20', requiredCorrect: 20, title: 'تاجر', badgeAssetId: 'badge_20', reward: 5, percent: 99 },
+    { id: 'cp_5', requiredCorrect: 5, title: 'قیمت‌شناس', badgeAssetId: 'badge_5', reward: 0, rewardKind:'plus_code', percent: 50 },
+    { id: 'cp_10', requiredCorrect: 10, title: 'تریدر', badgeAssetId: 'badge_10', reward: 3, rewardKind:'coin', percent: 70 },
+    { id: 'cp_15', requiredCorrect: 15, title: 'بازاری', badgeAssetId: 'badge_15', reward: 5, rewardKind:'coin', percent: 90 },
+    { id: 'cp_20', requiredCorrect: 20, title: 'تاجر', badgeAssetId: 'badge_20', reward: 0, rewardKind:'gold_card', percent: 99 },
   ],
   continueRule: { enabled: false, cost: 5, cap: 0 },
-  recordReward: 1, recordRewardAbove: 20,
+  recordReward: 0, recordRewardAbove: 20,
   streakReward: 1,
   bands: [
     { minScore: 0, minBp: 5000, minInc: false, maxBp: null, maxInc: false },   // 0–4: d > 50%
@@ -39,7 +40,7 @@ const CFG = {
   ],
   features: { streak: true, share: true, products: true, haptics: true },
 };
-const DAILY_CAP = CFG.playsPerDay * (CFG.checkpoints.reduce((t, c) => t + c.reward, 0) + CFG.recordReward) + 3;   // R-47: 3 × (9 + 1) + 1 = 31
+const DAILY_CAP = CFG.playsPerDay * (Math.max(0, ...CFG.checkpoints.map(c => c.reward), CFG.recordReward)) + 3;   // Highest performance award per run plus at most 3 attendance coins.
 const REWARD_DELAYED_AFTER = 10_000, DAILY_PROCESSING_FOR = 120_000, DAYS_SHOWN = 7, LEASE = 20_000, GIVE_UP = 72 * 3600_000;
 const PRODUCT_LINK = dkp => `https://www.digikala.com/product/dkp-${dkp}/`;
 
@@ -62,14 +63,14 @@ const invalid = (message, details) => Object.assign(new Fail(422, 'VALIDATION_FA
 
 // ------------------------------------------------------------------------------------------------ state (localStorage)
 const fresh = () => ({
-  v: 1, player: { onboarded: false, record: 0, recordRunId: null, blocked: false, firstWeekCompletedAt:null, badgeCounts:{} }, testSettings:{revive:false}, gameOn: true,
-  part: {}, seen: {}, runs: {}, qs: {}, offers: {}, ops: {}, credit: {}, idem: {}, rewardHistory: {},
-  wallet: { balance: 1000, tx: {}, script: [] },   // owner 2026-10-25: temporary QA value
+  v: 1, player: { onboarded: false, record: 0, recordRunId: null, blocked: false, firstWeekCompletedAt:null, badgeCounts:{} }, gameOn: true,
+  part: {}, seen: {}, runs: {}, qs: {}, offers: {}, ops: {}, credit: {}, idem: {}, rewardHistory: {}, awards: {},
+  wallet: { balance: 0, tx: {}, script: [] },   // owner 2026-10-25: temporary QA value
 });
 let S = fresh();
 function load() {
   try { const v = JSON.parse(localStorage.getItem(STORE)); if (v && v.v === 1) S = v; } catch (e) { /* storage blocked or corrupt: start fresh */ }
-  S.rewardHistory ||= {};
+  S.rewardHistory ||= {}; S.awards ||= {};
   S.player.firstWeekCompletedAt ||= firstWeekCompletion(Object.keys(S.part).filter(d=>S.part[d].streakEligible));
   // Migrate past successful operations before old runs and their operations can be pruned.
   Object.values(S.ops).forEach(op => rememberReward(S.rewardHistory, op));
@@ -221,11 +222,11 @@ function mutate(op, delta, key) {
 
 // ------------------------------------------------------------------------------------------------ views (ViewAssembler, Views.java)
 const cpById = id => CFG.checkpoints.find(c => c.id === id) || null;
-const cpView = c => (c ? { checkpointId: c.id, title: c.title, badgeAssetId: c.badgeAssetId, rewardAmount: c.reward, requiredCorrect: c.requiredCorrect, comparisonPercent: c.percent } : null);
+const cpView = c => (c ? { checkpointId: c.id, title: c.title, badgeAssetId: c.badgeAssetId, rewardAmount: c.reward, rewardKind:c.rewardKind, requiredCorrect: c.requiredCorrect, comparisonPercent: c.percent } : null);
 const runConfig = () => ({
   configVersion: CFG.configVersion, catalogVersion: CFG.catalogVersion, inputMs: CFG.inputMs, acceptMs: CFG.acceptMs, offerMs: CFG.offerMs,
   offerAcceptMs: CFG.offerAcceptMs, checkpointAutoContinueMs: CFG.checkpointAutoContinueMs, checkpoints: CFG.checkpoints.map(cpView),
-  continueRule: { ...CFG.continueRule }, features: { ...CFG.features }, payOnCrossing: true, recordReward: CFG.recordReward, recordRewardAbove: CFG.recordRewardAbove,
+  continueRule: { ...CFG.continueRule }, features: { ...CFG.features }, rewardPolicy:REWARD_POLICY, rewardScenario:'B', payOnCrossing: false, recordReward: CFG.recordReward, recordRewardAbove: CFG.recordRewardAbove,
 });
 const resolveBy = o => (o.paymentStartedAt ?? o.acceptDeadline ?? clockNow) + CFG.paymentResolutionMs;
 const admits = (o, t) => o.acceptDeadline == null || t <= o.acceptDeadline;
@@ -312,16 +313,29 @@ function finish(run, reason, at) {
   const amount=streakRewardForDay(dates,run.startBusinessDate,completedAt);
   S.player.firstWeekCompletedAt=completedAt;
   if(CFG.features.streak && amount>0 && !streakRewardOf(run.startBusinessDate)) createCredit(run,'STREAK_REWARD',amount,at,amount===3?'streak_weekly':'streak_daily');
-  // since the redesign every checkpoint is paid when it is crossed (crossingRewards): nothing is left to pay at the end
+  settleFinalReward(run,at); // Only the final checkpoint award; no intermediate reward survives separately.
 }
 const runRewards = run => Object.values(S.ops).filter(o => o.runId === run.runId && (o.type === 'CHECKPOINT_REWARD' || o.type === 'RECORD_REWARD'));
-/** SettlementService.crossingRewards: once per (run, checkpoint) at the valid crossing; the record reward once per run. */
-function crossingRewards(run, reached, at) {
-  const has = key => runRewards(run).some(o => o.rewardKey === key);
-  if (reached && reached.reward > 0 && !has(reached.id)) processOp(createCredit(run, 'CHECKPOINT_REWARD', reached.reward, at, reached.id).operationId);
-  const t = run.bestScoreAtStart;
-  if (CFG.recordReward > 0 && t != null && t > CFG.recordRewardAbove && run.score === t && !has('record:' + t))
-    processOp(createCredit(run, 'RECORD_REWARD', CFG.recordReward, at, 'record:' + t).operationId);
+// A checkpoint earns its badge immediately, but never admits a payment mid-run.
+function crossingRewards() {}
+function settleFinalReward(run,at){
+ if(run.rewardPolicy!==REWARD_POLICY || S.awards[run.runId])return;
+ const cp=finalCheckpoint(CFG.checkpoints,run.score);if(!cp)return;
+ const award={id:'final:'+run.runId,runId:run.runId,checkpointId:cp.id,title:cp.title,kind:cp.rewardKind,amount:cp.reward,status:'succeeded',demo:true,receivedAt:iso(at),code:null};
+ S.awards[run.runId]=award;
+ if(cp.rewardKind==='coin'){
+  const op=createCredit(run,'CHECKPOINT_REWARD',cp.reward,at,cp.id);award.operationId=op.operationId;op.rewardPolicy=REWARD_POLICY;processOp(op.operationId);
+ }else award.code=(cp.rewardKind==='plus_code'?'DEMO-PLUS-':'DEMO-GOLD-')+run.runId.slice(-8).toUpperCase();
+}
+function finalAward(run){
+ const a=S.awards[run.runId];if(!a)return null;
+ const op=a.operationId&&S.ops[a.operationId];return {...a,status:op?rewardStatus(op).status:a.status};
+}
+function rewardHistory(){
+ const coins=rewardHistoryView(S.rewardHistory,CFG.checkpoints);
+ const codes=Object.values(S.awards).filter(a=>a.kind!=='coin').map(a=>({...a,type:'CHECKPOINT_GIFT',title:a.kind==='plus_code'?'کد تخفیف پلاس':'کارت طلای ۱۰۰ هزار تومانی'}));
+ const items=[...coins.items,...codes].sort((a,b)=>b.receivedAt.localeCompare(a.receivedAt)||b.id.localeCompare(a.id));
+ return {...coins,items,count:items.length};
 }
 
 // ------------------------------------------------------------------------------------------------ deadlines (DeadlineService)
@@ -514,7 +528,7 @@ function start(device, campaignId) {
     const cp = cpById(active.highestCheckpointId);
     replaced = { runId: active.runId, score: active.score, checkpointReward: runRewards(active).reduce((t, o) => t + o.amount + o.heldAmount, 0) };
   }
-  const run = { runId, campaignId:campaign?.id||null, category:campaign?.category||null, categoryLabel:campaign?.categoryLabel||null, deviceId: device, state: 'READY', startBusinessDate: day, startedAt: now, referenceDkp: ref.dkp, nextSeq: 1, readySince: now,
+  const run = { runId, rewardPolicy:REWARD_POLICY, campaignId:campaign?.id||null, category:campaign?.category||null, categoryLabel:campaign?.categoryLabel||null, deviceId: device, state: 'READY', startBusinessDate: day, startedAt: now, referenceDkp: ref.dkp, nextSeq: 1, readySince: now,
     nextDeadlineAt: now + CFG.inactivityMs, score: 0, continuesUsed: 0, highestCheckpointId: null, missQuestionId: null, missAt: null, noOfferReason: null,
     finishReason: null, finishedAt: null, lossQuestionId: null, recordBefore: null, newRecord: false, questionIds: [], offerIds: [], bestScoreAtStart: S.player.record };
   S.runs[runId] = run;
@@ -661,7 +675,7 @@ function rewardStatus(o) {
   const status = o.heldAmount > 0 ? 'delayed' : o.status === 'SUCCEEDED' ? 'succeeded'
     : ['HELD', 'NEEDS_REVIEW', 'UNKNOWN', 'FAILED'].includes(o.status) ? 'delayed'
     : o.createdAt + REWARD_DELAYED_AFTER < clockNow ? 'delayed' : 'pending';
-  return { amount: o.amount + o.heldAmount, heldAmount: o.heldAmount, status };
+  return { amount: o.amount + o.heldAmount, heldAmount: o.heldAmount, status, totalAmount: o.totalAmount ?? null, previousAmount: o.previousAmount ?? null };
 }
 function result(runId, device) {
   const run = lockForCommand(runId);
@@ -671,11 +685,11 @@ function result(runId, device) {
     status: parts.some(x => x.status === 'delayed') ? 'delayed' : parts.some(x => x.status === 'pending') ? 'pending' : 'succeeded' };
   const next = CFG.checkpoints.find(c => c.requiredCorrect > run.score);
   const balance = gateway.balance();
-  return { runId: run.runId, score: run.score, reason: run.finishReason, noOfferReason: run.noOfferReason, record: S.player.record, isNewRecord: !!run.newRecord,
+  return { runId: run.runId, score: run.score, reason: run.finishReason, noOfferReason: run.noOfferReason, rewardPolicy: REWARD_POLICY, record: S.player.record, isNewRecord: !!run.newRecord,
     previousRecord: run.recordBefore || 0, checkpoint: run.finishReason === 'blocked' ? null : cpView(cpById(run.highestCheckpointId)), checkpointReward: cpReward,
     continuesUsed: run.continuesUsed, continueLimitUsed: run.noOfferReason === 'limit_used',
     nextGoal: next ? { remaining: next.requiredCorrect - run.score, title: next.title, reward: next.reward, requiredCorrect: next.requiredCorrect } : null,
-    quota: quota(clockNow, part(dateOf(clockNow)).playsUsed), balance, campaignCode: null, finishedAt: iso(run.finishedAt), serverTime: iso(clockNow) };
+    quota: quota(clockNow, part(dateOf(clockNow)).playsUsed), balance, finalReward: finalAward(run), dailyReward:dailyView(), rewardHistory:rewardHistory(), campaignCode: null, finishedAt: iso(run.finishedAt), serverTime: iso(clockNow) };
 }
 // prototype-only (owner 2026-10-25, G12.DEALS): a stable simulated deal for some seen products. Production: Digikala's
 // live discount and DigiCoin cashback for each product, read when the list is requested.
@@ -761,7 +775,7 @@ function bootstrap(device) {
   return {
     access: S.player.blocked ? { status: 'blocked', message: null } : !S.gameOn ? { status: 'game_off', message: null } : { status: 'ok', message: null },
     badgeCounts:CFG.checkpoints.map(c=>({checkpointId:c.id,count:S.player.badgeCounts?.[c.id]||0})),firstVisit: !S.player.onboarded, quota: quota(now, part(today).playsUsed), record: S.player.record,
-    bestCheckpoint: recordRun ? cpView(cpById(recordRun.highestCheckpointId)) : null, dailyReward: dailyView(), rewardHistory: rewardHistoryView(S.rewardHistory, CFG.checkpoints), balance,
+    bestCheckpoint: recordRun ? cpView(cpById(recordRun.highestCheckpointId)) : null, dailyReward: dailyView(), rewardHistory: rewardHistory(), balance,
     activeRun: activeView, config: runConfig(), campaign: null,
     lastRunId: (Object.values(S.runs).filter(r => r.state === 'FINISHED').sort((a, b) => b.startedAt - a.startedAt)[0] || {}).runId || null, serverTime: iso(now),
   };
@@ -840,8 +854,8 @@ function tick() {
   if (changed) save();
 }
 
-// ------------------------------------------------------------------------------------------------ network stand-in + reviewer controls
-export const net = { latencyMs: 200, offline: false };
+// ------------------------------------------------------------------------------------------------ network stand-in
+const net = { latencyMs: 200, offline: false };
 const wait = (ms, signal) => new Promise((resolve, reject) => {
   if (signal && signal.aborted) return reject(new DOMException('aborted', 'AbortError'));
   const t = setTimeout(resolve, ms);
@@ -866,54 +880,3 @@ export function install() {
   setInterval(tick, 500);
 }
 
-/** Reviewer controls (?review): the in-page equivalents of the development backend's /dev/v1 fixtures. */
-export const reviewer = {
-  snapshot(){return {balance:S.wallet.balance,record:S.player.record,streak:streak(dateOf(Date.now())),playsLeft:CFG.playsPerDay-part(dateOf(Date.now())).playsUsed,firstVisit:!S.player.onboarded,revive:CFG.continueRule.enabled,badgeCounts:{...S.player.badgeCounts}};},
-  configure(o){
-    const num=(v,max)=>Math.min(max,Math.max(0,Math.floor(Number(v)||0)));
-    S=fresh();clockNow=Date.now();S.testSettings={revive:false};CFG.continueRule.enabled=false;CFG.continueRule.cap=0;
-    S.wallet.balance=num(o.balance,1000000);S.player.record=num(o.record,10000);S.player.onboarded=!o.firstVisit;
-    for(const cp of CFG.checkpoints)S.player.badgeCounts[cp.id]=num(o.badgeCounts?.[cp.id],9999);
-    part(dateOf(clockNow)).playsUsed=CFG.playsPerDay-num(o.playsLeft,CFG.playsPerDay);
-    this.seedAttended(num(o.streak,365));save();return this.snapshot();
-  },
-  scenario(runId,score=0,mode='ready'){
-    clockNow=Date.now();const run=S.runs[runId];if(!run)throw Error('No test run');
-    run.score=Math.max(0,Math.min(100,Math.floor(score)));run.highestCheckpointId=CFG.checkpoints.filter(c=>c.requiredCorrect<=run.score).at(-1)?.id||null;
-    if(mode==='offer'&&CFG.continueRule.enabled){run.state='AWAITING_OFFER';run.missAt=clockNow;run.nextDeadlineAt=clockNow+CFG.offerActivationMs;}
-    else if(mode==='result')finish(run,'wrong',clockNow);
-    save();return runView(run,run.deviceId);
-  },
-  seedRewards() {   // Explicit reviewer-only sample data; never called by ordinary boot.
-    clockNow = Date.now();
-    const samples = [['CHECKPOINT_REWARD', 3, 'cp_15'], ['STREAK_REWARD', 1, null], ['CHECKPOINT_REWARD', 5, 'cp_20']];
-    samples.forEach(([type, amount, rewardKey], i) => {
-      const id = 'home-preview-reward-' + i;
-      if (S.ops[id] || S.rewardHistory[id]) return;
-      const at = clockNow - (i + 1) * 86400000;
-      if (gateway.credit(amount, id) !== 'SUCCEEDED') return;
-      const op = { operationId: id, runId: null, type, amount, rewardKey, status: 'SUCCEEDED', createdAt: at, creditedAt: at, claimedAt: type === 'STREAK_REWARD' ? at : null, capDay: dateOf(at) };
-      S.ops[id] = op; rememberReward(S.rewardHistory, op);
-    });
-    save();
-  },
-  balance: () => S.wallet.balance,
-  setBalance(v) { S.wallet.balance = Math.max(0, Math.floor(v)); save(); },
-  script(stepObj) { S.wallet.script.push(stepObj); save(); },
-  resetOnboarding() { S.player.onboarded = false; save(); },
-  seedAttended(n) {   // the n days before today were attended; yesterday's daily reward is waiting for its claim
-    clockNow = Date.now();
-    const today = dateOf(clockNow);
-    for (let i = 1; i <= n; i++) { const p = part(addDays(today, -i)); p.playsUsed = Math.max(1, p.playsUsed); p.finishedRuns = Math.max(1, p.finishedRuns); p.streakEligible = true; }
-    const y = addDays(today, -1);
-    const seedAmount=streakRewardForDay(eligibleDates(),y,firstWeekCompletion(eligibleDates()));
-    if (n > 0 && seedAmount>0 && !streakRewardOf(y)) {
-      const op = { operationId: newId(), runId: null, offerId: null, type: 'STREAK_REWARD', amount: seedAmount, heldAmount: 0, status: 'CLAIMABLE', capDay: y,
-        createdAt: clockNow, claimedAt: null, nextAttemptAt: null, giveUpAt: clockNow + GIVE_UP, attempts: 0, relatedOperationId: null };
-      S.ops[op.operationId] = op;
-    }
-    save();
-  },
-  resetPlays() { clockNow = Date.now(); part(dateOf(clockNow)).playsUsed = 0; save(); },
-  resetAll() { S = fresh();CFG.continueRule.enabled=false;CFG.continueRule.cap=0;save(); },
-};

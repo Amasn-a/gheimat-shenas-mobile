@@ -1,22 +1,22 @@
-import {createJourney} from './journey.mjs?v=183490631a6f';
-import { createFeedback, buttonCueFor } from './feedback.mjs?v=183490631a6f';
-import { patchHTML } from './dom-patch.mjs?v=183490631a6f';
+import {createJourney} from './journey.mjs?v=ba94ef0d5297';
+import { createFeedback, buttonCueFor } from './feedback.mjs?v=ba94ef0d5297';
+import { patchHTML } from './dom-patch.mjs?v=ba94ef0d5297';
 // Player state controller: one authoritative store drives the DOM. Explicit view states with transition guards; run,
 // question and operation identities plus a generation counter make stale responses and timers harmless. The server
 // decides timing, results, money and rewards; this file only renders what the server said and sends guarded intents.
 // Entry: splash → home → first-start practice → explicit play; the loss screen is the one surface for a miss and the continue
 // of the same run; checkpoint rewards are registered with the answer that crosses them, the celebration only continues.
-import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js?v=183490631a6f';
-import { api, ApiError, newKey } from './api.js?v=183490631a6f';
-import * as clock from './clock.js?v=183490631a6f';
-import * as host from './host.js?v=183490631a6f';
-import * as motion from './motion.js?v=183490631a6f';
-import { DUR } from './durations.js?v=183490631a6f';
-import * as V from './views.js?v=183490631a6f';
-import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js?v=183490631a6f';
-import { createShareCard, GAME_URL } from './share.js?v=183490631a6f';
-import { shareCaption, shareStats } from './share-payload.mjs?v=183490631a6f';
-import { fa, untilInstant, title, esc } from './fmt.js?v=183490631a6f';
+import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js?v=ba94ef0d5297';
+import { api, ApiError, newKey } from './api.js?v=ba94ef0d5297';
+import * as clock from './clock.js?v=ba94ef0d5297';
+import * as host from './host.js?v=ba94ef0d5297';
+import * as motion from './motion.js?v=ba94ef0d5297';
+import { DUR } from './durations.js?v=ba94ef0d5297';
+import * as V from './views.js?v=ba94ef0d5297';
+import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js?v=ba94ef0d5297';
+import { createShareCard, GAME_URL } from './share.js?v=ba94ef0d5297';
+import { shareCaption, shareStats } from './share-payload.mjs?v=ba94ef0d5297';
+import { fa, untilInstant, title, esc } from './fmt.js?v=ba94ef0d5297';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -192,7 +192,7 @@ function endScreen() {
     deals: S.end?.products?.items||[], dealsState: S.end ? S.end.state : 'loading',
     note, code, soundOn:soundIsOn(),sharing:!!S.ui.share?.busy, restarting:!!S.ui.restarting, shareable: feat('share'), balance: S.balance, toast: S.ui.toast,
     nextGoal: R?.nextGoal || cfg().checkpoints.filter(c => c.requiredCorrect > score).map(c => ({remaining:c.requiredCorrect-score,title:c.title}))[0],
-    reward: R?.checkpointReward, noOfferReason: R?.noOfferReason || S.ui.noOffer, streakDays:S.boot?.dailyReward?.streakDays||0, previousRecord: R?.previousRecord ?? before });
+    finalReward:R?.finalReward,rewardPending:!R,reward: R?.checkpointReward, noOfferReason: R?.noOfferReason || S.ui.noOffer, streakDays:S.boot?.dailyReward?.streakDays||0, previousRecord: R?.previousRecord ?? before });
 }
 /** G12.DEALS: the seen products from the result screen's run, or from the latest finished run when opened from home. */
 function dealsScreen() {
@@ -202,7 +202,7 @@ function dealsScreen() {
 }
 async function loadEndDeals(runId) {
   S.end = { runId, state: 'loading', products: null };
-  try { const list = await api.products(runId); if (S.end && S.end.runId === runId) Object.assign(S.end, { state: 'ready', products: list }); }
+  try { const list = await api.products(runId); if (S.end && S.end.runId === runId){Object.assign(S.end,{state:'ready',products:list});S.home.products=list;S.home.state='ready';} }
   catch (e) { if (S.end && S.end.runId === runId) S.end.state = 'error'; }
   if (isLoss(S.view) || S.view === 'G12.DEALS') render();
 }
@@ -229,14 +229,14 @@ function stopLearningClock() { clearInterval(learnTimer); learnTimer=0; }
 function learningPhase(phase) {
   if (S.ui.onb?.busy) return;
   stopLearningClock(); S.ui.learn={phase}; render();
-  refocus(phase==='intro'?'[data-tour-next]':'.l-header button,.l-practice .q-iconbtn');
+  refocus(phase==='intro'?'#tour-title':'.l-header button,.l-practice .q-iconbtn');
 }
 function learningBack() {
   if(S.ui.onb?.busy||S.ui.learn?.busy)return;
   const l=S.ui.learn;
   if(l?.phase==='intro'&&(l.tourStep||0)>0)return advanceLearningTour(-1);
-  if(l?.phase==='question'){S.ui.learn={phase:'intro',tourStep:1};render();return;}
-  if(l?.phase==='feedback'||l?.phase==='done'){S.ui.learn={phase:'question',answerGuide:true};render();return;}
+  if(l?.phase==='question'){S.ui.learn={phase:'intro',tourStep:1};render();refocus('#tour-title');return;}
+  if(l?.phase==='feedback'||l?.phase==='done'){S.ui.learn={phase:'question',answerGuide:true};render();refocus('[data-act="learn-higher"]');return;}
   if(l?.phase!=='overview')return learningPhase('overview');
   if(S.view==='G02.ONBOARDING'){S.ui.onb=null;S.ui.learn=null;return routeHome();}
   closeGuide();
@@ -245,7 +245,7 @@ function advanceLearningTour(delta=1) {
   const l=S.ui.learn;if(l?.phase!=='intro')return;
   l.tourStep=Math.max(0,Math.min(TOUR_STEPS.length-1,(l.tourStep||0)+delta));
   if(delta>0&&l.tourStep===TOUR_STEPS.length-1)return startLearningQuestion(true);
-  react('spotlight',`tour:${now()}`);render();refocus('[data-tour-next]');
+  react('spotlight',`tour:${now()}`);render();refocus('#tour-title');
 }
 function startLearningQuestion(answerGuide=false) {
   if (!['G02.GUIDE','G02.ONBOARDING'].includes(S.view) || S.ui.onb?.busy || S.ui.learn?.phase!=='intro' || (S.ui.learn.tourStep||0)!==TOUR_STEPS.length-1) return;
@@ -1215,7 +1215,7 @@ async function loadResult(runId, polls = 0) {
   const g = S.gen;
   for (let i = 0; i < 3; i++) {
     try {
-      const r = await api.result(runId); if (g !== S.gen) return; S.result = r; if (S.boot) S.boot.quota = r.quota; if (r.balance != null) S.balance = r.balance;
+      const r = await api.result(runId); if (g !== S.gen) return; S.result = r; if(S.boot){S.boot.quota=r.quota;if(r.dailyReward)S.boot.dailyReward=r.dailyReward;if(r.rewardHistory)S.boot.rewardHistory=r.rewardHistory;} if (r.balance != null) S.balance = r.balance;
       // a campaign code is issued shortly after the run ends: read again (every 2 s, at most 10 times) until it is no longer pending
       if (r.campaignCode && r.campaignCode.status === 'pending' && polls < 10) later(2000, () => loadResult(runId, polls + 1));
       return render();
@@ -1312,7 +1312,8 @@ function onClick(e) {
   const acts = {
     'tab-home': () => onBack(),
     'sound-toggle': () => {reactions.setEnabled(!reactions.isEnabled());render();},
-    'test-setup': () => location.reload(),
+    'result-rewards':()=>{S.home.tabReturnTo=routeSnapshot();S.view='G01.READY';S.home.appTab='rewards';render();},
+    'reward-copy':async()=>{const item=S.boot?.rewardHistory?.items?.find(x=>x.id===el.dataset.rewardId);if(!item?.code)return;const ok=await host.copy(item.code);toast(ok?'کد نمایشی کپی شد':'کپی نشد؛ دوباره امتحان کن',!ok);render();},
     'nav-game': () => homeTab('game'), 'nav-rewards': () => homeTab('rewards'),
     'tab-play': playFromHomeTab,
     'nav-badges': () => homeTab('badges'), 'nav-products': () => homeTab('products'),
@@ -1398,17 +1399,6 @@ async function playAgain(){
   catch(e){S.ui.restarting=false;toast('بازی آماده نشد؛ دوباره امتحان کن.',true);render();}
 }
 export const audioDiagnostics=()=>reactions.diagnostics();
-export async function openTestScreen(name,score=0){
-  if(['badges','rewards','products'].includes(name)){S.ui.daily=null;homeTab(name);return;}
-  if(name==='streak'){openDailyReward(true);return;}
-  if(!['game','result'].includes(name))return;
-  if(S.view!=='G01.READY')return;await startRun();if(!S.run)return;
-  const mod=await import('../play/server.js?v=183490631a6f');const mode=name==='result'?'result':'ready';
-  const run=mod.reviewer.scenario(S.run.runId,score,mode);S.gen++;S.fb=null;S.q=null;S.offer=null;S.ref=run.reference;S.ui.offline=false;S.result=null;
-  if(mode==='result'){S.run=run;return finished(run);}
-  S.run=run;go('G03.READY');
-}
-
 async function retryDeals(){
   if(S.ui.productsRetry)return;S.ui.productsRetry=true;render();
   try{if(S.ui.dealsSrc==='end'&&S.end)await loadEndDeals(S.end.runId);else{const id=S.home.runId||S.boot?.lastRunId;S.home.runId=null;await loadHistory(id);}}

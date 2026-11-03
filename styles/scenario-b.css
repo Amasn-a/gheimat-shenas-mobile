@@ -1,0 +1,51 @@
+/* Final checkpoint rewards. Existing app shell, product geometry and bottom controls remain. */
+#app .b-prize-help{font-size:12px;line-height:1.9;color:#43564b;margin:0 0 16px;text-align:center}
+#app .b-badge-reward{font-size:11px;line-height:1.7;font-weight:750;color:#234c39;text-align:center}
+#app .b-prizes-link{display:flex;align-items:center;justify-content:center;gap:6px;background:transparent;border:0;color:#315c4a;font-size:12px;line-height:1.8;padding:10px 0;min-height:44px;width:100%;text-align:center;box-shadow:none}
+#app .b-prizes-link svg{width:16px;height:16px;flex:none}
+#app .m-badge-grid>li{gap:5px}
+#app .m-badge-grid>li>img{max-height:112px}
+#app .b-code-reward{align-items:flex-start;background:#fffdf5;border-radius:16px;padding:16px}
+#app .b-code-reward>div{display:flex;flex-direction:column;gap:8px;min-width:0;flex:1}
+#app .b-code-reward small{font-size:11px;color:#765b38}
+#app .b-code-reward code{background:#f1eee4;border-radius:8px;padding:8px;font:600 13px/1.5 monospace;text-align:center;overflow-wrap:anywhere}
+#app .b-code-reward button{min-height:44px;border-radius:10px;border:1px solid #687c60;background:#f1e9fc;color:#233f35;font:inherit;font-size:12px;font-weight:750}
+#app .b-code-reward svg{width:24px;height:24px;color:#a17428}
+#app .p-end .p-result{background:radial-gradient(ellipse at 50% 28%,#fff0ba77,transparent 68%);border:0;box-shadow:none;padding:12px 8px;gap:10px;border-radius:0}
+#app .p-end .p-result-art,#app .p-end--badge .p-result-art{height:152px;min-height:152px;max-height:152px;width:100%}
+#app .p-end:not(.p-end--badge) .p-result-art{height:74px;min-height:74px;max-height:74px}
+#app .p-result-art img{height:100%;width:100%;object-fit:contain}
+#app .b-record-note{background:#e9f2cb;color:#274f37;padding:7px 18px;border-radius:20px;font-weight:850;font-size:14px;align-self:center;margin:0}
+#app .b-record-note.is-equal{background:#eeece5;color:#455547}
+#app .b-final-award{display:flex;flex-direction:column;align-items:center;gap:4px;align-self:center;max-width:100%;padding:10px 18px;background:#fff8dc;border:1px solid #e3c56b;border-radius:16px;text-align:center}
+#app .b-final-award small{font-size:11px;color:#6f592c}
+#app .b-final-award b{font-size:19px;line-height:1.5;color:#173e32}
+#app .b-final-award span{font-size:10px;color:#5d604d;line-height:1.7}
+#app .b-end-badge{margin:0;background:#ece3fc;color:#24453a;border-radius:12px;align-self:center;padding:6px 12px;font-size:12px}
+#app .p-end .p-result-stats{padding-top:10px;gap:8px;width:100%}
+#app .p-end :is(.p-result-best,.p-result-streak){min-height:48px;padding:8px;gap:3px}
+#app .p-end :is(.p-result-best,.p-result-streak)>b{font-size:20px}
+#app .p-end .p-result-number>b{font-size:56px;line-height:1}
+#app .b-featured{position:relative}
+#app .m-product-grid>.b-featured>button,#app .end-product-grid>.b-featured>button{border:1.5px solid #ef4056;padding-top:28px;position:relative;overflow:hidden}
+#app .b-featured-label{position:absolute;top:0;inset-inline:0;height:24px;display:grid;place-items:center;background:#ef4056;color:#fff;font-size:11px;font-weight:800;z-index:1;border-radius:14px 14px 0 0}
+#app .b-featured :is(.end-product-discount,.m-product-discount){top:30px}
+#app .l-outcome-badges li{gap:4px}
+@media(max-height:640px){#app .p-end--badge .p-result-art{height:126px;min-height:126px;max-height:126px}#app .p-end .p-result{gap:8px}#app .b-final-award b{font-size:17px}}
+#app .p-end .p-result{gap:7px;padding:8px}
+#app .p-end--badge .p-result-art{height:124px;min-height:124px;max-height:124px}
+#app .p-end :is(.p-result-best,.p-result-streak){display:flex;flex-direction:row;justify-content:space-between;min-height:36px;padding:6px 8px}
+#app .p-end :is(.p-result-best,.p-result-streak)>span{font-size:10px}
+#app .p-end :is(.p-result-best,.p-result-streak)>b{font-size:17px}
+#app .p-end .p-result-stats{padding-top:7px}
+#app .p-end .b-prizes-link{min-height:30px;padding:3px;font-size:11px}
+#app .p-end .b-final-award{padding:7px 12px}
+#app .p-end .p-result-number>b{font-size:48px}
+#app .m-badge-grid>li>img{height:96px;min-height:96px;max-height:96px;flex:none}
+#app .b-featured :is(.end-product-discount,.m-product-discount){top:30px!important}
+@media(max-height:740px){#app .m-badge-grid>li>img{height:80px;min-height:80px;max-height:80px}}
+#app .p-checkpoint-card{max-height:calc(100dvh - 32px);overflow:auto;padding:16px}
+#app .p-checkpoint-card .q-cp__badge .q-badgecard__art{height:142px;width:142px}
+#app .p-checkpoint-card h2{font-size:22px;line-height:1.6;margin:8px 0}
+#app .p-checkpoint-card .p-checkpoint-prize b{font-size:16px}
+#app .p-checkpoint-card .p-checkpoint-prize small{font-size:12px;line-height:1.8}

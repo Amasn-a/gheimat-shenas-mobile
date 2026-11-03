@@ -1,16 +1,17 @@
-import { GAME_URL } from './share-payload.mjs?v=183490631a6f';
-import { renderStreakSheet } from './streak-view.js?v=183490631a6f';
-import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=183490631a6f';
-import { soundControl } from './feedback.mjs?v=183490631a6f';
-import { entryArt, loadingDots } from './entry-art.js?v=183490631a6f';
-import { renderLearning } from './learning.js?v=183490631a6f';
-import { renderMobileHome } from './mobile-home.js?v=183490631a6f';
+import {rewardLabel,finalRewardLabel} from './reward-copy.mjs?v=ba94ef0d5297';
+import { GAME_URL } from './share-payload.mjs?v=ba94ef0d5297';
+import { renderStreakSheet } from './streak-view.js?v=ba94ef0d5297';
+import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=ba94ef0d5297';
+import { soundControl } from './feedback.mjs?v=ba94ef0d5297';
+import { entryArt, loadingDots } from './entry-art.js?v=ba94ef0d5297';
+import { renderLearning } from './learning.js?v=ba94ef0d5297';
+import { renderMobileHome } from './mobile-home.js?v=ba94ef0d5297';
 // Screen markup of the redesign of 2026-10-21 (white base, Digikala red actions, badge family). Views are pure functions
 // of the view model: they never read the network or the clock. All text from data goes through esc()/title().
 // Direction rules (§2): back/close sit at the physical right (first in RTL DOM order) and point right. Inside a button the
 // icon is written before the label, so it sits at the label's right; the play triangle is mirrored to point at the label (owner 2026-10-25).
-import { I } from './icons.js?v=183490631a6f';
-import { fa, money, esc, title } from './fmt.js?v=183490631a6f';
+import { I } from './icons.js?v=ba94ef0d5297';
+import { fa, money, esc, title } from './fmt.js?v=ba94ef0d5297';
 
 const L = ' disabled aria-disabled="true"';
 const ICO = (k, s = 20) => I[k].replace('width="24" height="24"', `width="${s}" height="${s}"`);
@@ -153,7 +154,7 @@ export function checkpointProgress(score,cps){
 }
 export function track(score,cps){
  const p=checkpointProgress(score,cps),label=`${fa(score)} جواب درست؛ ${fa(p.next.requiredCorrect-score)} جواب تا ${p.next.progressOnly?'هدف '+fa(p.next.requiredCorrect):'چک‌پوینت '+esc(p.next.title)}`;
- return `<div class="q-track${p.fire?' is-fire':''}" role="progressbar" aria-valuemin="0" aria-valuemax="${p.span}" aria-valuenow="${Math.min(p.value,p.span)}" aria-label="${label}"><div class="p-track-heading" aria-hidden="true"><span>${p.next.progressOnly?`${fa(p.next.requiredCorrect-score)} جواب تا هدف بعدی: ${fa(p.next.requiredCorrect)}`:`${fa(p.next.requiredCorrect-score)} جواب کم داری تا ${esc(p.next.title)}`}</span><small>${p.fire?'روی دور رکوردی!':p.next?.rewardAmount>0?`${fa(p.next.rewardAmount)} دیجی‌کوین جایزه`:'هر حدس، یک قدم جلوتر'}</small></div><div class="q-track__line"><i style="--f:${p.f.toFixed(4)}"></i>${p.fire?'<span class="p-track-flame" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="#f05b22" d="M13 1c1 8 8 9 8 15a9 9 0 0 1-18 0c0-4 2-7 6-10-1 5 1 6 2 4 2-3 2-6 2-9Z"/><path fill="#ffce43" d="M12 12c-1 4-4 4-4 7a4 4 0 0 0 8 0c0-3-3-4-4-7Z"/></svg></span>':''}</div></div>`;
+ return `<div class="q-track${p.fire?' is-fire':''}" role="progressbar" aria-valuemin="0" aria-valuemax="${p.span}" aria-valuenow="${Math.min(p.value,p.span)}" aria-label="${label}"><div class="p-track-heading" aria-hidden="true"><span>${p.next.progressOnly?`${fa(p.next.requiredCorrect-score)} جواب تا هدف بعدی: ${fa(p.next.requiredCorrect)}`:`${fa(p.next.requiredCorrect-score)} جواب کم داری تا ${esc(p.next.title)}`}</span><small>${p.fire?'روی دور رکوردی!':rewardLabel(p.next)}</small></div><div class="q-track__line"><i style="--f:${p.f.toFixed(4)}"></i>${p.fire?'<span class="p-track-flame" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="#f05b22" d="M13 1c1 8 8 9 8 15a9 9 0 0 1-18 0c0-4 2-7 6-10-1 5 1 6 2 4 2-3 2-6 2-9Z"/><path fill="#ffce43" d="M12 12c-1 4-4 4-4 7a4 4 0 0 0 8 0c0-3-3-4-4-7Z"/></svg></span>':''}</div></div>`;
 }
 /**
  * Timer plate above the products (§7): the words on the right, the seconds on the left in a pulsing cap, no bar.
@@ -247,8 +248,7 @@ export function leaveSheet(m) {
  * continue, no second «دریافت» step: the reward was registered by the server with the answer that crossed the line.
  */
 export function cpOverlay(c,index,reward,next) {
-  const amount=c.rewardAmount||0,late=reward?.status==='delayed';
-  return `<div class="q-cp q-cp--compact tier-${index}" role="dialog" aria-modal="true" aria-labelledby="cp-t" ><section class="p-checkpoint-card"><button class="modal-close q-iconbtn" data-act="cp-go" aria-label="بستن نشان">${I.x}</button>${badge(c,index,'q-cp__badge')}<h2 id="cp-t">نشان «${esc(c.title)}» رو گرفتی!</h2>${amount?`<p class="p-checkpoint-prize">${COIN}<b>${fa(amount)} دیجی‌کوین جایزه</b><small>${late?'واریزش کمی طول می‌کشه':reward?.status==='succeeded'?'واریز شد':''}</small></p>`:''}${PRIMARY('ادامهٔ بازی',' data-act="cp-go"',I.fwd)}</section></div>`;
+  return `<div class="q-cp q-cp--compact tier-${index}" role="dialog" aria-modal="true" aria-labelledby="cp-t"><section class="p-checkpoint-card"><button class="modal-close q-iconbtn" data-act="cp-go" aria-label="بستن نشان">${I.x}</button>${badge(c,index,'q-cp__badge')}<h2 id="cp-t">نشان «${esc(c.title)}» رو گرفتی!</h2><p class="p-checkpoint-prize"><b>${rewardLabel(c)}</b><small>اگه این بالاترین نشانت تا پایان دست باشه، جایزه‌اش رو می‌گیری.</small></p><p class="b-prize-help">جایزهٔ نهایی رو در صفحهٔ «جوایز» می‌بینی.</p>${PRIMARY('ادامهٔ بازی',' data-act="cp-go"',I.fwd)}</section></div>`;
 }
 
 // ---------------------------------------------------------------- G05/G06 end of a run (owner 2026-10-25)
@@ -274,11 +274,11 @@ export const dealsOf = list => (list?.items || []).filter(p => productPrices(p).
  */
 /** Compact, truthful preview: at most three seen products, with a responsive remainder count. */
 function resultDeals(items){
- const slots=Array.from({length:Math.max(3,items.length)},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}">${productDiscountMarkup(p,'end-product-discount')}<span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="" loading="lazy">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
+ const slots=Array.from({length:Math.max(3,items.length)},(_,i)=>{const p=items[i];return p?`<li><button data-act="open-product" data-link="${esc(p.link||'')}">${i===1?'<span class="b-featured-label">کالای ویژه</span>':''}${productDiscountMarkup(p,'end-product-discount')}<span class="end-product-art">${p.imageUrl?`<img src="${esc(p.imageUrl)}" alt="" loading="lazy">`:''}</span><b>${esc(p.displayTitle)}</b>${productPriceMarkup(p)}</button></li>`:'<li class="end-product-empty" aria-hidden="true"></li>';}).join('');
  return `<section class="p-result-deals"><header><h2>کالاهایی که دیدی</h2><button data-act="deals-end">مشاهدهٔ همه ${I.fwd}</button></header><ol class="end-product-grid" tabindex="0" aria-label="کالاهای این دست؛ برای دیدن بقیه افقی ورق بزن">${slots}</ol></section>`;
 }
 export function vEnd(m) {
-  const headline = '';
+  const headline = m.newRecord?'<p class="b-record-note">رکوردت رو زدی!</p>':m.score>0&&m.score===m.previousRecord?'<p class="b-record-note is-equal">به رکوردت رسیدی!</p>':'';
   const earned='';
   const art = m.cp ? `<img src="${BADGE_SRC(badgeId(m.cp,m.cpIndex))}" alt="نشان ${esc(m.cp.title)}">` : '<img src="assets/brand-smile-v2.png" alt="">';
   const share = m.shareable;
@@ -286,8 +286,8 @@ export function vEnd(m) {
   const limit='';
   return page(`q-end p-end${m.cp?' p-end--badge':''}${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="back" aria-label="بازگشت به صفحهٔ قبل">${I.back}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
     `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
-    `<div class="p-result-art" aria-hidden="true">${art}</div>${headline}<div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
-    `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div></section>` +
+    `${headline}<div class="p-result-art" aria-hidden="true">${art}</div><div class="b-final-award"><small>جایزهٔ این دست</small><b>${m.finalReward?finalRewardLabel(m.finalReward):m.reward?.amount>0?fa(m.reward.amount)+' دیجی‌کوین (قبلی)':m.rewardPending?'در حال دریافت نتیجه…':'بدون جایزه'}</b>${m.finalReward?`<span>${m.finalReward.kind==='coin'?m.finalReward.status==='succeeded'?'به موجودی نمایشی اضافه شد':'واریز در حال پیگیریه':'کد نمایشی؛ قابل مشاهده در صفحهٔ جوایز'}</span>`:''}</div><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
+    `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div>${m.cp?`<p class="b-end-badge">بالاترین نشان این دست: ${esc(m.cp.title)}</p><button class="b-prizes-link" data-act="result-rewards">مشاهدهٔ جایزه در صفحهٔ جوایز ${I.fwd}</button>`:''}</section>` +
     `${earned}${limit}${m.note || ''}${m.code || ''}${deals}</main>` +
     `<footer class="q-end__foot">${m.restarting?`<button class="q-btn q-btn--primary" data-act="play-again" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی…</span></button>`:BTN('q-btn--primary','یه دست دیگه',' data-act="play-again"',I.play)}` +
     `${share ? (m.sharing?`<button class="q-btn q-btn--secondary" data-act="share-result" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی تصویر…</span></button>`:BTN('q-btn--secondary','اشتراک گذاری با دوستان',' data-act="share-result"',I.share)) : ''}</footer>`,toastHTML(m.toast));

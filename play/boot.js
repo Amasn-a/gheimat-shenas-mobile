@@ -1,11 +1,11 @@
 // Play entry (GitHub Pages). This Play-only redesign intentionally diverges from gheimat-shenas (src/, styles/, fonts/). This file
 // does what the Super App and the backend do in production: it configures the host adapter for a plain browser and
-// answers the player's API calls with the in-browser demo server (play/server.js). Reviewer controls: add ?review.
-import { HAPTIC_PATTERNS } from '../src/feedback.mjs?v=183490631a6f';
-import { buildSharePayload } from '../src/share-payload.mjs?v=183490631a6f';
-import { splash, BOOT_ERROR } from '../src/launch.js?v=183490631a6f';   // first: the splash mounts before anything else loads
-import { configureHost } from '../src/host.js?v=183490631a6f';
-import { install, API_ORIGIN, setCatalog, net, reviewer } from './server.js?v=183490631a6f';
+// answers the player's API calls with the in-browser demo server (play/server.js). Public entry: no configuration or developer controls.
+import { HAPTIC_PATTERNS } from '../src/feedback.mjs?v=ba94ef0d5297';
+import { buildSharePayload } from '../src/share-payload.mjs?v=ba94ef0d5297';
+import { splash, BOOT_ERROR } from '../src/launch.js?v=ba94ef0d5297';   // first: the splash mounts before anything else loads
+import { configureHost } from '../src/host.js?v=ba94ef0d5297';
+import { install, API_ORIGIN, setCatalog } from './server.js?v=ba94ef0d5297';
 
 const app = document.getElementById('app');
 const rev = document.documentElement.dataset.release || document.documentElement.dataset.source || '';
@@ -41,48 +41,4 @@ try {
 }
 install();
 
-if (/[?&]review\b/.test(location.search)) {
-  document.body.classList.add('pe-dev');
-  const panel = document.createElement('aside');
-  panel.className = 'pe-devpanel';
-  panel.innerHTML = `
-<header><span><b class="tag">DEMO</b> reviewer controls</span><button id="dvMin">–</button></header>
-<div>state <span class="state" id="dvState">…</span></div>
-<small>Static Play demo of gheimat-shenas ${rev} · in-browser server · simulated DigiCoin · data kept in this browser only</small>
-<fieldset><legend>Simulated DigiCoin</legend>
-  balance <input type="number" id="dvBal" min="0"> <button id="dvBalGo">set</button><br>
-  next charge <select id="dvCharge"><option value="">normal</option><option value="failed">rejected</option><option value="unknown_applied">applied, response lost</option><option value="late_success">confirms late (15 s)</option><option value="unknown_not_applied">lost, not applied</option></select>
-  <button id="dvChargeGo">script</button><br>
-  balance read <select id="dvBalRead"><option value="">normal</option><option value="unreadable">unreadable</option></select> <button id="dvBalReadGo">script</button>
-</fieldset>
-<fieldset><legend>Account (this browser)</legend>
-  <button id="dvOnb">reset onboarding</button> <button id="dvDaily">5 attended days + unclaimed reward</button><br>
-  <button id="dvRewards">sample earned rewards</button><br>
-  <button id="dvPlays">reset today's plays</button> <button id="dvReset">reset all demo data</button>
-</fieldset>
-<fieldset><legend>Network (simulated)</legend>
-  delay <select id="dvLat"><option value="200">0.2 s</option><option value="800">0.8 s</option><option value="2500">2.5 s</option><option value="6000">6 s</option></select>
-  <label><input type="checkbox" id="dvOff"> offline</label>
-</fieldset>`;
-  document.body.appendChild(panel);
-  const $ = s => panel.querySelector(s), reload = () => location.reload();
-  $('#dvBal').value = reviewer.balance();
-  $('#dvMin').onclick = () => panel.classList.toggle('min');
-  $('#dvBalGo').onclick = () => reviewer.setBalance(Number($('#dvBal').value));
-  $('#dvChargeGo').onclick = () => { const o = $('#dvCharge').value; if (o) reviewer.script({ op: 'charge', outcome: o, late_ms: 15000 }); };
-  $('#dvBalReadGo').onclick = () => { const o = $('#dvBalRead').value; if (o) reviewer.script({ op: 'balance', outcome: o }); };
-  $('#dvOnb').onclick = () => { reviewer.resetOnboarding(); reload(); };
-  $('#dvDaily').onclick = () => { reviewer.seedAttended(5); reload(); };
-  $('#dvRewards').onclick = () => { reviewer.seedRewards(); reload(); };
-  $('#dvPlays').onclick = () => { reviewer.resetPlays(); reload(); };
-  $('#dvReset').onclick = () => { reviewer.resetAll(); reload(); };
-  $('#dvLat').onchange = e => { net.latencyMs = Number(e.target.value); };
-  $('#dvOff').onchange = e => { net.offline = e.target.checked; window.dispatchEvent(new Event(net.offline ? 'offline' : 'online')); };
-  setInterval(() => { const v = app.dataset.view; if (v) $('#dvState').textContent = v; }, 200);
-}
-
-const {configureDemo}=await import('../src/test-setup.js?v=183490631a6f');
-const testOptions=await configureDemo(reviewer);
-const booted=new Promise(resolve=>app.addEventListener('qs:boot',e=>resolve(e.detail.ok),{once:true}));
-await import('../src/main.js?v=183490631a6f');
-if(await booted){const {openTestScreen}=await import('../src/game.js?v=183490631a6f');if(testOptions)await openTestScreen(testOptions.screen,testOptions.score);}
+await import('../src/main.js?v=ba94ef0d5297');

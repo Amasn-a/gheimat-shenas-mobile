@@ -153,3 +153,5 @@
 @media (max-width: 359px) {
   #app .m-quick-chances { padding: 6px; gap: 4px; }
 }
+
+#app .m-reward-policy{margin:0;padding:12px 0;font-size:12px;line-height:1.9;color:#304a3c;text-align:center}
