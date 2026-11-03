@@ -1,0 +1,15 @@
+/* Badge cards grow with every label and count instead of squeezing into fixed rows. */
+#app .m-main[data-mobile-tab=badges]{overflow-y:auto;scroll-padding-bottom:16px}
+#app .m-panel.m-badges{height:auto;min-height:0;flex:0 0 auto;gap:16px;padding-bottom:16px}
+#app .m-badges .m-badge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-rows:auto;align-items:stretch;flex:none;height:auto;min-height:0;gap:12px;margin:0;padding:0;list-style:none}
+#app .m-badges .m-badge-grid>li{display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:7px;padding:12px 10px;min-height:216px;height:auto;overflow:hidden;border-radius:18px}
+#app .m-badges .m-badge-grid>li>img{height:96px;min-height:96px;max-height:96px;flex:none;width:100%;object-fit:contain}
+#app .m-badges :is(.m-badge-threshold,.b-badge-reward){display:block;margin:0;width:100%;height:auto;min-height:18px;text-align:center;line-height:1.65;flex:none;white-space:normal;overflow-wrap:anywhere}
+#app .m-badges .m-badge-times{position:static;display:inline-flex;justify-content:center;align-items:center;min-height:26px;margin-top:auto;flex:none;line-height:1.4;font-size:12px;max-width:100%;padding:4px 10px}
+#app .m-prizes{height:auto;min-height:0;flex:none;overflow:visible}
+#app .m-reward-list>li{min-height:70px;flex-shrink:0}
+#app .m-reward-list>li>div{min-width:0}
+#app .m-reward-list>li>div>b{line-height:1.7;overflow-wrap:anywhere}
+#app .b-code-reward{margin-block:8px}
+#app .l-practice :is(.q-ref__t,.q-cmp__t){display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-height:740px){#app .m-badges .m-badge-grid>li{min-height:202px;padding:12px 8px}#app .m-badges .m-badge-grid>li>img{height:84px;min-height:84px;max-height:84px}}

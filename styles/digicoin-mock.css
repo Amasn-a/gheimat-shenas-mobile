@@ -33,3 +33,17 @@ html{scrollbar-width:none}html::-webkit-scrollbar{display:none}.dc-mission-main>
 @media(max-width:370px){.dc-featured-game{padding:17px 15px;min-height:188px}.dc-featured-copy h2{font-size:25px}.dc-featured-copy p{font-size:9px}.dc-featured-visual{width:46%;left:-2px}}
 .dc-featured-visual{width:44%}
 @media(min-width:430px){.dc-featured-visual{width:43%}}
+/* Comfortable top inset and the primary DigiCoin entry directly below the pet campaign. */
+.dc-store{padding-top:calc(16px + env(safe-area-inset-top,0px))}
+.dc-hero{padding-top:calc(16px + env(safe-area-inset-top,0px))}
+.dc-store-coin-banner{position:relative;isolation:isolate;display:flex;align-items:center;overflow:hidden;min-height:222px;margin:0 16px 18px;padding:20px 18px;background:linear-gradient(120deg,#ffe2a9,#fff0c7 53%,#fff7df);border:1px solid #f2dfb2;border-radius:18px;color:#164d43}
+.dc-store-coin-copy{position:relative;z-index:2;flex:0 0 57%;min-width:0}
+.dc-store-coin-brand{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:#746020;margin-bottom:8px}
+.dc-store-coin-brand .dc-coin{width:22px;height:22px}
+.dc-store-coin-copy h2{font-size:27px;font-weight:950;line-height:1.35;letter-spacing:-.5px;margin:0 0 9px;color:#164d43}
+.dc-store-coin-copy p{font-size:10px;line-height:1.8;color:#4c6650;margin:0 0 13px;max-width:19ch}
+.dc-store-coin-cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:38px;padding:8px 12px;background:#e6224c;color:#fff;border-radius:10px;font-size:12px;font-weight:750;white-space:nowrap}
+.dc-store-coin-cta .m-icon{width:14px;height:14px}
+.dc-store-coin-art{position:absolute;left:-3px;top:30px;bottom:18px;height:calc(100% - 48px);width:44%;object-fit:contain;z-index:1}
+.dc-store-coin-banner:active .dc-store-coin-cta{background:#c82143}
+@media(max-width:370px){.dc-store-coin-banner{padding:18px 15px;min-height:212px}.dc-store-coin-copy h2{font-size:25px}.dc-store-coin-copy p{font-size:9px}.dc-store-coin-cta{font-size:11px;gap:8px}}

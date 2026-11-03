@@ -1,22 +1,22 @@
-import {createJourney} from './journey.mjs?v=ba94ef0d5297';
-import { createFeedback, buttonCueFor } from './feedback.mjs?v=ba94ef0d5297';
-import { patchHTML } from './dom-patch.mjs?v=ba94ef0d5297';
+import {createJourney} from './journey.mjs?v=3b660ae16bb3';
+import { createFeedback, buttonCueFor } from './feedback.mjs?v=3b660ae16bb3';
+import { patchHTML } from './dom-patch.mjs?v=3b660ae16bb3';
 // Player state controller: one authoritative store drives the DOM. Explicit view states with transition guards; run,
 // question and operation identities plus a generation counter make stale responses and timers harmless. The server
 // decides timing, results, money and rewards; this file only renders what the server said and sends guarded intents.
 // Entry: splash → home → first-start practice → explicit play; the loss screen is the one surface for a miss and the continue
 // of the same run; checkpoint rewards are registered with the answer that crosses them, the celebration only continues.
-import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js?v=ba94ef0d5297';
-import { api, ApiError, newKey } from './api.js?v=ba94ef0d5297';
-import * as clock from './clock.js?v=ba94ef0d5297';
-import * as host from './host.js?v=ba94ef0d5297';
-import * as motion from './motion.js?v=ba94ef0d5297';
-import { DUR } from './durations.js?v=ba94ef0d5297';
-import * as V from './views.js?v=ba94ef0d5297';
-import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js?v=ba94ef0d5297';
-import { createShareCard, GAME_URL } from './share.js?v=ba94ef0d5297';
-import { shareCaption, shareStats } from './share-payload.mjs?v=ba94ef0d5297';
-import { fa, untilInstant, title, esc } from './fmt.js?v=ba94ef0d5297';
+import { activeMarketingCampaign, campaignById, campaignTime } from './marketing-campaign.js?v=3b660ae16bb3';
+import { api, ApiError, newKey } from './api.js?v=3b660ae16bb3';
+import * as clock from './clock.js?v=3b660ae16bb3';
+import * as host from './host.js?v=3b660ae16bb3';
+import * as motion from './motion.js?v=3b660ae16bb3';
+import { DUR } from './durations.js?v=3b660ae16bb3';
+import * as V from './views.js?v=3b660ae16bb3';
+import { syncLearningSpotlight, TOUR_STEPS } from './learning-spotlight.js?v=3b660ae16bb3';
+import { createShareCard, GAME_URL } from './share.js?v=3b660ae16bb3';
+import { shareCaption, shareStats } from './share-payload.mjs?v=3b660ae16bb3';
+import { fa, untilInstant, title, esc } from './fmt.js?v=3b660ae16bb3';
 
 const $ = (s, r = document) => r.querySelector(s);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1313,7 +1313,7 @@ function onClick(e) {
     'tab-home': () => onBack(),
     'sound-toggle': () => {reactions.setEnabled(!reactions.isEnabled());render();},
     'result-rewards':()=>{S.home.tabReturnTo=routeSnapshot();S.view='G01.READY';S.home.appTab='rewards';render();},
-    'reward-copy':async()=>{const item=S.boot?.rewardHistory?.items?.find(x=>x.id===el.dataset.rewardId);if(!item?.code)return;const ok=await host.copy(item.code);toast(ok?'کد نمایشی کپی شد':'کپی نشد؛ دوباره امتحان کن',!ok);render();},
+    'reward-copy':async()=>{const item=S.boot?.rewardHistory?.items?.find(x=>x.id===el.dataset.rewardId);if(!item?.code)return;const ok=await host.copy(item.code);toast(ok?'کد کپی شد':'کپی نشد؛ دوباره امتحان کن',!ok);render();},
     'nav-game': () => homeTab('game'), 'nav-rewards': () => homeTab('rewards'),
     'tab-play': playFromHomeTab,
     'nav-badges': () => homeTab('badges'), 'nav-products': () => homeTab('products'),

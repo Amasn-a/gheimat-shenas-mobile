@@ -1,17 +1,17 @@
-import {rewardLabel,finalRewardLabel} from './reward-copy.mjs?v=ba94ef0d5297';
-import { GAME_URL } from './share-payload.mjs?v=ba94ef0d5297';
-import { renderStreakSheet } from './streak-view.js?v=ba94ef0d5297';
-import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=ba94ef0d5297';
-import { soundControl } from './feedback.mjs?v=ba94ef0d5297';
-import { entryArt, loadingDots } from './entry-art.js?v=ba94ef0d5297';
-import { renderLearning } from './learning.js?v=ba94ef0d5297';
-import { renderMobileHome } from './mobile-home.js?v=ba94ef0d5297';
+import {rewardLabel,finalRewardLabel} from './reward-copy.mjs?v=3b660ae16bb3';
+import { GAME_URL } from './share-payload.mjs?v=3b660ae16bb3';
+import { renderStreakSheet } from './streak-view.js?v=3b660ae16bb3';
+import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=3b660ae16bb3';
+import { soundControl } from './feedback.mjs?v=3b660ae16bb3';
+import { entryArt, loadingDots } from './entry-art.js?v=3b660ae16bb3';
+import { renderLearning } from './learning.js?v=3b660ae16bb3';
+import { renderMobileHome } from './mobile-home.js?v=3b660ae16bb3';
 // Screen markup of the redesign of 2026-10-21 (white base, Digikala red actions, badge family). Views are pure functions
 // of the view model: they never read the network or the clock. All text from data goes through esc()/title().
 // Direction rules (§2): back/close sit at the physical right (first in RTL DOM order) and point right. Inside a button the
 // icon is written before the label, so it sits at the label's right; the play triangle is mirrored to point at the label (owner 2026-10-25).
-import { I } from './icons.js?v=ba94ef0d5297';
-import { fa, money, esc, title } from './fmt.js?v=ba94ef0d5297';
+import { I } from './icons.js?v=3b660ae16bb3';
+import { fa, money, esc, title } from './fmt.js?v=3b660ae16bb3';
 
 const L = ' disabled aria-disabled="true"';
 const ICO = (k, s = 20) => I[k].replace('width="24" height="24"', `width="${s}" height="${s}"`);
@@ -286,7 +286,7 @@ export function vEnd(m) {
   const limit='';
   return page(`q-end p-end${m.cp?' p-end--badge':''}${m.newRecord ? ' p-end--record' : ''}`, `<header class="q-hdr q-end__hd"><button class="q-iconbtn" data-act="back" aria-label="بازگشت به صفحهٔ قبل">${I.back}</button><h2>نتیجهٔ این دست</h2>${soundControl(m.soundOn!==false)}</header>` +
     `<main class="q-end__main"><section class="p-result" aria-label="نتیجه و رکورد">` +
-    `${headline}<div class="p-result-art" aria-hidden="true">${art}</div><div class="b-final-award"><small>جایزهٔ این دست</small><b>${m.finalReward?finalRewardLabel(m.finalReward):m.reward?.amount>0?fa(m.reward.amount)+' دیجی‌کوین (قبلی)':m.rewardPending?'در حال دریافت نتیجه…':'بدون جایزه'}</b>${m.finalReward?`<span>${m.finalReward.kind==='coin'?m.finalReward.status==='succeeded'?'به موجودی نمایشی اضافه شد':'واریز در حال پیگیریه':'کد نمایشی؛ قابل مشاهده در صفحهٔ جوایز'}</span>`:''}</div><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
+    `${headline}<div class="p-result-art" aria-hidden="true">${art}</div><div class="b-final-award"><small>جایزهٔ این دست</small><b>${m.finalReward?finalRewardLabel(m.finalReward):m.reward?.amount>0?fa(m.reward.amount)+' دیجی‌کوین (قبلی)':m.rewardPending?'در حال دریافت نتیجه…':'بدون جایزه'}</b>${m.finalReward?`<span>${m.finalReward.kind==='coin'?m.finalReward.status==='succeeded'?'به موجودی اضافه شد':'واریز در حال پیگیریه':'کدت رو در صفحهٔ جوایز ببین'}</span>`:''}</div><div class="p-result-number"><b>${fa(m.score)}</b><span>حدس درست</span></div>` +
     `<div class="p-result-stats"><div class="p-result-best"><span>بهترین رکوردت</span><b>${fa(m.best)}</b></div><div class="p-result-streak"><span>استریک تو</span><b>${fa(m.streakDays||0)} <small>روز</small></b></div></div>${m.cp?`<p class="b-end-badge">بالاترین نشان این دست: ${esc(m.cp.title)}</p><button class="b-prizes-link" data-act="result-rewards">مشاهدهٔ جایزه در صفحهٔ جوایز ${I.fwd}</button>`:''}</section>` +
     `${earned}${limit}${m.note || ''}${m.code || ''}${deals}</main>` +
     `<footer class="q-end__foot">${m.restarting?`<button class="q-btn q-btn--primary" data-act="play-again" disabled aria-busy="true">${SPIN}<span>در حال آماده‌سازی…</span></button>`:BTN('q-btn--primary','یه دست دیگه',' data-act="play-again"',I.play)}` +

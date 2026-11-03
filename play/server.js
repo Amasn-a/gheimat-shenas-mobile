@@ -3,21 +3,22 @@
 // Play-only timing: question 10 s visible / 12.5 s arrival deadline; continue decisions are untimed.
 // Admitted payments resolve within 60 s from admission. Receipt-first admission,
 // Scenario B: at finish only, highest checkpoint = Plus demo code / 3 coins / 5 coins / gold demo card.
-// No record bonus or revive; 3 runs a day. Attendance remains independent.
-// DEMO ONLY: one account per browser (localStorage), DigiCoin SIMULATED in this page (start balance 0). Nothing is
+// No record bonus or revive; 10 runs a day. Attendance remains independent.
+// DEMO ONLY: one account per browser (localStorage), DigiCoin SIMULATED in this page (start balance 950). Nothing is
 // charged or credited anywhere. A static page cannot verify the real backend or the real DigiCoin integration.
 
-import {REWARD_POLICY,finalCheckpoint} from './reward-policy.mjs?v=ba94ef0d5297';
-import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=ba94ef0d5297';
-import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=ba94ef0d5297';
-import { rememberReward, rewardHistoryView } from './reward-history.js?v=ba94ef0d5297';
+import {REWARD_POLICY,finalCheckpoint} from './reward-policy.mjs?v=3b660ae16bb3';
+import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=3b660ae16bb3';
+import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=3b660ae16bb3';
+import { rememberReward, rewardHistoryView } from './reward-history.js?v=3b660ae16bb3';
 const PREFIX = '/v1/gamification/price-expert';
 export const API_ORIGIN = 'https://play.invalid';   // never resolves: a call that escapes the interceptor fails, it reaches no server
-const STORE = 'pe.home-redesign.state.v1';
+import {PLAYER_STORE,INITIAL_BALANCE,DAILY_ATTEMPTS} from '../src/player-profile.mjs';
+const STORE = PLAYER_STORE;
 
 // LaunchConfig.value() of gheimat-shenas (R-20, R-33, R-41, R-47, brief 2026-10-20, redesign 2026-10-21)
 const CFG = {
-  configVersion: 2, rewardPolicy: REWARD_POLICY, catalogVersion: 2, playsPerDay: 3,   // Scenario B, source design 2026-11-02.
+  configVersion: 3, rewardPolicy: REWARD_POLICY, catalogVersion: 3, playsPerDay: DAILY_ATTEMPTS,   // Scenario B, source design 2026-11-02.
   inputMs: 10_000, acceptMs: 12_500,
   leadMs: 5_000,   // owner 2026-10-26: 5 s between questions; the next product is sent hidden at its start so its photo can load
  offerMs: null, offerAcceptMs: null, paymentResolutionMs: 60_000,
@@ -65,7 +66,7 @@ const invalid = (message, details) => Object.assign(new Fail(422, 'VALIDATION_FA
 const fresh = () => ({
   v: 1, player: { onboarded: false, record: 0, recordRunId: null, blocked: false, firstWeekCompletedAt:null, badgeCounts:{} }, gameOn: true,
   part: {}, seen: {}, runs: {}, qs: {}, offers: {}, ops: {}, credit: {}, idem: {}, rewardHistory: {}, awards: {},
-  wallet: { balance: 0, tx: {}, script: [] },   // owner 2026-10-25: temporary QA value
+  wallet: { balance: INITIAL_BALANCE, tx: {}, script: [] },   // owner 2026-10-25: temporary QA value
 });
 let S = fresh();
 function load() {
@@ -109,6 +110,7 @@ function dropRunsWithUnknownProducts() {
 // ------------------------------------------------------------------------------------------------ catalog + selection (R-41, R-52, R-62)
 let products = new Map(), index = [], nonDigital = new Set();   // index: [price, dkp] sorted by price, then dkp
 export function setCatalog(rows) {
+  rows = rows.filter(row => isDigitalProduct(row[2]));
   products = new Map(rows.map(([dkp, variantId, displayTitle, imageUrl, priceToman]) => [dkp, { dkp, variantId, displayTitle, imageUrl, priceToman }]));
   nonDigital = new Set(rows.filter(r=>!isDigitalProduct(r[2])).map(r=>r[0]));
   index = rows.map(r => [r[4], r[0]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -149,8 +151,32 @@ function hasNext(refPrice, score, exclude, also) {
   }
   return false;
 }
+// A themed pool is smaller: preserve a non-repeating path through checkpoint 20.
+// This changes candidate viability only; price bands, unseen-first ordering and timing stay unchanged.
+function reachesFinalCheckpoint(refPrice, score, excluded) {
+  const target=CFG.checkpoints.at(-1).requiredCorrect, used=new Set(excluded), failed=new Set();
+  const nextOptions=(price,at)=>{
+    const b=bandFor(at),out=[];
+    for(const dearer of [true,false]){const r=range(b,price,dearer);
+      for(let i=firstAtLeast(r.low);i<index.length&&index[i][0]<=r.high;i++){
+        const [p,id]=index[i];if(!used.has(id))out.push({price:p,dkp:id});
+      }
+    }return out;
+  };
+  const visit=(price,at)=>{
+    if(at>=target)return true;
+    const options=nextOptions(price,at);if(!options.length)return false;
+    const key=at+'|'+price+'|'+[...used].sort((a,b)=>a-b).join(',');if(failed.has(key))return false;
+    // Prefer well-connected branches while proving a path, not while choosing what the player sees.
+    const ranked=options.map(c=>{used.add(c.dkp);const degree=at+1>=target?1:nextOptions(c.price,at+1).length;used.delete(c.dkp);return {...c,degree};}).filter(c=>c.degree).sort((a,b)=>b.degree-a.degree);
+    for(const c of ranked){used.add(c.dkp);const ok=visit(c.price,at+1);used.delete(c.dkp);if(ok)return true;}
+    failed.add(key);return false;
+  };
+  return visit(refPrice,score);
+}
 /** SelectionService.canReveal: some product of the band, not in the run, that itself leaves a valid next question. */
 function canReveal(refPrice, score, exclude) {
+  if(score<CFG.checkpoints.at(-1).requiredCorrect)return reachesFinalCheckpoint(refPrice,score,exclude);
   const b = bandFor(score);
   for (const dearer of [true, false]) {
     const r = range(b, refPrice, dearer); if (r.low > r.high) continue;
@@ -173,7 +199,9 @@ function candidates(b, refPrice, dearer, exclude, showDate) {
   }
   return out;
 }
-const firstPassing = (list, score, exclude) => (list.find(c => hasNext(c.price, score + 1, exclude, c.dkp)) || null);
+const firstPassing = (list, score, exclude) => list.find(c => score<CFG.checkpoints.at(-1).requiredCorrect
+  ? reachesFinalCheckpoint(c.price,score+1,new Set([...exclude,c.dkp]))
+  : hasNext(c.price,score+1,exclude,c.dkp)) || null;
 /**
  * SelectionService.chooseComparison. The backend tries a random sample of 48 per direction first and then the whole
  * band; on this catalog size the whole band is searched in random order, which picks with the same distribution.
@@ -325,7 +353,7 @@ function settleFinalReward(run,at){
  S.awards[run.runId]=award;
  if(cp.rewardKind==='coin'){
   const op=createCredit(run,'CHECKPOINT_REWARD',cp.reward,at,cp.id);award.operationId=op.operationId;op.rewardPolicy=REWARD_POLICY;processOp(op.operationId);
- }else award.code=(cp.rewardKind==='plus_code'?'DEMO-PLUS-':'DEMO-GOLD-')+run.runId.slice(-8).toUpperCase();
+ }else award.code=(cp.rewardKind==='plus_code'?'QS-OFF-':'QS-GOLD-')+run.runId.slice(-8).toUpperCase();
 }
 function finalAward(run){
  const a=S.awards[run.runId];if(!a)return null;
@@ -333,7 +361,7 @@ function finalAward(run){
 }
 function rewardHistory(){
  const coins=rewardHistoryView(S.rewardHistory,CFG.checkpoints);
- const codes=Object.values(S.awards).filter(a=>a.kind!=='coin').map(a=>({...a,type:'CHECKPOINT_GIFT',title:a.kind==='plus_code'?'کد تخفیف پلاس':'کارت طلای ۱۰۰ هزار تومانی'}));
+ const codes=Object.values(S.awards).filter(a=>a.kind!=='coin').map(a=>({...a,type:'CHECKPOINT_GIFT',title:a.kind==='plus_code'?'کد تخفیف':'کارت طلای ۱۰۰ هزار تومانی'}));
  const items=[...coins.items,...codes].sort((a,b)=>b.receivedAt.localeCompare(a.receivedAt)||b.id.localeCompare(a.id));
  return {...coins,items,count:items.length};
 }

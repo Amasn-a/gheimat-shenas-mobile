@@ -1,13 +1,13 @@
-import { fa, esc } from './fmt.js?v=ba94ef0d5297';
+import { fa, esc } from './fmt.js?v=3b660ae16bb3';
 export const TOUR_STEPS=[
- {target:'[data-tour="first"]',title:'این کالای اوله',copy:'ماگ <strong>۲۴۵٬۰۰۰ تومانه</strong>؛ این قیمت، مبنای مقایسه‌ته.',next:'کالای دوم رو ببینیم'},
- {target:'[data-tour="second"]',title:'این کالای دومه',copy:'هدفون از ماگِ <strong>۲۴۵٬۰۰۰ تومانی</strong> گرون‌تره یا ارزون‌تر؟',next:'بریم انتخاب کنیم'},
- {target:'[data-tour="answers"]',title:'حالا انتخاب کن',copy:'هدفون گرون‌تره یا ارزون‌تر؟ <strong>یکی از دو گزینه</strong> رو بزن.',next:''}
+ {target:'[data-tour="first"]',title:'این کالای اوله',copy:'این ماوس <strong>۱٬۸۸۹٬۰۰۰ تومانه</strong>؛ این قیمت، مبنای مقایسه‌ته.',next:'کالای دوم رو ببینیم'},
+ {target:'[data-tour="second"]',title:'این کالای دومه',copy:'این کیبورد از ماوسِ <strong>۱٬۸۸۹٬۰۰۰ تومانی</strong> گرون‌تره یا ارزون‌تر؟',next:'بریم انتخاب کنیم'},
+ {target:'[data-tour="answers"]',title:'حالا انتخاب کن',copy:'کیبورد گرون‌تره یا ارزون‌تر؟ <strong>یکی از دو گزینه</strong> رو بزن.',next:''}
 ];
 export function tourMarkup(step,seconds,answerGuide=false,result=null){
   const t=TOUR_STEPS[step]||TOUR_STEPS[0],last=step===TOUR_STEPS.length-1;
   const title=result?(result.outcome==='correct'?'درست انتخاب کردی!':'این بار درست نبود'):t.title;
-  const copy=result?(result.outcome==='correct'?'هدفون از ماگ گرون‌تره. بزن بریم سراغ بازی اصلی!':'هدفون از ماگ گرون‌تره، پس جواب «گرون‌تره» بود. می‌تونی با «قبلی» دوباره امتحان کنی.'):t.copy.replace('{seconds}',fa(seconds));
+  const copy=result?(result.outcome==='correct'?'کیبورد از ماوس گرون‌تره. بزن بریم سراغ بازی اصلی!':'کیبورد از ماوس گرون‌تره، پس جواب «گرون‌تره» بود. می‌تونی با «قبلی» دوباره امتحان کنی.'):t.copy.replace('{seconds}',fa(seconds));
   const locked=result?.busy?' disabled aria-busy="true"':'';
   const actions=result?`<div class="l-coach-actions"><button class="l-coach-prev" data-act="learn-back"${locked}>قبلی</button><button class="l-btn" data-act="learn-play"${locked}>${result.busy?'<span class="q-spin" aria-hidden="true"></span><span>داریم شروع می‌کنیم…</span>':'بزن بریم!'}</button></div>`:answerGuide?'<div class="l-coach-actions is-empty" aria-hidden="true"></div>':`<div class="l-coach-actions"><button class="l-coach-prev" data-act="${step?'learn-prev':'learn-back'}">قبلی</button><button class="l-btn" data-act="${last?'learn-start':'learn-next'}" data-tour-next>${t.next}</button></div>`;
   return `<div class="l-tour is-positioned${answerGuide?' l-tour--answer':''}${result?' l-tour--result l-tour--'+result.outcome:''}" data-key="practice-tour"><div class="l-spotlight-ring" data-key="practice-ring" aria-hidden="true"></div><section class="l-coach${answerGuide?' l-coach--practice':''}" data-key="practice-coach" role="region"${answerGuide?' data-answer-guide':''} aria-labelledby="tour-title" aria-describedby="tour-copy"><div class="l-coach-meta"><span class="l-step-track" aria-hidden="true">${TOUR_STEPS.map((_,i)=>`<i class="${i<=step?'is-done':''}"></i>`).join('')}</span>${answerGuide?'':'<button data-act="learn-back" aria-label="خروج از تمرین"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>'}</div><div class="l-coach-body" data-key="practice-copy-${step}-${result?result.outcome:'intro'}"${result?' role="status" aria-live="polite"':''}><h2 id="tour-title" tabindex="-1">${title}</h2><p id="tour-copy"><span>${copy}</span></p><p class="l-coach-error"${result?.error?' role="alert"':' aria-hidden="true"'}>${result?.error?esc(result.error):''}</p></div>${actions}</section></div>`;
