@@ -5,7 +5,7 @@ function patchNode(old,next){
   if(old.nodeType!==1){if(old.nodeValue!==next.nodeValue)old.nodeValue=next.nodeValue;return;}
   for(const a of [...old.attributes])if(!next.hasAttribute(a.name))old.removeAttribute(a.name);
   for(const a of next.attributes)if(old.getAttribute(a.name)!==a.value)old.setAttribute(a.name,a.value);
-  patchChildren(old,next);
+  if(!next.hasAttribute('data-preserve-content'))patchChildren(old,next);
 }
 function patchChildren(host,next){
   let at=host.firstChild;

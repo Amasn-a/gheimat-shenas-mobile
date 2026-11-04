@@ -7,25 +7,25 @@
 // DEMO ONLY: one account per browser (localStorage), DigiCoin SIMULATED in this page (start balance 950). Nothing is
 // charged or credited anywhere. A static page cannot verify the real backend or the real DigiCoin integration.
 
-import {REWARD_POLICY,finalCheckpoint} from './reward-policy.mjs?v=3b660ae16bb3';
-import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=3b660ae16bb3';
-import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=3b660ae16bb3';
-import { rememberReward, rewardHistoryView } from './reward-history.js?v=3b660ae16bb3';
+import {REWARD_POLICY,finalCheckpoint} from './reward-policy.mjs?v=20261104-final-30';
+import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=20261104-final-30';
+import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=20261104-final-30';
+import { rememberReward, rewardHistoryView } from './reward-history.js?v=20261104-final-30';
 const PREFIX = '/v1/gamification/price-expert';
 export const API_ORIGIN = 'https://play.invalid';   // never resolves: a call that escapes the interceptor fails, it reaches no server
-import {PLAYER_STORE,INITIAL_BALANCE,DAILY_ATTEMPTS} from '../src/player-profile.mjs';
+import {PLAYER_STORE,INITIAL_BALANCE,DAILY_ATTEMPTS} from '../src/player-profile.mjs?v=20261104-final-30';
 const STORE = PLAYER_STORE;
 
 // LaunchConfig.value() of gheimat-shenas (R-20, R-33, R-41, R-47, brief 2026-10-20, redesign 2026-10-21)
 const CFG = {
-  configVersion: 3, rewardPolicy: REWARD_POLICY, catalogVersion: 3, playsPerDay: DAILY_ATTEMPTS,   // Scenario B, source design 2026-11-02.
+  configVersion: 4, rewardPolicy: REWARD_POLICY, catalogVersion: 3, playsPerDay: DAILY_ATTEMPTS,   // Scenario B, source design 2026-11-02.
   inputMs: 10_000, acceptMs: 12_500,
   leadMs: 5_000,   // owner 2026-10-26: 5 s between questions; the next product is sent hidden at its start so its photo can load
  offerMs: null, offerAcceptMs: null, paymentResolutionMs: 60_000,
   inactivityMs: 180_000, offerActivationMs: 180_000, timeoutGraceMs: 1_000, checkpointAutoContinueMs: 5_000,
   checkpoints: [
     { id: 'cp_5', requiredCorrect: 5, title: 'قیمت‌شناس', badgeAssetId: 'badge_5', reward: 0, rewardKind:'plus_code', percent: 50 },
-    { id: 'cp_10', requiredCorrect: 10, title: 'تریدر', badgeAssetId: 'badge_10', reward: 3, rewardKind:'coin', percent: 70 },
+    { id: 'cp_10', requiredCorrect: 10, title: 'تریدر', badgeAssetId: 'badge_10', reward: 3, rewardKind:'supermarket_code', percent: 70 },
     { id: 'cp_15', requiredCorrect: 15, title: 'بازاری', badgeAssetId: 'badge_15', reward: 5, rewardKind:'coin', percent: 90 },
     { id: 'cp_20', requiredCorrect: 20, title: 'تاجر', badgeAssetId: 'badge_20', reward: 0, rewardKind:'gold_card', percent: 99 },
   ],
@@ -349,11 +349,15 @@ function crossingRewards() {}
 function settleFinalReward(run,at){
  if(run.rewardPolicy!==REWARD_POLICY || S.awards[run.runId])return;
  const cp=finalCheckpoint(CFG.checkpoints,run.score);if(!cp)return;
- const award={id:'final:'+run.runId,runId:run.runId,checkpointId:cp.id,title:cp.title,kind:cp.rewardKind,amount:cp.reward,status:'succeeded',demo:true,receivedAt:iso(at),code:null};
+ const award={id:'final:'+run.runId,runId:run.runId,checkpointId:cp.id,title:cp.title,kind:cp.rewardKind,amount:cp.reward,status:'succeeded',demo:true,receivedAt:iso(at),expiresAt:iso(at+30*86400000),code:null};
+ if(cp.rewardKind==='plus_code')award.offer='تخفیف خرید اشتراک پلاس';
+ if(cp.rewardKind==='supermarket_code')award.offer='۱۰٪ تخفیف خرید سوپرمارکتی';
+ if(cp.rewardKind==='gold_card')award.offer='کارت هدیهٔ طلای دیجیتال';
  S.awards[run.runId]=award;
- if(cp.rewardKind==='coin'){
+ if(cp.reward>0){
   const op=createCredit(run,'CHECKPOINT_REWARD',cp.reward,at,cp.id);award.operationId=op.operationId;op.rewardPolicy=REWARD_POLICY;processOp(op.operationId);
- }else award.code=(cp.rewardKind==='plus_code'?'QS-OFF-':'QS-GOLD-')+run.runId.slice(-8).toUpperCase();
+ }
+ if(cp.rewardKind!=='coin')award.code=(cp.rewardKind==='plus_code'?'QS-PLUS-':cp.rewardKind==='supermarket_code'?'QS-SM-':'QS-GOLD-')+run.runId.slice(-8).toUpperCase();
 }
 function finalAward(run){
  const a=S.awards[run.runId];if(!a)return null;
@@ -361,7 +365,7 @@ function finalAward(run){
 }
 function rewardHistory(){
  const coins=rewardHistoryView(S.rewardHistory,CFG.checkpoints);
- const codes=Object.values(S.awards).filter(a=>a.kind!=='coin').map(a=>({...a,type:'CHECKPOINT_GIFT',title:a.kind==='plus_code'?'کد تخفیف':'کارت طلای ۱۰۰ هزار تومانی'}));
+ const codes=Object.values(S.awards).filter(a=>a.kind!=='coin').map(a=>({...a,type:'CHECKPOINT_GIFT',title:a.kind==='plus_code'?'تخفیف خرید اشتراک پلاس':a.kind==='supermarket_code'?'۱۰٪ تخفیف خرید سوپرمارکتی':'کارت هدیهٔ طلای دیجیتال'}));
  const items=[...coins.items,...codes].sort((a,b)=>b.receivedAt.localeCompare(a.receivedAt)||b.id.localeCompare(a.id));
  return {...coins,items,count:items.length};
 }

@@ -1,11 +1,11 @@
 // Play entry (GitHub Pages). This Play-only redesign intentionally diverges from gheimat-shenas (src/, styles/, fonts/). This file
 // does what the Super App and the backend do in production: it configures the host adapter for a plain browser and
 // answers the player's API calls with the in-browser demo server (play/server.js). Public entry: no configuration or developer controls.
-import { HAPTIC_PATTERNS } from '../src/feedback.mjs?v=3b660ae16bb3';
-import { buildSharePayload } from '../src/share-payload.mjs?v=3b660ae16bb3';
-import { splash, BOOT_ERROR } from '../src/launch.js?v=3b660ae16bb3';   // first: the splash mounts before anything else loads
-import { configureHost } from '../src/host.js?v=3b660ae16bb3';
-import { install, API_ORIGIN, setCatalog } from './server.js?v=3b660ae16bb3';
+import { HAPTIC_PATTERNS } from '../src/feedback.mjs?v=20261104-final-30';
+import { buildSharePayload } from '../src/share-payload.mjs?v=20261104-final-30';
+import { splash, BOOT_ERROR } from '../src/launch.js?v=20261104-final-30';   // first: the splash mounts before anything else loads
+import { configureHost } from '../src/host.js?v=20261104-final-30';
+import { install, API_ORIGIN, setCatalog } from './server.js?v=20261104-final-30';
 
 const app = document.getElementById('app');
 const rev = document.documentElement.dataset.release || document.documentElement.dataset.source || '';
@@ -41,4 +41,4 @@ try {
 }
 install();
 
-await import('../src/main.js?v=3b660ae16bb3');
+await import('../src/main.js?v=20261104-final-30');
