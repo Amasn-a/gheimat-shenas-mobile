@@ -1,4 +1,4 @@
-import {PLAYER_STORE,INITIAL_BALANCE} from './player-profile.mjs?v=20261104-final-30';
+import {PLAYER_STORE,INITIAL_BALANCE} from './player-profile.mjs?v=20261104-boot-fix-31';
 // Presentation-only host mock. It reads the prototype's balance, never changes
 // game progress, quota, rewards, authentication or the real DigiCoin account.
 const app=document.getElementById('mock-app');

@@ -1,7 +1,7 @@
-import { productPriceMarkup } from './product-pricing.mjs?v=20261104-final-30';
-import { I } from './icons.js?v=20261104-final-30';
-import { esc, fa } from './fmt.js?v=20261104-final-30';
-import { campaignTime, campaignDiscounts } from './marketing-campaign.js?v=20261104-final-30';
+import { productPriceMarkup } from './product-pricing.mjs?v=20261104-boot-fix-31';
+import { I } from './icons.js?v=20261104-boot-fix-31';
+import { esc, fa } from './fmt.js?v=20261104-boot-fix-31';
+import { campaignTime, campaignDiscounts } from './marketing-campaign.js?v=20261104-boot-fix-31';
 const digitalArt = '<svg viewBox="0 0 44 44" fill="none" aria-hidden="true"><path d="M11 24v-5a11 11 0 0 1 22 0v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="21" width="9" height="15" rx="4" fill="#fffaf1" stroke="currentColor" stroke-width="2"/><rect x="28" y="21" width="9" height="15" rx="4" fill="#fffaf1" stroke="currentColor" stroke-width="2"/><path d="m24 9-4 8h5l-4 8" stroke="#b996e2" stroke-width="2" stroke-linejoin="round"/></svg>';
 export function campaignClock(c, now) {
   const t=campaignTime(c.endsAt,now);

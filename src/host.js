@@ -1,5 +1,5 @@
-import { HAPTIC_PATTERNS } from './feedback.mjs?v=3b660ae16bb3';
-import { buildSharePayload, GAME_URL, singleShareLink } from './share-payload.mjs?v=3b660ae16bb3';
+import { HAPTIC_PATTERNS } from './feedback.mjs?v=20261104-boot-fix-31';
+import { buildSharePayload, GAME_URL, singleShareLink } from './share-payload.mjs?v=20261104-boot-fix-31';
 // Host adapter: every Super App interaction goes through here. The bridge contract (login token handover, back/close,
 // device id, haptics, share, deep link, WebView floor) is with the app team (D09) and is NOT in the supplied
 // sources, so no bridge object name or URL scheme is invented. The integration supplies an implementation through

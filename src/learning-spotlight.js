@@ -1,4 +1,4 @@
-import { fa, esc } from './fmt.js?v=3b660ae16bb3';
+import { fa, esc } from './fmt.js?v=20261104-boot-fix-31';
 export const TOUR_STEPS=[
  {target:'[data-tour="first"]',title:'این کالای اوله',copy:'این ماوس <strong>۱٬۸۸۹٬۰۰۰ تومانه</strong>؛ این قیمت، مبنای مقایسه‌ته.',next:'کالای دوم رو ببینیم'},
  {target:'[data-tour="second"]',title:'این کالای دومه',copy:'این کیبورد از ماوسِ <strong>۱٬۸۸۹٬۰۰۰ تومانی</strong> گرون‌تره یا ارزون‌تر؟',next:'بریم انتخاب کنیم'},

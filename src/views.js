@@ -1,17 +1,17 @@
-import {rewardLabel,finalRewardLabel} from './reward-copy.mjs?v=3b660ae16bb3';
-import { GAME_URL } from './share-payload.mjs?v=3b660ae16bb3';
-import { renderStreakSheet } from './streak-view.js?v=3b660ae16bb3';
-import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=3b660ae16bb3';
-import { soundControl } from './feedback.mjs?v=3b660ae16bb3';
-import { entryArt, loadingDots } from './entry-art.js?v=3b660ae16bb3';
-import { renderLearning } from './learning.js?v=3b660ae16bb3';
-import { renderMobileHome } from './mobile-home.js?v=3b660ae16bb3';
+import {rewardLabel,finalRewardLabel} from './reward-copy.mjs?v=20261104-boot-fix-31';
+import { GAME_URL } from './share-payload.mjs?v=20261104-boot-fix-31';
+import { renderStreakSheet } from './streak-view.js?v=20261104-boot-fix-31';
+import { productPriceMarkup, productPrices, productDiscountMarkup } from './product-pricing.mjs?v=20261104-boot-fix-31';
+import { soundControl } from './feedback.mjs?v=20261104-boot-fix-31';
+import { entryArt, loadingDots } from './entry-art.js?v=20261104-boot-fix-31';
+import { renderLearning } from './learning.js?v=20261104-boot-fix-31';
+import { renderMobileHome } from './mobile-home.js?v=20261104-boot-fix-31';
 // Screen markup of the redesign of 2026-10-21 (white base, Digikala red actions, badge family). Views are pure functions
 // of the view model: they never read the network or the clock. All text from data goes through esc()/title().
 // Direction rules (§2): back/close sit at the physical right (first in RTL DOM order) and point right. Inside a button the
 // icon is written before the label, so it sits at the label's right; the play triangle is mirrored to point at the label (owner 2026-10-25).
-import { I } from './icons.js?v=3b660ae16bb3';
-import { fa, money, esc, title } from './fmt.js?v=3b660ae16bb3';
+import { I } from './icons.js?v=20261104-boot-fix-31';
+import { fa, money, esc, title } from './fmt.js?v=20261104-boot-fix-31';
 
 const L = ' disabled aria-disabled="true"';
 const ICO = (k, s = 20) => I[k].replace('width="24" height="24"', `width="${s}" height="${s}"`);
@@ -19,8 +19,8 @@ const SPIN = '<span class="q-spin" aria-hidden="true"></span>';
 /** Official DigiCoin asset downloaded from Digikala's own static asset endpoint. */
 export const COIN = '<img class="q-coin" src="assets/digicoin-game.svg" width="24" height="23" alt="" aria-hidden="true">';
 export const TAG = '<img class="q-logomark" src="assets/game-logo.webp" width="40" height="56" alt="" aria-hidden="true">';
-// ?v=3: the badges-v3 artwork (title inside the art) reuses the old file names, so a cached old badge is never shown
-export const BADGE_SRC = id => `assets/badges/${encodeURIComponent(id)}.webp?v=3`;
+// ?v=20261104-boot-fix-31: the badges-v3 artwork (title inside the art) reuses the old file names, so a cached old badge is never shown
+export const BADGE_SRC = id => `assets/badges/${encodeURIComponent(id)}.webp?v=20261104-boot-fix-31`;
 export const BADGES = ['badge_5', 'badge_10', 'badge_15', 'badge_20'];
 /** A checkpoint's badge image; an unknown id (a checkpoint added later in A02) gets the badge of its position. */
 export const badgeId = (c, i) => BADGES.includes(c.badgeAssetId) ? c.badgeAssetId : BADGES[Math.min(BADGES.length - 1, Math.max(0, i))];

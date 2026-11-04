@@ -7,13 +7,13 @@
 // DEMO ONLY: one account per browser (localStorage), DigiCoin SIMULATED in this page (start balance 950). Nothing is
 // charged or credited anywhere. A static page cannot verify the real backend or the real DigiCoin integration.
 
-import {REWARD_POLICY,finalCheckpoint} from './reward-policy.mjs?v=20261104-final-30';
-import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=20261104-final-30';
-import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=20261104-final-30';
-import { rememberReward, rewardHistoryView } from './reward-history.js?v=20261104-final-30';
+import {REWARD_POLICY,finalCheckpoint} from './reward-policy.mjs?v=20261104-boot-fix-31';
+import { firstWeekCompletion, streakProgress, streakRewardForDay } from './streak-policy.mjs?v=20261104-boot-fix-31';
+import { campaignById, isDigitalProduct } from '../src/marketing-campaign.js?v=20261104-boot-fix-31';
+import { rememberReward, rewardHistoryView } from './reward-history.js?v=20261104-boot-fix-31';
 const PREFIX = '/v1/gamification/price-expert';
 export const API_ORIGIN = 'https://play.invalid';   // never resolves: a call that escapes the interceptor fails, it reaches no server
-import {PLAYER_STORE,INITIAL_BALANCE,DAILY_ATTEMPTS} from '../src/player-profile.mjs?v=20261104-final-30';
+import {PLAYER_STORE,INITIAL_BALANCE,DAILY_ATTEMPTS} from '../src/player-profile.mjs?v=20261104-boot-fix-31';
 const STORE = PLAYER_STORE;
 
 // LaunchConfig.value() of gheimat-shenas (R-20, R-33, R-41, R-47, brief 2026-10-20, redesign 2026-10-21)

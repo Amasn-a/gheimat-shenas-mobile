@@ -1,9 +1,9 @@
-import {rewardLabel} from './reward-copy.mjs?v=3b660ae16bb3';
-import {tourMarkup} from './learning-spotlight.js?v=3b660ae16bb3';
-import {soundControl} from './feedback.mjs?v=3b660ae16bb3';
-import {I} from './icons.js?v=3b660ae16bb3';
-import {fa,esc} from './fmt.js?v=3b660ae16bb3';
-import {DEMO_FIRST,DEMO_SECOND,DEMO_SECOND_PRICE} from './demo.js?v=3b660ae16bb3';
+import {rewardLabel} from './reward-copy.mjs?v=20261104-boot-fix-31';
+import {tourMarkup} from './learning-spotlight.js?v=20261104-boot-fix-31';
+import {soundControl} from './feedback.mjs?v=20261104-boot-fix-31';
+import {I} from './icons.js?v=20261104-boot-fix-31';
+import {fa,esc} from './fmt.js?v=20261104-boot-fix-31';
+import {DEMO_FIRST,DEMO_SECOND,DEMO_SECOND_PRICE} from './demo.js?v=20261104-boot-fix-31';
 export function renderLearning(m,h){
  const phase=m.learn?.phase||'overview',c=m.config;
  const button=(text,act,secondary=false)=>`<button class="l-btn${secondary?' l-btn--secondary':''}" data-act="${act}"${m.busy?' disabled aria-busy="true"':''}>${m.busy?'<span class="q-spin"></span>':text}</button>`;

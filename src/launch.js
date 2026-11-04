@@ -1,8 +1,11 @@
 // Launch splash (mobile visual language): shown on every page boot, never between questions or on internal navigation.
 // Imported first by play/boot.js so it mounts before anything else; main.js reuses the same instance (one module = one splash).
-import { createPriceShenasSplash } from './splash.js?v=3b660ae16bb3';
+import { createPriceShenasSplash } from './splash.js?v=20261104-boot-fix-31';
 
-export const splash = createPriceShenasSplash({
+// A partially cached/uploaded release can evaluate this module under two URLs.
+// One document must still own exactly one overlay and one inert lock.
+const splashKey = Symbol.for('gheimat-shenas.launch-splash');
+export const splash = document[splashKey] ||= createPriceShenasSplash({
   artUrl: new URL('../assets/brand-smile-v2.png', import.meta.url).href,
   minVisibleMs: 2000,
 });
@@ -14,8 +17,7 @@ export const nextBoot = app => new Promise(res => app.addEventListener('qs:boot'
 
 /** Waits for the first paint and the real boot; dismisses only on success. Retry re-runs the game's own boot (reads state, never starts a run or charges). */
 export async function gate(app, firstBoot, boot) {
-  const ok = await Promise.all([splash.ready, firstBoot]).then(([, ok]) => ok, () => null);
-  if (ok === null) return;
+  const ok = await Promise.all([splash.ready, firstBoot]).then(([, ok]) => ok, () => false);
   if (ok) return splash.complete();
   const retry = async () => { const next = nextBoot(app); boot(); if (!(await next)) throw new Error('boot'); splash.complete(); };
   splash.showError(BOOT_ERROR, retry);
